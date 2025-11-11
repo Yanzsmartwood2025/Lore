@@ -125,67 +125,16 @@
             <div class="w-full h-1px bg-gray-700 my-4"></div>
 
             <!-- Botón 1: Puerta FAN -->
-            <button id="fan-door-btn" class="btn-neon btn-neon-fan">
+            <a href="fan/index.html" class="btn-neon btn-neon-fan no-underline">
                 🎧 Puerta FAN
-            </button>
+            </a>
             <p class="text-sm text-gray-500 text-center">(Contenido "Trueque" + Spotify)</p>
 
             <!-- Botón 2: Puerta VIP -->
-            <button id="vip-door-btn" class="btn-neon btn-neon-vip">
+            <a href="vip/index.html" class="btn-neon btn-neon-vip no-underline">
                 💎 Puerta VIP
-            </button>
+            </a>
             <p class="text-sm text-gray-500 text-center">(Grok + Cripto + "Muy Caliente")</p>
-        </div>
-
-        <!-- ====================================================== -->
-        <!-- PANTALLA 3: "PUERTA FAN" (La Máquina de Spotify)       -->
-        <!-- ====================================================== -->
-        <div id="fan-door-screen" class="hidden absolute inset-0 flex flex-col justify-start items-center w-full h-full p-8 overflow-y-auto animate-fadeIn">
-            <button class="absolute top-4 left-4 text-white text-2xl font-bold" onclick="showScreen('lobby')">&lt; Volver</button>
-            <h1 class="text-4xl font-black text-center text-cyan-400 mt-16 mb-4">PUERTA FAN</h1>
-            <p class="text-center text-gray-400 mb-8">Paga tu entrada con 'play'. Desbloquea los 5 Niveles del "Protocolo".</p>
-
-            <!-- Productor: Aquí construiremos el "Sistema de 5 Niveles" (El "Reloj de Contenido") -->
-            <div class="w-full max-w-md space-y-4">
-                <div class="bg-gray-900 p-4 rounded-lg text-center opacity-50">
-                    <h3 class="text-xl font-bold">NIVEL 1: Te Caché (Próximamente)</h3>
-                    <p class="text-sm text-gray-500">(Aquí irá el Player de Spotify + Carrusel 1)</p>
-                </div>
-                <div class="bg-gray-900 p-4 rounded-lg text-center opacity-50">
-                    <h3 class="text-xl font-bold">NIVEL 2: Fiebre Neón (Próximamente)</h3>
-                </div>
-                <div class="bg-gray-900 p-4 rounded-lg text-center opacity-50">
-                    <h3 class="text-xl font-bold">NIVEL 3: Segunda Piel (Próximamente)</h3>
-                </div>
-                 <div class="bg-gray-900 p-4 rounded-lg text-center opacity-50">
-                    <h3 class="text-xl font-bold">NIVEL 4: Acceso VIP (Próximamente)</h3>
-                </div>
-                 <div class="bg-gray-900 p-4 rounded-lg text-center opacity-50">
-                    <h3 class="text-xl font-bold">NIVEL 5: El Secreto (Próximamente)</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====================================================== -->
-        <!-- PANTALLA 4: "PUERTA VIP" (El Imperio Cripto/Grok)      -->
-        <!-- ====================================================== -->
-        <div id="vip-door-screen" class="hidden absolute inset-0 flex flex-col justify-start items-center w-full h-full p-8 overflow-y-auto animate-fadeIn">
-            <button class="absolute top-4 left-4 text-white text-2xl font-bold" onclick="showScreen('lobby')">&lt; Volver</button>
-            <h1 class="text-4xl font-black text-center text-pink-500 mt-16 mb-4">PUERTA VIP</h1>
-            <p class="text-center text-gray-400 mb-8">El "Imperio". Contenido "muy caliente". 100% Cripto. 100% Grok.</p>
-
-            <!-- Productor: Aquí es donde usted (como Programador) integra la API de Coinbase Commerce -->
-            <div class="w-full max-w-md space-y-4 text-center">
-                <button class="bg-yellow-500 text-black font-bold py-4 px-8 rounded-lg text-xl uppercase animate-pulse">
-                    Pagar con Cripto (Acceso Total)
-                </button>
-                <p class="text-sm text-gray-500">(Aquí irá su API de "Cajero" Cripto)</p>
-                
-                <div class="pt-8 opacity-50">
-                    <h3 class="text-xl font-bold">Chat 1-a-1 con Lore (Grok)</h3>
-                    <p class="text-sm text-gray-500">(Bloqueado hasta el pago)</p>
-                </div>
-            </div>
         </div>
 
     </div>
@@ -194,7 +143,7 @@
     <footer class="absolute bottom-0 w-full text-center p-4 z-10">
         <p class="text-xs text-gray-600">
             © 2025 Jusn 38. Todos los derechos reservados. 
-            <a href="#" class="underline">Términos y Condiciones</a>
+            <a href="terms/index.html" class="underline">Términos y Condiciones</a>
         </p>
     </footer>
 
@@ -204,14 +153,10 @@
         // 1. Obtenemos las "pantallas"
         const splashScreen = document.getElementById('splash-screen');
         const lobbyScreen = document.getElementById('lobby-screen');
-        const fanDoorScreen = document.getElementById('fan-door-screen');
-        const vipDoorScreen = document.getElementById('vip-door-screen');
 
         const screens = {
             'splash': splashScreen,
-            'lobby': lobbyScreen,
-            'fan-door': fanDoorScreen,
-            'vip-door': vipDoorScreen
+            'lobby': lobbyScreen
         };
 
         // 2. La función "Mágica" que cambia de pantalla
@@ -227,10 +172,6 @@
                 screens[screenId].classList.remove('hidden');
             }
         }
-
-        // 3. Asignar los "Botones" (El "Cableado")
-        document.getElementById('fan-door-btn').onclick = () => showScreen('fan-door');
-        document.getElementById('vip-door-btn').onclick = () => showScreen('vip-door');
         
         // --- El "Arranque" (El "Flywheel") ---
         
