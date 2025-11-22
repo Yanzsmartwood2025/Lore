@@ -30,6 +30,16 @@
 
     <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Configuración Local de Firebase -->
+    <script src="firebase/firebase-config.js"></script>
+    <script src="firebase/auth.js"></script>
     
     <!-- Meta Tags de PWA (Para "Descargar la App") -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -37,7 +47,8 @@
     <meta name="theme-color" content="#000000">
     
     <!-- Productor: Aquí irá su manifest.json -->
-    
+    <link rel="manifest" href="/manifest.json">
+
     <style>
         /* (Estilos de Neón... sin cambios) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:wght@700&display=swap');
@@ -124,6 +135,12 @@
 
             <div class="w-full h-1px bg-gray-700 my-4"></div>
 
+            <!-- Botón de Login Firebase -->
+            <button onclick="signInWithGoogle()" class="bg-white text-black font-bold py-2 px-4 rounded flex items-center space-x-2 hover:bg-gray-200 transition duration-300">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" class="w-5 h-5">
+                <span>Iniciar Sesión con Google</span>
+            </button>
+
             <!-- Botón 1: Puerta FAN -->
             <a href="fan/index.html" class="btn-neon btn-neon-fan no-underline">
                 🎧 Puerta FAN
@@ -184,6 +201,18 @@
             showScreen('lobby'); // Muestra el "Lobby" (Las Dos Puertas)
         }, 4000);
 
+        // Registro del Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registrado con éxito:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Fallo al registrar el Service Worker:', error);
+                    });
+            });
+        }
     </script>
 </body>
   </html>
