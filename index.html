@@ -31,6 +31,9 @@
     <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- FontAwesome para Iconos de Redes Sociales -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <!-- Add Firebase products that you want to use -->
@@ -112,14 +115,14 @@
         }
     </style>
 </head>
-<body class="overflow-hidden">
+<body class="overflow-hidden flex flex-col h-screen">
 
-    <div id="app" class="relative w-full h-screen">
+    <div id="app" class="flex-grow relative w-full overflow-hidden flex flex-col">
 
         <!-- ====================================================== -->
         <!-- PANTALLA 1: "SPLASH SCREEN" (El "Bouncer" de 4s)        -->
         <!-- ====================================================== -->
-        <div id="splash-screen" class="absolute inset-0 flex flex-col justify-center items-center w-full h-full bg-black z-50 hidden">
+        <div id="splash-screen" class="fixed inset-0 flex flex-col justify-center items-center w-full h-full bg-black z-50 hidden">
             <!-- 
                 Productor: Ponga su "Splash Screen" (Foto 231924.jpg) como un video/imagen aquí.
                 Usaré un placeholder del logo "Lore" por ahora.
@@ -133,7 +136,7 @@
         <!-- PANTALLA 2: "LOBBY" (Las Dos Puertas)                   -->
         <!-- (Su captura 231738.png se ve perfecta)                -->
         <!-- ====================================================== -->
-        <div id="lobby-screen" class="hidden absolute inset-0 flex flex-col justify-center items-center w-full h-full p-8 space-y-8 animate-fadeIn">
+        <div id="lobby-screen" class="hidden flex-grow flex flex-col justify-center items-center w-full overflow-y-auto p-8 space-y-8 animate-fadeIn">
             <h2 class="text-3xl font-bold text-center text-gray-300">Bienvenido al</h2>
             <h1 class="text-5xl font-black text-center text-white uppercase tracking-widest">Protocolo VIP</h1>
             <p class="text-center text-gray-400">Elige tu travesura, mor.</p>
@@ -166,10 +169,34 @@
 
     </div>
 
-    <!-- El Footer (Términos y Condiciones) -->
-    <footer class="absolute bottom-0 w-full text-center p-4 z-10">
+    <!-- El Footer (Términos y Condiciones + Redes Sociales) -->
+    <footer class="w-full text-center p-4 z-10 bg-black border-t border-gray-800">
+        <!-- Redes Sociales -->
+        <div class="flex justify-center space-x-6 mb-4">
+            <!-- YouTube -->
+            <a href="https://youtube.com" target="_blank" class="text-white text-2xl hover:text-red-600 transition-colors">
+                <i class="fab fa-youtube"></i>
+            </a>
+            <!-- TikTok -->
+            <a href="https://tiktok.com" target="_blank" class="text-white text-2xl hover:text-pink-500 transition-colors">
+                <i class="fab fa-tiktok"></i>
+            </a>
+            <!-- Facebook -->
+            <a href="https://facebook.com" target="_blank" class="text-white text-2xl hover:text-blue-600 transition-colors">
+                <i class="fab fa-facebook"></i>
+            </a>
+            <!-- Instagram -->
+            <a href="https://instagram.com" target="_blank" class="text-white text-2xl hover:text-pink-600 transition-colors">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <!-- X (Twitter) -->
+            <a href="https://x.com" target="_blank" class="text-white text-2xl hover:text-gray-400 transition-colors">
+                <i class="fab fa-x-twitter"></i>
+            </a>
+        </div>
+
         <p class="text-xs text-gray-600">
-            © 2025 Jusn 38. Todos los derechos reservados. 
+            © 2025 Jusn 38. Todos los derechos reservados. <br class="sm:hidden">
             <a href="terms/index.html" class="underline">Términos y Condiciones</a>
         </p>
     </footer>
