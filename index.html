@@ -14,10 +14,10 @@
     
     <!-- 
       Productor: ¡ACCIÓN REQUERIDA! 
-      Suba su "Carátula" (Picsart_25-11-08...jpg) a este *nuevo* repo (ej. en /img/cover.jpg)
-      y ponga el link *completo* (ej. https://protocolo-vip-web.vercel.app/img/cover.jpg) aquí.
+      Si desea que la imagen se vea al compartir en WhatsApp, debe usar una URL absoluta (https://...).
+      He dejado la URL anterior por si funciona, pero para PWA usamos los iconos locales.
     -->
-    <meta property="og:image" content="https://raw.githubusercontent.com/Yanzsmartwood2025/JUSN38/main/Lore%20PROTOCOLO%20VIP/Picsart_25-11-08_11-13-59-676.jpg"> <!-- ¡Hecho! Usé su link de GitHub por ahora -->
+    <meta property="og:image" content="https://raw.githubusercontent.com/Yanzsmartwood2025/JUSN38/main/Lore%20PROTOCOLO%20VIP/Picsart_25-11-08_11-13-59-676.jpg">
     
     <meta property="og:type" content="website">
     
@@ -46,6 +46,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
+    <!-- Iconos para iOS -->
+    <link rel="apple-touch-icon" href="assets/imagenes/Lore-192x192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/imagenes/Lore-180x180.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="assets/imagenes/Lore-120x120.png">
+
     <!-- Productor: Aquí irá su manifest.json -->
     <link rel="manifest" href="/manifest.json">
 
@@ -114,7 +119,7 @@
         <!-- ====================================================== -->
         <!-- PANTALLA 1: "SPLASH SCREEN" (El "Bouncer" de 4s)        -->
         <!-- ====================================================== -->
-        <div id="splash-screen" class="absolute inset-0 flex flex-col justify-center items-center w-full h-full bg-black z-50">
+        <div id="splash-screen" class="absolute inset-0 flex flex-col justify-center items-center w-full h-full bg-black z-50 hidden">
             <!-- 
                 Productor: Ponga su "Splash Screen" (Foto 231924.jpg) como un video/imagen aquí.
                 Usaré un placeholder del logo "Lore" por ahora.
@@ -134,6 +139,11 @@
             <p class="text-center text-gray-400">Elige tu travesura, mor.</p>
 
             <div class="w-full h-1px bg-gray-700 my-4"></div>
+
+            <!-- Botón de Instalar PWA (Oculto por defecto) -->
+            <button id="install-btn" class="hidden bg-purple-600 text-white font-bold py-2 px-4 rounded flex items-center space-x-2 hover:bg-purple-700 transition duration-300 border border-purple-500 shadow-[0_0_10px_rgba(147,51,234,0.5)]">
+                <span>📲 Instalar App</span>
+            </button>
 
             <!-- Botón de Login Firebase -->
             <button onclick="signInWithGoogle()" class="bg-white text-black font-bold py-2 px-4 rounded flex items-center space-x-2 hover:bg-gray-200 transition duration-300">
@@ -192,14 +202,19 @@
         
         // --- El "Arranque" (El "Flywheel") ---
         
-        // Muestra el Splash al inicio
-        showScreen('splash');
+        // Comprobamos si ya ha visitado para saltar el splash
+        const hasVisited = sessionStorage.getItem('hasVisited');
 
-        // (Productor: 4000ms = 4 segundos)
-        // Esto ejecuta el "Splash Screen" de 4 segundos que usted pidió.
-        setTimeout(() => {
-            showScreen('lobby'); // Muestra el "Lobby" (Las Dos Puertas)
-        }, 4000);
+        if (hasVisited) {
+            showScreen('lobby');
+        } else {
+            showScreen('splash');
+            // (Productor: 4000ms = 4 segundos)
+            setTimeout(() => {
+                showScreen('lobby'); // Muestra el "Lobby" (Las Dos Puertas)
+                sessionStorage.setItem('hasVisited', 'true');
+            }, 4000);
+        }
 
         // Registro del Service Worker para PWA
         if ('serviceWorker' in navigator) {
@@ -213,6 +228,33 @@
                     });
             });
         }
+
+        // --- Lógica de Instalación PWA ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevenir que Chrome 67 y anteriores muestren automáticamente el prompt
+            e.preventDefault();
+            // Guardar el evento para que pueda ser disparado después.
+            deferredPrompt = e;
+            // Actualizar la UI para notificar al usuario que puede añadir a la pantalla de inicio
+            installBtn.classList.remove('hidden');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            // Ocultar nuestra UI de "Instalar"
+            installBtn.classList.add('hidden');
+            // Mostrar el prompt de instalación
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                // Esperar a que el usuario responda al prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                // Ya no podemos usar el deferredPrompt, descartarlo
+                deferredPrompt = null;
+            }
+        });
     </script>
 </body>
   </html>
