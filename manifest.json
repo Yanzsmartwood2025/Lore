@@ -8,14 +8,24 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/Yanzsmartwood2025/JUSN38/main/Lore%20PROTOCOLO%20VIP/Picsart_25-11-08_11-13-59-676.jpg",
+      "src": "assets/imagenes/Lore-192x192.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "https://raw.githubusercontent.com/Yanzsmartwood2025/JUSN38/main/Lore%20PROTOCOLO%20VIP/Picsart_25-11-08_11-13-59-676.jpg",
+      "src": "assets/imagenes/Lore-512x512.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
+    },
+    {
+      "src": "assets/imagenes/Lore-120x120.png",
+      "sizes": "120x120",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/imagenes/Lore-180x180.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ]
 }

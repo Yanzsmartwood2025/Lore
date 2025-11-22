@@ -1,11 +1,15 @@
 const CACHE_NAME = 'lore-vip-v1';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/fan/index.html',
-  '/vip/index.html',
-  '/terms/index.html'
+  './',
+  './index.html',
+  './manifest.json',
+  './fan/index.html',
+  './vip/index.html',
+  './terms/index.html',
+  './assets/imagenes/Lore-192x192.png',
+  './assets/imagenes/Lore-512x512.png',
+  './assets/imagenes/Lore-120x120.png',
+  './assets/imagenes/Lore-180x180.png'
 ];
 
 self.addEventListener('install', (event) => {
