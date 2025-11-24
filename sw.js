@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lore-vip-v1';
+const CACHE_NAME = 'lore-vip-v2'; // Versión de caché actualizada
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
