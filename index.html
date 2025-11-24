@@ -2,282 +2,294 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROTOCOLO VIP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROTOCOLO VIP | El Club de Lore</title>
     
-    <!-- ====================================================== -->
-    <!-- "PROTOCOLO DE MARKETING" (Open Graph Tags)             -->
-    <!-- Este es el "Anzuelo" del Link para TikTok/X/WhatsApp  -->
-    <!-- ====================================================== -->
+    <!-- Evitar caché agresivo -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <meta property="og:title" content="PROTOCOLO VIP | El Club de Lore">
-    <meta property="og:description" content="La Jefa del Neón 👑 | ¿Te atreves a entrar a la travesura? (Cosplay/Grok/Música)">
-    
-    <!-- 
-      Productor: ¡ACCIÓN REQUERIDA! 
-      Si desea que la imagen se vea al compartir en WhatsApp, debe usar una URL absoluta (https://...).
-      He dejado la URL anterior por si funciona, pero para PWA usamos los iconos locales.
-    -->
-    <meta property="og:image" content="https://raw.githubusercontent.com/Yanzsmartwood2025/JUSN38/main/Lore%20PROTOCOLO%20VIP/Picsart_25-11-08_11-13-59-676.jpg">
-    
+    <meta property="og:description" content="La Jefa del Neón 👑 | ¿Te atreves a entrar a la travesura?">
     <meta property="og:type" content="website">
     
-    <!-- Productor: Ponga el link de Vercel aquí cuando lo tenga -->
-    <meta property="og:url" content="https://protocolo-vip-web.vercel.app"> 
-    
-    <!-- Para X (Twitter) -->
-    <meta name="twitter:card" content="summary_large_image">
-    <!-- ====================================================== -->
-
-    <!-- Carga de Tailwind CSS -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- FontAwesome para Iconos de Redes Sociales -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <!-- Firebase SDK (Versión 8 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <!-- Configuración Local de Firebase -->
-    <script src="firebase/firebase-config.js"></script>
-    <script src="firebase/auth.js"></script>
-    
-    <!-- Meta Tags de PWA (Para "Descargar la App") -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
-    
-    <!-- Iconos para iOS -->
-    <link rel="apple-touch-icon" href="assets/imagenes/Lore-192x192.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/imagenes/Lore-180x180.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="assets/imagenes/Lore-120x120.png">
-
-    <!-- Productor: Aquí irá su manifest.json -->
-    <link rel="manifest" href="/manifest.json">
-
     <style>
-        /* (Estilos de Neón... sin cambios) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:wght@700&display=swap');
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0a0a0a;
+            background-color: #050505;
             color: #f0f0f0;
+            -webkit-tap-highlight-color: transparent;
         }
+
+        /* --- Animaciones del Logo --- */
         .lore-title {
             font-family: 'Playfair Display', serif;
             font-size: 4rem;
             color: white;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 5px rgba(255, 255, 255, 0.5);
-            animation: fadeIn 2s ease-in-out;
+            animation: pulseGlow 3s infinite alternate;
         }
+
+        @keyframes pulseGlow {
+            from { text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+            to { text-shadow: 0 0 25px rgba(255,255,255,0.8), 0 0 15px #f000b8; }
+        }
+
+        /* --- Botones Neón --- */
         .btn-neon {
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 80%;
-            max-width: 300px;
-            height: 100px;
+            width: 85%;
+            max-width: 320px;
+            height: 90px;
             border: 2px solid;
-            border-radius: 0.75rem;
-            font-size: 1.5rem;
-            font-weight: 700;
+            border-radius: 1rem;
+            font-size: 1.4rem;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
         }
+
         .btn-neon-fan {
             border-color: #00f2ea;
             color: #00f2ea;
-            box-shadow: 0 0 10px rgba(0, 242, 234, 0.5), 0 0 20px rgba(0, 242, 234, 0.3);
+            box-shadow: 0 0 15px rgba(0, 242, 234, 0.2);
         }
-        .btn-neon-fan:hover {
-            background-color: #00f2ea;
-            color: #0a0a0a;
-            box-shadow: 0 0 20px rgba(0, 242, 234, 0.8), 0 0 40px rgba(0, 242, 234, 0.5);
+        .btn-neon-fan:active, .btn-neon-fan:hover {
+            background-color: rgba(0, 242, 234, 0.1);
+            box-shadow: 0 0 30px rgba(0, 242, 234, 0.6);
+            transform: scale(0.98);
         }
+
         .btn-neon-vip {
             border-color: #f000b8;
             color: #f000b8;
-            box-shadow: 0 0 10px rgba(240, 0, 184, 0.5), 0 0 20px rgba(240, 0, 184, 0.3);
+            box-shadow: 0 0 15px rgba(240, 0, 184, 0.2);
         }
-        .btn-neon-vip:hover {
-            background-color: #f000b8;
-            color: #0a0a0a;
-            box-shadow: 0 0 20px rgba(240, 0, 184, 0.8), 0 0 40px rgba(240, 0, 184, 0.5);
+        .btn-neon-vip:active, .btn-neon-vip:hover {
+            background-color: rgba(240, 0, 184, 0.1);
+            box-shadow: 0 0 30px rgba(240, 0, 184, 0.6);
+            transform: scale(0.98);
         }
+
+        .animate-fadeIn {
+            animation: fadeIn 1s ease-out forwards;
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Iconos Sociales Hover */
+        .social-icon:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));
         }
     </style>
 </head>
-<body class="overflow-hidden flex flex-col h-screen">
+<body class="overflow-hidden flex flex-col h-screen bg-black text-white">
 
     <div id="app" class="flex-grow relative w-full overflow-hidden flex flex-col">
 
         <!-- ====================================================== -->
-        <!-- PANTALLA 1: "SPLASH SCREEN" (El "Bouncer" de 4s)        -->
+        <!-- PANTALLA 1: SPLASH SCREEN (El Bouncer)                 -->
         <!-- ====================================================== -->
-        <div id="splash-screen" class="fixed inset-0 flex flex-col justify-center items-center w-full h-full bg-black z-50 hidden">
-            <!-- 
-                Productor: Ponga su "Splash Screen" (Foto 231924.jpg) como un video/imagen aquí.
-                Usaré un placeholder del logo "Lore" por ahora.
-            -->
-            <div class="z-10">
-                <h1 class="lore-title">Lore</h1>
+        <div id="splash-screen" class="fixed inset-0 flex flex-col justify-center items-center w-full h-full bg-black z-50 transition-opacity duration-1000">
+            <div class="z-10 text-center relative">
+                <!-- Efecto de luz de fondo -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-900 rounded-full filter blur-[80px] opacity-30 animate-pulse"></div>
+                
+                <h1 class="lore-title mb-2 relative z-10">LORE</h1>
+                <p class="text-gray-400 text-xs tracking-[0.3em] uppercase relative z-10">Acceso Restringido</p>
+                
+                <!-- Loading Spinner -->
+                <div class="mt-12 relative z-10">
+                    <div class="w-12 h-1 bg-gray-800 rounded-full overflow-hidden mx-auto">
+                        <div class="h-full bg-gradient-to-r from-cyan-400 to-purple-600 w-1/2 animate-[shimmer_1s_infinite_linear]"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-10 text-gray-700 text-[10px] font-mono" id="version-display-splash">
+                Iniciando...
             </div>
         </div>
 
         <!-- ====================================================== -->
-        <!-- PANTALLA 2: "LOBBY" (Las Dos Puertas)                   -->
-        <!-- (Su captura 231738.png se ve perfecta)                -->
+        <!-- PANTALLA 2: LOBBY (Las Dos Puertas)                    -->
         <!-- ====================================================== -->
-        <div id="lobby-screen" class="hidden flex-grow flex flex-col justify-center items-center w-full overflow-y-auto p-8 space-y-8 animate-fadeIn">
-            <h2 class="text-3xl font-bold text-center text-gray-300">Bienvenido al</h2>
-            <h1 class="text-5xl font-black text-center text-white uppercase tracking-widest">Protocolo VIP</h1>
-            <p class="text-center text-gray-400">Elige tu travesura, mor.</p>
+        <div id="lobby-screen" class="hidden flex-grow flex flex-col w-full h-full overflow-y-auto animate-fadeIn relative z-10">
+            
+            <div class="flex-grow flex flex-col justify-center items-center p-6 space-y-8 pb-24">
+                
+                <div class="text-center space-y-1">
+                    <h2 class="text-xl text-gray-400 tracking-wider font-light">Bienvenido al</h2>
+                    <h1 class="text-5xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                        Protocolo<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">VIP</span>
+                    </h1>
+                </div>
 
-            <div class="w-full h-1px bg-gray-700 my-4"></div>
+                <!-- Botón Login -->
+                <button onclick="signInWithGoogle()" class="w-full max-w-xs bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95 transition-all rounded-lg py-3 px-4 flex items-center justify-center space-x-3 backdrop-blur-md">
+                    <i class="fab fa-google text-white"></i>
+                    <span class="text-sm font-bold text-gray-200">Acceso con Google</span>
+                </button>
 
-            <!-- Botón de Instalar PWA (Oculto por defecto) -->
-            <button id="install-btn" class="hidden bg-purple-600 text-white font-bold py-2 px-4 rounded flex items-center space-x-2 hover:bg-purple-700 transition duration-300 border border-purple-500 shadow-[0_0_10px_rgba(147,51,234,0.5)]">
-                <span>📲 Instalar App</span>
-            </button>
+                <!-- Puertas -->
+                <div class="w-full flex flex-col items-center space-y-6">
+                    <div class="w-full flex flex-col items-center group">
+                        <a href="fan/index.html" class="btn-neon btn-neon-fan">
+                            <i class="fas fa-headphones-alt mr-3"></i> FAN
+                        </a>
+                        <p class="text-[10px] text-cyan-500/70 mt-2 uppercase tracking-widest opacity-70">Música & Trueque</p>
+                    </div>
 
-            <!-- Botón de Login Firebase -->
-            <button onclick="signInWithGoogle()" class="bg-white text-black font-bold py-2 px-4 rounded flex items-center space-x-2 hover:bg-gray-200 transition duration-300">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" class="w-5 h-5">
-                <span>Iniciar Sesión con Google</span>
-            </button>
+                    <div class="w-full flex flex-col items-center group">
+                        <a href="vip/index.html" class="btn-neon btn-neon-vip">
+                            <i class="fas fa-gem mr-3"></i> VIP
+                        </a>
+                        <p class="text-[10px] text-fuchsia-500/70 mt-2 uppercase tracking-widest opacity-70">Grok & Cripto</p>
+                    </div>
+                </div>
 
-            <!-- Botón 1: Puerta FAN -->
-            <a href="fan/index.html" class="btn-neon btn-neon-fan no-underline">
-                🎧 Puerta FAN
-            </a>
-            <p class="text-sm text-gray-500 text-center">(Contenido "Trueque" + Spotify)</p>
+                <!-- Redes Sociales -->
+                <div class="flex justify-center space-x-6 pt-2">
+                    <a href="https://facebook.com" target="_blank" class="text-gray-500 hover:text-blue-600 transition-colors text-2xl social-icon">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://tiktok.com" target="_blank" class="text-gray-500 hover:text-pink-500 transition-colors text-2xl social-icon">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
+                    <a href="https://youtube.com" target="_blank" class="text-gray-500 hover:text-red-600 transition-colors text-2xl social-icon">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="https://x.com" target="_blank" class="text-gray-500 hover:text-white transition-colors text-2xl social-icon">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://instagram.com" target="_blank" class="text-gray-500 hover:text-purple-500 transition-colors text-2xl social-icon">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
 
-            <!-- Botón 2: Puerta VIP -->
-            <a href="vip/index.html" class="btn-neon btn-neon-vip no-underline mb-4"> <!-- Margen inferior añadido -->
-                💎 Puerta VIP
-            </a>
-            <p class="text-sm text-gray-500 text-center -mt-4 mb-6"> <!-- Margen superior negativo y margen inferior -->
-                (Grok + Cripto + "¿Quién es Cripto? ¡Muy Caliente!")
-            </p>
-
-            <!-- Iconos de Redes Sociales -->
-            <div class="flex justify-center space-x-5">
-                <a href="https://facebook.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
-                    <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="https://tiktok.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
-                    <i class="fab fa-tiktok"></i>
-                </a>
-                <a href="https://youtube.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
-                    <i class="fab fa-youtube"></i>
-                </a>
-                <a href="https://x.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
-                    <i class="fab fa-twitter"></i> <!-- Nota: Font Awesome aún puede usar 'fa-twitter' para X -->
-                </a>
-                <a href="https://instagram.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
-                    <i class="fab fa-instagram"></i>
-                </a>
             </div>
         </div>
     </div>
 
-    <!-- El Footer (Solo Términos y Condiciones) -->
-    <footer class="w-full text-center p-4 z-10 bg-black">
-        <p class="text-xs text-gray-600">
-            © 2025 Jusn 38. Todos los derechos reservados. <br class="sm:hidden">
-            <a href="terms/index.html" class="underline">Términos y Condiciones</a>
-        </p>
+    <!-- Footer Actualizado -->
+    <footer class="fixed bottom-0 w-full text-center py-3 bg-black/90 backdrop-blur-md z-30 border-t border-white/5">
+        <div class="flex flex-col justify-center items-center">
+            <!-- Texto editado como solicitaste -->
+            <p class="text-[10px] text-gray-600">© 2025 Todos los derechos reservados.</p>
+            <p class="text-[9px] text-gray-800 mt-1 uppercase tracking-widest">
+                v<span id="version-number">1.5</span>
+            </p>
+        </div>
     </footer>
 
     <script>
-        // --- La "Máquina" (El Router JS) ---
+        // ==============================================================
+        //  CONTROL DE VERSIONES ESTABLE
+        // ==============================================================
+        const APP_VERSION = "1.5"; // Versión actualizada
 
-        // 1. Obtenemos las "pantallas"
+        function checkVersionStable() {
+            document.getElementById('version-number').innerText = APP_VERSION;
+            document.getElementById('version-display-splash').innerText = "v" + APP_VERSION;
+
+            const savedVersion = localStorage.getItem('app_version');
+
+            if (savedVersion !== APP_VERSION) {
+                console.log("¡Nueva versión detectada!");
+                localStorage.setItem('app_version', APP_VERSION);
+                
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                        for(let registration of registrations) {
+                            registration.unregister();
+                        }
+                    });
+                }
+            }
+        }
+
+        // ==============================================================
+        //  CONFIGURACIÓN FIREBASE
+        // ==============================================================
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY_REAL", 
+            authDomain: "tu-app.firebaseapp.com",
+            projectId: "tu-app",
+        };
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+        } catch (e) {
+            console.log("Firebase no iniciado (faltan credenciales reales)");
+        }
+
+        function signInWithGoogle() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithPopup(provider)
+                    .then((result) => alert("Hola " + result.user.displayName))
+                    .catch((error) => alert("Error Auth: " + error.message));
+            } catch (e) {
+                alert("Falta configurar la API KEY de Firebase en el código.");
+            }
+        }
+
+        // ==============================================================
+        //  NAVEGACIÓN Y MEMORIA DE SESIÓN
+        // ==============================================================
         const splashScreen = document.getElementById('splash-screen');
         const lobbyScreen = document.getElementById('lobby-screen');
 
-        const screens = {
-            'splash': splashScreen,
-            'lobby': lobbyScreen
-        };
+        function initApp() {
+            checkVersionStable();
 
-        // 2. La función "Mágica" que cambia de pantalla
-        function showScreen(screenId) {
-            // Oculta todas
-            for (const id in screens) {
-                if (screens.hasOwnProperty(id)) {
-                    screens[id].classList.add('hidden');
-                }
-            }
-            // Muestra la correcta
-            if (screens[screenId]) {
-                screens[screenId].classList.remove('hidden');
+            const sessionActive = sessionStorage.getItem('session_active_v2');
+
+            if (sessionActive) {
+                splashScreen.style.display = 'none';
+                lobbyScreen.classList.remove('hidden');
+            } else {
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        lobbyScreen.classList.remove('hidden');
+                        sessionStorage.setItem('session_active_v2', 'true');
+                    }, 1000); 
+                }, 3000);
             }
         }
-        
-        // --- El "Arranque" (El "Flywheel") ---
-        
-        // Comprobamos si ya ha visitado para saltar el splash
-        const hasVisited = sessionStorage.getItem('hasVisited');
 
-        if (hasVisited) {
-            showScreen('lobby');
-        } else {
-            showScreen('splash');
-            // (Productor: 4000ms = 4 segundos)
-            setTimeout(() => {
-                showScreen('lobby'); // Muestra el "Lobby" (Las Dos Puertas)
-                sessionStorage.setItem('hasVisited', 'true');
-            }, 4000);
-        }
-
-        // Registro del Service Worker para PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then((registration) => {
-                        console.log('Service Worker registrado con éxito:', registration.scope);
-                    })
-                    .catch((error) => {
-                        console.log('Fallo al registrar el Service Worker:', error);
-                    });
-            });
-        }
-
-        // --- Lógica de Instalación PWA ---
-        let deferredPrompt;
-        const installBtn = document.getElementById('install-btn');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevenir que Chrome 67 y anteriores muestren automáticamente el prompt
-            e.preventDefault();
-            // Guardar el evento para que pueda ser disparado después.
-            deferredPrompt = e;
-            // Actualizar la UI para notificar al usuario que puede añadir a la pantalla de inicio
-            installBtn.classList.remove('hidden');
-        });
-
-        installBtn.addEventListener('click', async () => {
-            // Ocultar nuestra UI de "Instalar"
-            installBtn.classList.add('hidden');
-            // Mostrar el prompt de instalación
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                // Esperar a que el usuario responda al prompt
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to the install prompt: ${outcome}`);
-                // Ya no podemos usar el deferredPrompt, descartarlo
-                deferredPrompt = null;
-            }
-        });
+        window.addEventListener('load', initApp);
     </script>
 </body>
-  </html>
+</html>
