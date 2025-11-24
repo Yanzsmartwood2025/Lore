@@ -161,40 +161,36 @@
             <p class="text-sm text-gray-500 text-center">(Contenido "Trueque" + Spotify)</p>
 
             <!-- Botón 2: Puerta VIP -->
-            <a href="vip/index.html" class="btn-neon btn-neon-vip no-underline">
+            <a href="vip/index.html" class="btn-neon btn-neon-vip no-underline mb-4"> <!-- Margen inferior añadido -->
                 💎 Puerta VIP
             </a>
-            <p class="text-sm text-gray-500 text-center">(Grok + Cripto + "Muy Caliente")</p>
-        </div>
+            <p class="text-sm text-gray-500 text-center -mt-4 mb-6"> <!-- Margen superior negativo y margen inferior -->
+                (Grok + Cripto + "¿Quién es Cripto? ¡Muy Caliente!")
+            </p>
 
+            <!-- Iconos de Redes Sociales -->
+            <div class="flex justify-center space-x-5">
+                <a href="https://facebook.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://tiktok.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
+                    <i class="fab fa-tiktok"></i>
+                </a>
+                <a href="https://youtube.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <a href="https://x.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
+                    <i class="fab fa-twitter"></i> <!-- Nota: Font Awesome aún puede usar 'fa-twitter' para X -->
+                </a>
+                <a href="https://instagram.com" target="_blank" class="text-gray-400 hover:text-white transition-colors text-2xl">
+                    <i class="fab fa-instagram"></i>
+                </a>
+            </div>
+        </div>
     </div>
 
-    <!-- El Footer (Términos y Condiciones + Redes Sociales) -->
-    <footer class="w-full text-center p-4 z-10 bg-black border-t border-gray-800">
-        <!-- Redes Sociales -->
-        <div class="flex justify-center space-x-6 mb-4">
-            <!-- YouTube -->
-            <a href="https://youtube.com" target="_blank" class="text-white text-2xl hover:text-red-600 transition-colors">
-                <i class="fab fa-youtube"></i>
-            </a>
-            <!-- TikTok -->
-            <a href="https://tiktok.com" target="_blank" class="text-white text-2xl hover:text-pink-500 transition-colors">
-                <i class="fab fa-tiktok"></i>
-            </a>
-            <!-- Facebook -->
-            <a href="https://facebook.com" target="_blank" class="text-white text-2xl hover:text-blue-600 transition-colors">
-                <i class="fab fa-facebook"></i>
-            </a>
-            <!-- Instagram -->
-            <a href="https://instagram.com" target="_blank" class="text-white text-2xl hover:text-pink-600 transition-colors">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <!-- X (Twitter) -->
-            <a href="https://x.com" target="_blank" class="text-white text-2xl hover:text-gray-400 transition-colors">
-                <i class="fab fa-x-twitter"></i>
-            </a>
-        </div>
-
+    <!-- El Footer (Solo Términos y Condiciones) -->
+    <footer class="w-full text-center p-4 z-10 bg-black">
         <p class="text-xs text-gray-600">
             © 2025 Jusn 38. Todos los derechos reservados. <br class="sm:hidden">
             <a href="terms/index.html" class="underline">Términos y Condiciones</a>
