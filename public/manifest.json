@@ -1,0 +1,31 @@
+{
+  "name": "PROTOCOLO VIP | El Club de Lore",
+  "short_name": "Lore VIP",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/Lore-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/Lore-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/Lore-120x120.png",
+      "sizes": "120x120",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/Lore-180x180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
