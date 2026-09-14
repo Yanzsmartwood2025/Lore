@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { MediaPanel } from "@/components/MediaPanel";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -47,7 +48,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
-      <body className="h-full flex flex-col bg-black text-white overflow-hidden">
+      <body className="h-full flex flex-col bg-black text-white overflow-hidden pt-28 sm:pt-20">
+        <MediaPanel />
         {children}
       </body>
     </html>
