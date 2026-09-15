@@ -11,18 +11,14 @@ import {
   faWandMagicSparkles,
   faCirclePlay,
 } from '@fortawesome/free-solid-svg-icons';
-import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
 import { useMedia } from '@/context/MediaContext';
 import { MusicRequestForm } from '@/components/MusicRequestForm';
+import { AuthPanel } from '@/components/AuthPanel';
 
 export function TopNavMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const { enterLobby } = useMedia();
-
-  const handleGoogleLogin = () => {
-    alert('Acceso con Google (Próximamente en Fase 2)');
-  };
 
   return (
     <>
@@ -82,14 +78,7 @@ export function TopNavMenu() {
               <span>Iniciar Audio & Reproducción</span>
             </button>
 
-            {/* Login con Google */}
-            <button
-              onClick={handleGoogleLogin}
-              className="w-full py-3 px-4 rounded-xl border border-white/20 bg-white/10 text-white font-medium text-xs flex items-center justify-center space-x-3 transition hover:bg-white/20 active:scale-95"
-            >
-              <FontAwesomeIcon icon={faGoogle} className="text-base" />
-              <span>Acceso con Google</span>
-            </button>
+            <AuthPanel />
           </div>
 
           <MusicRequestForm onRequested={() => setIsOpen(false)} />
