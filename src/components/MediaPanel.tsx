@@ -4,40 +4,38 @@ import { useState, type FormEvent } from 'react';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faPlay,
+  faArrowLeft,
+  faExpand,
+  faMusic,
   faPause,
-  faForward,
-  faBackward,
+  faPlay,
+  faVideo,
   faVolumeHigh,
   faVolumeMute,
-  faExpand,
-  faCompress,
-  faMusic,
-  faVideo,
-  faMinimize,
 } from '@fortawesome/free-solid-svg-icons';
 import { useMedia } from '@/context/MediaContext';
+
+type PresentationMode = 'normal' | 'fullscreen';
 
 export function MediaPanel() {
   const pathname = usePathname();
   const {
     isPlaying,
     isMuted,
-    videoSize,
     activeTab,
-    currentPlaylistIndex,
     togglePlay,
-    nextTrack,
-    prevTrack,
     toggleMute,
-    setVideoSize,
-    toggleVideoSize,
     setActiveTab,
     playRequestedVideo,
   } = useMedia();
+  const [presentationMode, setPresentationMode] = useState<PresentationMode>('normal');
   const [musicRequest, setMusicRequest] = useState('');
   const [requestError, setRequestError] = useState('');
   const [isRequesting, setIsRequesting] = useState(false);
+
+  const isHome = pathname === '/';
+  const isFullscreen = presentationMode === 'fullscreen';
+  const isMusic = activeTab === 'music';
 
   const submitMusicRequest = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -55,9 +53,7 @@ export function MediaPanel() {
       });
       const data: { videoId?: string } = await response.json();
 
-      if (!response.ok || !data.videoId) {
-        throw new Error('No video found');
-      }
+      if (!response.ok || !data.videoId) throw new Error('No video found');
 
       setActiveTab('music');
       playRequestedVideo(data.videoId);
@@ -69,205 +65,140 @@ export function MediaPanel() {
     }
   };
 
-  const isHome = pathname === '/';
-  const isHeroMode = isHome && videoSize === 'hero';
-  const isMusic = activeTab === 'music';
+  const openMusicPictureInPicture = () => {
+    setActiveTab('music');
+    setPresentationMode('normal');
+  };
+
+  if (!isHome) return null;
 
   return (
     <>
-      {/*
-        Single persistent player container.
-        When isHeroMode is true on Home, it renders in the top hero area.
-        When isHeroMode is false (or on non-home routes), it transitions to floating bottom-right corner.
-      */}
-      <div
-        className={`transition-all duration-500 ease-in-out z-40 ${
-          isHeroMode
-            ? 'w-full max-w-2xl mx-auto px-4 pt-6 pb-2 pointer-events-auto'
-            : 'fixed bottom-4 right-4 pointer-events-auto'
+      {isFullscreen && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm" aria-hidden="true" />
+      )}
+
+      {/* The mode state lives here so both surfaces always swap together. */}
+      <section
+        className={`fixed z-[60] transition-all duration-500 ease-out ${
+          isFullscreen
+            ? 'inset-0 flex items-center justify-center p-0 sm:p-5'
+            : 'top-4 right-4 w-[min(23rem,calc(100vw-2rem))]'
         }`}
+        aria-label="Reproductor musical"
       >
         <div
-          className={`bg-black/90 border backdrop-blur-xl rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.9)] overflow-hidden transition-all duration-300 ${
-            isMusic ? 'border-[#00f2ea]/40 shadow-[0_0_20px_rgba(0,242,234,0.15)]' : 'border-[#f000b8]/40 shadow-[0_0_20px_rgba(240,0,184,0.15)]'
-          } ${
-            isHeroMode
-              ? 'w-full'
-              : videoSize === 'micro'
-              ? 'w-[190px] sm:w-[220px]'
-              : 'w-[300px] sm:w-[350px]'
+          className={`relative overflow-hidden border border-[#00f2ea]/45 bg-black/90 shadow-[0_0_30px_rgba(0,242,234,0.2)] transition-all duration-500 ease-out ${
+            isFullscreen
+              ? 'h-full w-full rounded-none sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-6xl sm:rounded-3xl'
+              : 'rounded-2xl'
           }`}
         >
-          {/* Header Bar */}
-          <div className="flex items-center justify-between px-3 py-2 bg-black/80 border-b border-white/10 text-xs">
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setActiveTab('music')}
-                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  isMusic
-                    ? 'text-[#00f2ea] bg-[#00f2ea]/20 border border-[#00f2ea]/50 shadow-[0_0_8px_rgba(0,242,234,0.3)]'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <FontAwesomeIcon icon={faMusic} />
-                <span>Música</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('content')}
-                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  !isMusic
-                    ? 'text-[#f000b8] bg-[#f000b8]/20 border border-[#f000b8]/50 shadow-[0_0_8px_rgba(240,0,184,0.3)]'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <FontAwesomeIcon icon={faVideo} />
-                <span>VIP</span>
-              </button>
-            </div>
+          <div
+            className={`relative bg-black transition-all duration-500 ${
+              isFullscreen ? 'h-full w-full' : 'aspect-video w-full'
+            }`}
+          >
+            {/* This target remains visible: YouTube is always presented without native controls. */}
+            <div id="yt-player-element" className="h-full w-full" />
 
-            <div className="flex items-center space-x-2">
-              <span className="text-[10px] text-gray-400 font-mono hidden sm:inline">
-                Playlist {currentPlaylistIndex + 1}/2
-              </span>
+            {!isFullscreen && (
+              <button
+                type="button"
+                onClick={() => setPresentationMode('fullscreen')}
+                className="absolute inset-0 z-0 cursor-pointer"
+                aria-label="Expandir video musical"
+              />
+            )}
 
-              {/* View mode toggle controls */}
-              {isHome && isHeroMode ? (
+            {isFullscreen && (
+              <button
+                type="button"
+                onClick={() => setPresentationMode('normal')}
+                className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/55 text-white backdrop-blur-md transition hover:border-[#00f2ea] hover:text-[#00f2ea]"
+                title="Salir de pantalla completa"
+                aria-label="Salir de pantalla completa"
+              >
+                <FontAwesomeIcon icon={faArrowLeft} />
+              </button>
+            )}
+
+            <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-between gap-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-4 pt-12">
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setVideoSize('expanded')}
-                  className="flex items-center space-x-1 text-gray-300 hover:text-[#00f2ea] text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded transition-all"
-                  title="Minimizar reproductor a esquina flotante"
+                  type="button"
+                  onClick={(event) => { event.stopPropagation(); togglePlay(); }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#00f2ea]/60 bg-[#00f2ea]/15 text-[#00f2ea] shadow-[0_0_14px_rgba(0,242,234,0.35)] transition hover:scale-105"
+                  title={isPlaying ? 'Pausar' : 'Reproducir'}
+                  aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
                 >
-                  <FontAwesomeIcon icon={faMinimize} className="text-xs" />
-                  <span className="hidden sm:inline">Minimizar</span>
+                  <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
                 </button>
-              ) : (
-                <div className="flex items-center space-x-1">
-                  {isHome && (
-                    <button
-                      onClick={() => setVideoSize('hero')}
-                      className="text-gray-400 hover:text-[#00f2ea] text-xs p-1 transition-colors"
-                      title="Volver a vista Grande Hero"
-                    >
-                      <FontAwesomeIcon icon={faExpand} />
-                    </button>
-                  )}
-                  <button
-                    onClick={toggleVideoSize}
-                    className="text-gray-400 hover:text-white text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded transition-colors"
-                    title={videoSize === 'micro' ? 'Cambiar a tamaño expandido' : 'Cambiar a tamaño micro'}
-                  >
-                    <FontAwesomeIcon icon={videoSize === 'micro' ? faExpand : faCompress} className="mr-1" />
-                    <span>{videoSize === 'micro' ? 'Expandir' : 'Micro'}</span>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={(event) => { event.stopPropagation(); toggleMute(); }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-md transition hover:border-[#00f2ea] hover:text-[#00f2ea]"
+                  title={isMuted ? 'Activar sonido' : 'Silenciar'}
+                  aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
+                >
+                  <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeHigh} />
+                </button>
+              </div>
+              {!isFullscreen && (
+                <button
+                  type="button"
+                  onClick={(event) => { event.stopPropagation(); setPresentationMode('fullscreen'); }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-md transition hover:border-[#00f2ea] hover:text-[#00f2ea]"
+                  title="Pantalla completa"
+                  aria-label="Pantalla completa"
+                >
+                  <FontAwesomeIcon icon={faExpand} />
+                </button>
               )}
             </div>
           </div>
-
-          {/* Player Container */}
-          <div
-            className={`relative bg-black overflow-hidden transition-all duration-300 ${
-              isHeroMode
-                ? 'aspect-video w-full max-h-[360px]'
-                : videoSize === 'micro'
-                ? 'h-[110px] w-full'
-                : 'h-[190px] w-full'
-            }`}
-          >
-            {/* YouTube IFrame target element - GUARANTEED ALWAYS VISIBLE for YT TOS */}
-            <div
-              id="yt-player-element"
-              className={`w-full h-full transition-opacity duration-300 ${
-                isMusic ? 'block' : 'hidden'
-              }`}
-            />
-
-            {!isMusic && (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-950/40 to-black text-gray-300 p-4 text-center">
-                <FontAwesomeIcon icon={faVideo} className="text-3xl text-[#f000b8] mb-2 animate-pulse" />
-                <p className="text-xs font-semibold">Contenido Exclusivo VIP</p>
-                <p className="text-[10px] text-gray-400 mt-1">Avances promocionales e interacciones</p>
-              </div>
-            )}
-          </div>
-
-          {isMusic && (
-            <form onSubmit={submitMusicRequest} className="border-t border-white/10 p-3">
-              <label htmlFor="music-request" className="block text-xs text-gray-300 mb-2">
-                Pide una canción
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="music-request"
-                  type="text"
-                  value={musicRequest}
-                  onChange={(event) => setMusicRequest(event.target.value)}
-                  placeholder="Ej. Blinding Lights de The Weeknd"
-                  className="min-w-0 flex-1 rounded bg-white/10 px-2 py-1 text-xs text-white placeholder:text-gray-500"
-                  disabled={isRequesting}
-                />
-                <button
-                  type="submit"
-                  className="rounded bg-[#00f2ea]/20 px-3 py-1 text-xs font-semibold text-[#00f2ea] disabled:opacity-50"
-                  disabled={!musicRequest.trim() || isRequesting}
-                >
-                  {isRequesting ? 'Buscando...' : 'Reproducir'}
-                </button>
-              </div>
-              {requestError && <p className="mt-2 text-xs text-red-300" role="alert">{requestError}</p>}
-            </form>
-          )}
-
-          {/* Controls Overlay / Footer */}
-          <div className="p-3 bg-black/80 border-t border-white/10 flex items-center justify-between gap-2">
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={prevTrack}
-                className="text-gray-400 hover:text-white transition-colors p-1.5 hover:scale-110 active:scale-95"
-                title="Pista anterior"
-              >
-                <FontAwesomeIcon icon={faBackward} className="text-sm" />
-              </button>
-
-              <button
-                onClick={togglePlay}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
-                  isMusic
-                    ? 'bg-[#00f2ea]/20 text-[#00f2ea] border border-[#00f2ea]/60 shadow-[0_0_10px_rgba(0,242,234,0.3)]'
-                    : 'bg-[#f000b8]/20 text-[#f000b8] border border-[#f000b8]/60 shadow-[0_0_10px_rgba(240,0,184,0.3)]'
-                }`}
-                title={isPlaying ? 'Pausar' : 'Reproducir'}
-              >
-                <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className="text-sm" />
-              </button>
-
-              <button
-                onClick={nextTrack}
-                className="text-gray-400 hover:text-white transition-colors p-1.5 hover:scale-110 active:scale-95"
-                title="Siguiente pista"
-              >
-                <FontAwesomeIcon icon={faForward} className="text-sm" />
-              </button>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold hidden sm:inline">
-                {isPlaying ? 'Reproduciendo' : 'En Pausa'}
-              </span>
-
-              <button
-                onClick={toggleMute}
-                className={`p-1.5 transition-colors ${
-                  isMuted ? 'text-red-400 hover:text-red-300' : 'text-gray-400 hover:text-white'
-                }`}
-                title={isMuted ? 'Dessilenciar' : 'Silenciar'}
-              >
-                <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeHigh} className="text-sm" />
-              </button>
-            </div>
-          </div>
         </div>
-      </div>
+
+        {/* In fullscreen the VIP/chica content becomes the small inverse PiP surface. */}
+        {isFullscreen && (
+          <button
+            type="button"
+            onClick={() => setPresentationMode('normal')}
+            className="absolute right-4 top-4 flex aspect-video w-40 flex-col items-center justify-center rounded-xl border border-[#f000b8]/60 bg-gradient-to-br from-purple-950 via-black to-[#f000b8]/20 p-3 text-center shadow-[0_0_22px_rgba(240,0,184,0.35)] transition hover:scale-[1.03] sm:right-8 sm:top-8 sm:w-56"
+            aria-label="Volver al contenido principal"
+          >
+            <FontAwesomeIcon icon={faVideo} className="mb-1 text-lg text-[#f000b8]" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white">Contenido VIP</span>
+            <span className="mt-1 text-[9px] text-gray-300">Volver al contenido</span>
+          </button>
+        )}
+      </section>
+
+      {!isFullscreen && (
+        <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-[#f000b8]/35 bg-black/75 p-3 shadow-[0_0_20px_rgba(240,0,184,0.15)] backdrop-blur-xl">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <button type="button" onClick={openMusicPictureInPicture} className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#00f2ea]">
+              <FontAwesomeIcon icon={faMusic} /> Ver el video musical
+            </button>
+            {!isMusic && <span className="text-[10px] text-gray-400">El video está en el cuadrito</span>}
+          </div>
+          <form onSubmit={submitMusicRequest} className="flex gap-2">
+            <input
+              id="music-request"
+              type="text"
+              value={musicRequest}
+              onChange={(event) => setMusicRequest(event.target.value)}
+              placeholder="Pide una canción"
+              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs text-white placeholder:text-gray-500 outline-none focus:border-[#00f2ea]/60"
+              disabled={isRequesting}
+            />
+            <button type="submit" className="rounded-lg border border-[#00f2ea]/45 bg-[#00f2ea]/15 px-3 text-xs font-semibold text-[#00f2ea] disabled:opacity-50" disabled={!musicRequest.trim() || isRequesting}>
+              {isRequesting ? 'Buscando...' : 'Reproducir'}
+            </button>
+          </form>
+          {requestError && <p className="mt-2 text-xs text-red-300" role="alert">{requestError}</p>}
+        </div>
+      )}
     </>
   );
 }
