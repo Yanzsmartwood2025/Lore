@@ -1,422 +1,211 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faMusic,
-  faVideo,
   faPlay,
   faPause,
   faForward,
+  faBackward,
   faVolumeHigh,
   faVolumeMute,
+  faExpand,
+  faCompress,
+  faMusic,
+  faVideo,
+  faMinimize,
 } from '@fortawesome/free-solid-svg-icons';
+import { useMedia } from '@/context/MediaContext';
 
-interface YTPlayer {
-  playVideo(): void;
-  pauseVideo(): void;
-  mute(): void;
-  unMute(): void;
-  getCurrentTime(): number;
-  destroy(): void;
-}
+export function MediaPanel() {
+  const pathname = usePathname();
+  const {
+    isPlaying,
+    isMuted,
+    videoSize,
+    activeTab,
+    currentPlaylistIndex,
+    togglePlay,
+    nextTrack,
+    prevTrack,
+    toggleMute,
+    setVideoSize,
+    toggleVideoSize,
+    setActiveTab,
+  } = useMedia();
 
-interface YTPlayerEvent {
-  target: YTPlayer;
-  data?: number;
-}
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    YT: any;
-    onYouTubeIframeAPIReady: (() => void) | undefined;
-  }
-}
-
-// Sample royalty-free/public music playlist (YouTube Video IDs)
-const DEFAULT_MUSIC_PLAYLIST = [
-  '3JZ_D3ELwOQ', // Sample Video 1
-  'kJQP7kiw5Fk', // Sample Video 2
-  'dQw4w9WgXcQ', // Sample Video 3
-];
-
-// Sample public MP4 video for Content mode
-const DEFAULT_CONTENT_VIDEO_URL =
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-
-interface MediaPanelProps {
-  playlist?: string[];
-  contentVideoUrl?: string;
-}
-
-export function MediaPanel({
-  playlist = DEFAULT_MUSIC_PLAYLIST,
-  contentVideoUrl = DEFAULT_CONTENT_VIDEO_URL,
-}: MediaPanelProps) {
-  const [activeTab, setActiveTab] = useState<'music' | 'content'>('music');
-
-  // Music state
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [musicPlaying, setMusicPlaying] = useState(false);
-  const [musicMuted, setMusicMuted] = useState(false);
-  const [musicSavedTime, setMusicSavedTime] = useState(0);
-
-  // Content state
-  const [contentPlaying, setContentPlaying] = useState(false);
-  const [contentMuted, setContentMuted] = useState(false);
-  const [contentSavedTime, setContentSavedTime] = useState(0);
-
-  // YT player ref
-  const ytPlayerRef = useRef<YTPlayer | null>(null);
-
-  // HTML5 Video ref
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // First user interaction tracking
-  const [hasInteracted, setHasInteracted] = useState(false);
-
-  // 1. Handle global first user interaction
-  useEffect(() => {
-    const handleFirstInteraction = () => {
-      setHasInteracted(true);
-      window.removeEventListener('pointerdown', handleFirstInteraction);
-      window.removeEventListener('keydown', handleFirstInteraction);
-    };
-
-    window.addEventListener('pointerdown', handleFirstInteraction);
-    window.addEventListener('keydown', handleFirstInteraction);
-
-    return () => {
-      window.removeEventListener('pointerdown', handleFirstInteraction);
-      window.removeEventListener('keydown', handleFirstInteraction);
-    };
-  }, []);
-
-  // 2. Load YouTube IFrame API once
-  const [ytApiReady, setYtApiReady] = useState(() => {
-    return typeof window !== 'undefined' && Boolean(window.YT && window.YT.Player);
-  });
-
-  useEffect(() => {
-    if (ytApiReady) return;
-
-    if (window.YT && window.YT.Player) {
-      const timer = setTimeout(() => setYtApiReady(true), 0);
-      return () => clearTimeout(timer);
-    }
-
-    // Load YT script if not present
-    const existingScript = document.getElementById('youtube-iframe-api');
-    if (!existingScript) {
-      const tag = document.createElement('script');
-      tag.id = 'youtube-iframe-api';
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag?.parentNode?.insertBefore(tag, firstScriptTag);
-    }
-
-    const previousReady = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      if (previousReady) previousReady();
-      setYtApiReady(true);
-    };
-  }, [ytApiReady]);
-
-  // Sync state with refs inside useEffect
-  const musicPlayingRef = useRef(musicPlaying);
-  const musicMutedRef = useRef(musicMuted);
-  const hasInteractedRef = useRef(hasInteracted);
-  const musicSavedTimeRef = useRef(musicSavedTime);
-
-  useEffect(() => {
-    musicPlayingRef.current = musicPlaying;
-    musicMutedRef.current = musicMuted;
-    hasInteractedRef.current = hasInteracted;
-    musicSavedTimeRef.current = musicSavedTime;
-  }, [musicPlaying, musicMuted, hasInteracted, musicSavedTime]);
-
-  // 3. Initialize YT Player when Music tab is active and API is ready
-  useEffect(() => {
-    if (activeTab !== 'music' || !ytApiReady) return;
-
-    const containerId = 'yt-player-element';
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const initialStartTime = Math.floor(musicSavedTimeRef.current);
-
-    new window.YT.Player(containerId, {
-      videoId: playlist[currentTrackIndex],
-      playerVars: {
-        autoplay: musicPlayingRef.current ? 1 : 0,
-        controls: 0,
-        modestbranding: 1,
-        rel: 0,
-        start: initialStartTime,
-      },
-      events: {
-        onReady: (event: YTPlayerEvent) => {
-          ytPlayerRef.current = event.target;
-          if (musicMutedRef.current) {
-            event.target.mute();
-          } else {
-            event.target.unMute();
-          }
-
-          if (musicPlayingRef.current && hasInteractedRef.current) {
-            event.target.playVideo();
-          }
-        },
-        onStateChange: (event: YTPlayerEvent) => {
-          // YT.PlayerState.ENDED === 0
-          if (event.data === 0) {
-            setCurrentTrackIndex((prevIndex) => (prevIndex + 1) % playlist.length);
-            setMusicSavedTime(0);
-          }
-          // YT.PlayerState.PLAYING === 1
-          if (event.data === 1) {
-            setMusicPlaying(true);
-          }
-          // YT.PlayerState.PAUSED === 2
-          if (event.data === 2) {
-            setMusicPlaying(false);
-          }
-        },
-      },
-    });
-
-    return () => {
-      if (ytPlayerRef.current) {
-        try {
-          const currentTime = ytPlayerRef.current.getCurrentTime() || 0;
-          setMusicSavedTime(currentTime);
-          ytPlayerRef.current.destroy();
-        } catch {
-          // Ignore destruction errors
-        }
-        ytPlayerRef.current = null;
-      }
-    };
-  }, [activeTab, ytApiReady, currentTrackIndex, playlist]);
-
-  // 4. Handle Music Controls
-  const toggleMusicPlay = () => {
-    if (!ytPlayerRef.current) return;
-    if (musicPlaying) {
-      ytPlayerRef.current.pauseVideo();
-      setMusicPlaying(false);
-    } else {
-      ytPlayerRef.current.playVideo();
-      setMusicPlaying(true);
-    }
-  };
-
-  const toggleMusicMute = () => {
-    if (!ytPlayerRef.current) return;
-    if (musicMuted) {
-      ytPlayerRef.current.unMute();
-      setMusicMuted(false);
-    } else {
-      ytPlayerRef.current.mute();
-      setMusicMuted(true);
-    }
-  };
-
-  const skipMusicTrack = () => {
-    const nextIndex = (currentTrackIndex + 1) % playlist.length;
-    setMusicSavedTime(0);
-    setCurrentTrackIndex(nextIndex);
-  };
-
-  // 5. Handle Content Controls & Restoration
-  const contentSavedTimeRef = useRef(contentSavedTime);
-  const contentPlayingRef = useRef(contentPlaying);
-
-  useEffect(() => {
-    contentSavedTimeRef.current = contentSavedTime;
-    contentPlayingRef.current = contentPlaying;
-  }, [contentSavedTime, contentPlaying]);
-
-  useEffect(() => {
-    if (activeTab === 'content' && videoRef.current) {
-      if (contentSavedTimeRef.current > 0) {
-        videoRef.current.currentTime = contentSavedTimeRef.current;
-      }
-      if (contentPlayingRef.current && hasInteractedRef.current) {
-        videoRef.current.play().catch(() => setContentPlaying(false));
-      }
-    }
-  }, [activeTab]);
-
-  const toggleContentPlay = () => {
-    if (!videoRef.current) return;
-    if (contentPlaying) {
-      videoRef.current.pause();
-      setContentPlaying(false);
-    } else {
-      videoRef.current
-        .play()
-        .then(() => setContentPlaying(true))
-        .catch(() => setContentPlaying(false));
-    }
-  };
-
-  const toggleContentMute = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !contentMuted;
-    setContentMuted(!contentMuted);
-  };
-
-  // 6. Handle Tab Switch (Pause & Save state)
-  const handleTabChange = (newTab: 'music' | 'content') => {
-    if (newTab === activeTab) return;
-
-    if (activeTab === 'music') {
-      if (ytPlayerRef.current) {
-        try {
-          const time = ytPlayerRef.current.getCurrentTime() || 0;
-          setMusicSavedTime(time);
-          ytPlayerRef.current.pauseVideo();
-        } catch {
-          // Ignore
-        }
-      }
-      setMusicPlaying(false);
-    } else {
-      if (videoRef.current) {
-        setContentSavedTime(videoRef.current.currentTime);
-        videoRef.current.pause();
-      }
-      setContentPlaying(false);
-    }
-
-    setActiveTab(newTab);
-  };
-
+  const isHome = pathname === '/';
+  const isHeroMode = isHome && videoSize === 'hero';
   const isMusic = activeTab === 'music';
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 w-full bg-black/80 backdrop-blur-md border-b border-white/10 shadow-lg">
-      <div className="max-w-4xl mx-auto px-4 py-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-        {/* Toggle Pestañas */}
-        <div className="flex items-center space-x-2 bg-black/50 p-1 rounded-xl border border-white/10">
-          <button
-            onClick={() => handleTabChange('music')}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-              isMusic
-                ? 'bg-[#00f2ea]/20 text-[#00f2ea] border border-[#00f2ea]/50 shadow-[0_0_10px_rgba(0,242,234,0.3)]'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <FontAwesomeIcon icon={faMusic} />
-            <span>Música</span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('content')}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-              !isMusic
-                ? 'bg-[#f000b8]/20 text-[#f000b8] border border-[#f000b8]/50 shadow-[0_0_10px_rgba(240,0,184,0.3)]'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <FontAwesomeIcon icon={faVideo} />
-            <span>Contenido</span>
-          </button>
-        </div>
-
-        {/* Display principal de video/reproductor */}
-        <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-          {/* MODO MÚSICA */}
-          {isMusic && (
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              {/* Contenedor del IFrame de YouTube (Visible para cumplir TOS) */}
-              <div
-                className="relative w-28 h-16 rounded-lg overflow-hidden border border-[#00f2ea]/30 shadow-[0_0_8px_rgba(0,242,234,0.2)] bg-black shrink-0"
+    <>
+      {/*
+        Single persistent player container.
+        When isHeroMode is true on Home, it renders in the top hero area.
+        When isHeroMode is false (or on non-home routes), it transitions to floating bottom-right corner.
+      */}
+      <div
+        className={`transition-all duration-500 ease-in-out z-40 ${
+          isHeroMode
+            ? 'w-full max-w-2xl mx-auto px-4 pt-6 pb-2 pointer-events-auto'
+            : 'fixed bottom-4 right-4 pointer-events-auto'
+        }`}
+      >
+        <div
+          className={`bg-black/90 border backdrop-blur-xl rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.9)] overflow-hidden transition-all duration-300 ${
+            isMusic ? 'border-[#00f2ea]/40 shadow-[0_0_20px_rgba(0,242,234,0.15)]' : 'border-[#f000b8]/40 shadow-[0_0_20px_rgba(240,0,184,0.15)]'
+          } ${
+            isHeroMode
+              ? 'w-full'
+              : videoSize === 'micro'
+              ? 'w-[190px] sm:w-[220px]'
+              : 'w-[300px] sm:w-[350px]'
+          }`}
+        >
+          {/* Header Bar */}
+          <div className="flex items-center justify-between px-3 py-2 bg-black/80 border-b border-white/10 text-xs">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setActiveTab('music')}
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  isMusic
+                    ? 'text-[#00f2ea] bg-[#00f2ea]/20 border border-[#00f2ea]/50 shadow-[0_0_8px_rgba(0,242,234,0.3)]'
+                    : 'text-gray-400 hover:text-white'
+                }`}
               >
-                <div id="yt-player-element" className="w-full h-full" />
-              </div>
+                <FontAwesomeIcon icon={faMusic} />
+                <span>Música</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('content')}
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  !isMusic
+                    ? 'text-[#f000b8] bg-[#f000b8]/20 border border-[#f000b8]/50 shadow-[0_0_8px_rgba(240,0,184,0.3)]'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <FontAwesomeIcon icon={faVideo} />
+                <span>VIP</span>
+              </button>
+            </div>
 
-              {/* Info y Controles Música */}
-              <div className="flex flex-col justify-center flex-grow sm:flex-grow-0 min-w-[120px]">
-                <span className="text-[10px] text-[#00f2ea] uppercase tracking-widest font-semibold">
-                  Pista {currentTrackIndex + 1} / {playlist.length}
-                </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] text-gray-400 font-mono hidden sm:inline">
+                Playlist {currentPlaylistIndex + 1}/2
+              </span>
 
-                <div className="flex items-center space-x-3 mt-1">
+              {/* View mode toggle controls */}
+              {isHome && isHeroMode ? (
+                <button
+                  onClick={() => setVideoSize('expanded')}
+                  className="flex items-center space-x-1 text-gray-300 hover:text-[#00f2ea] text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded transition-all"
+                  title="Minimizar reproductor a esquina flotante"
+                >
+                  <FontAwesomeIcon icon={faMinimize} className="text-xs" />
+                  <span className="hidden sm:inline">Minimizar</span>
+                </button>
+              ) : (
+                <div className="flex items-center space-x-1">
+                  {isHome && (
+                    <button
+                      onClick={() => setVideoSize('hero')}
+                      className="text-gray-400 hover:text-[#00f2ea] text-xs p-1 transition-colors"
+                      title="Volver a vista Grande Hero"
+                    >
+                      <FontAwesomeIcon icon={faExpand} />
+                    </button>
+                  )}
                   <button
-                    onClick={toggleMusicPlay}
-                    className="w-8 h-8 rounded-full border border-[#00f2ea] text-[#00f2ea] flex items-center justify-center hover:bg-[#00f2ea]/20 transition-all active:scale-90"
-                    title={musicPlaying ? 'Pausar' : 'Reproducir'}
+                    onClick={toggleVideoSize}
+                    className="text-gray-400 hover:text-white text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded transition-colors"
+                    title={videoSize === 'micro' ? 'Cambiar a tamaño expandido' : 'Cambiar a tamaño micro'}
                   >
-                    <FontAwesomeIcon icon={musicPlaying ? faPause : faPlay} className="text-xs" />
-                  </button>
-
-                  <button
-                    onClick={toggleMusicMute}
-                    className="text-gray-400 hover:text-[#00f2ea] transition-colors"
-                    title={musicMuted ? 'Dessilenciar' : 'Silenciar'}
-                  >
-                    <FontAwesomeIcon icon={musicMuted ? faVolumeMute : faVolumeHigh} className="text-sm" />
-                  </button>
-
-                  <button
-                    onClick={skipMusicTrack}
-                    className="text-gray-400 hover:text-[#00f2ea] transition-colors"
-                    title="Siguiente pista"
-                  >
-                    <FontAwesomeIcon icon={faForward} className="text-sm" />
+                    <FontAwesomeIcon icon={videoSize === 'micro' ? faExpand : faCompress} className="mr-1" />
+                    <span>{videoSize === 'micro' ? 'Expandir' : 'Micro'}</span>
                   </button>
                 </div>
-              </div>
+              )}
             </div>
-          )}
+          </div>
 
-          {/* MODO CONTENIDO */}
-          {!isMusic && (
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              {/* Contenedor HTML5 Video */}
-              <div className="relative w-28 h-16 rounded-lg overflow-hidden border border-[#f000b8]/30 shadow-[0_0_8px_rgba(240,0,184,0.2)] bg-black shrink-0">
-                <video
-                  ref={videoRef}
-                  src={contentVideoUrl}
-                  className="w-full h-full object-cover"
-                  onEnded={() => setContentPlaying(false)}
-                  onPlay={() => setContentPlaying(true)}
-                  onPause={() => setContentPlaying(false)}
-                  playsInline
-                />
+          {/* Player Container */}
+          <div
+            className={`relative bg-black overflow-hidden transition-all duration-300 ${
+              isHeroMode
+                ? 'aspect-video w-full max-h-[360px]'
+                : videoSize === 'micro'
+                ? 'h-[110px] w-full'
+                : 'h-[190px] w-full'
+            }`}
+          >
+            {/* YouTube IFrame target element - GUARANTEED ALWAYS VISIBLE for YT TOS */}
+            <div
+              id="yt-player-element"
+              className={`w-full h-full transition-opacity duration-300 ${
+                isMusic ? 'block' : 'hidden'
+              }`}
+            />
+
+            {!isMusic && (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-950/40 to-black text-gray-300 p-4 text-center">
+                <FontAwesomeIcon icon={faVideo} className="text-3xl text-[#f000b8] mb-2 animate-pulse" />
+                <p className="text-xs font-semibold">Contenido Exclusivo VIP</p>
+                <p className="text-[10px] text-gray-400 mt-1">Avances promocionales e interacciones</p>
               </div>
+            )}
+          </div>
 
-              {/* Info y Controles Contenido */}
-              <div className="flex flex-col justify-center flex-grow sm:flex-grow-0 min-w-[120px]">
-                <span className="text-[10px] text-[#f000b8] uppercase tracking-widest font-semibold">
-                  Video Promocional
-                </span>
+          {/* Controls Overlay / Footer */}
+          <div className="p-3 bg-black/80 border-t border-white/10 flex items-center justify-between gap-2">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={prevTrack}
+                className="text-gray-400 hover:text-white transition-colors p-1.5 hover:scale-110 active:scale-95"
+                title="Pista anterior"
+              >
+                <FontAwesomeIcon icon={faBackward} className="text-sm" />
+              </button>
 
-                <div className="flex items-center space-x-3 mt-1">
-                  <button
-                    onClick={toggleContentPlay}
-                    className="w-8 h-8 rounded-full border border-[#f000b8] text-[#f000b8] flex items-center justify-center hover:bg-[#f000b8]/20 transition-all active:scale-90"
-                    title={contentPlaying ? 'Pausar' : 'Reproducir'}
-                  >
-                    <FontAwesomeIcon icon={contentPlaying ? faPause : faPlay} className="text-xs" />
-                  </button>
+              <button
+                onClick={togglePlay}
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
+                  isMusic
+                    ? 'bg-[#00f2ea]/20 text-[#00f2ea] border border-[#00f2ea]/60 shadow-[0_0_10px_rgba(0,242,234,0.3)]'
+                    : 'bg-[#f000b8]/20 text-[#f000b8] border border-[#f000b8]/60 shadow-[0_0_10px_rgba(240,0,184,0.3)]'
+                }`}
+                title={isPlaying ? 'Pausar' : 'Reproducir'}
+              >
+                <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className="text-sm" />
+              </button>
 
-                  <button
-                    onClick={toggleContentMute}
-                    className="text-gray-400 hover:text-[#f000b8] transition-colors"
-                    title={contentMuted ? 'Dessilenciar' : 'Silenciar'}
-                  >
-                    <FontAwesomeIcon icon={contentMuted ? faVolumeMute : faVolumeHigh} className="text-sm" />
-                  </button>
-                </div>
-              </div>
+              <button
+                onClick={nextTrack}
+                className="text-gray-400 hover:text-white transition-colors p-1.5 hover:scale-110 active:scale-95"
+                title="Siguiente pista"
+              >
+                <FontAwesomeIcon icon={faForward} className="text-sm" />
+              </button>
             </div>
-          )}
+
+            <div className="flex items-center space-x-3">
+              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold hidden sm:inline">
+                {isPlaying ? 'Reproduciendo' : 'En Pausa'}
+              </span>
+
+              <button
+                onClick={toggleMute}
+                className={`p-1.5 transition-colors ${
+                  isMuted ? 'text-red-400 hover:text-red-300' : 'text-gray-400 hover:text-white'
+                }`}
+                title={isMuted ? 'Dessilenciar' : 'Silenciar'}
+              >
+                <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeHigh} className="text-sm" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

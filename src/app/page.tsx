@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebookF, faTiktok, faYoutube, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
-import { faHeadphonesAlt, faGem } from '@fortawesome/free-solid-svg-icons';
+import { faHeadphonesAlt, faGem, faPlay, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
 import { NeonButton } from '@/components/NeonButton';
 import { GlassCard } from '@/components/GlassCard';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
+import { useMedia } from '@/context/MediaContext';
 
 const APP_VERSION = "2.0.0 (Next.js)";
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashOpacity, setSplashOpacity] = useState(1);
+  const { enterLobby, hasEntered } = useMedia();
 
   useEffect(() => {
     // Check sessionStorage only on client side after mount
@@ -37,8 +39,12 @@ export default function Home() {
     alert("Login con Google (Próximamente en Fase 2)");
   };
 
+  const handlePlayEnter = () => {
+    enterLobby();
+  };
+
   return (
-    <main className="flex-grow relative w-full overflow-hidden flex flex-col min-h-screen">
+    <main className="flex-grow relative w-full overflow-hidden flex flex-col min-h-screen bg-black">
       {/* SPLASH SCREEN */}
       {showSplash && (
         <div
@@ -66,25 +72,40 @@ export default function Home() {
 
       {/* LOBBY SCREEN */}
       <div className="flex-grow flex flex-col w-full h-full overflow-y-auto animate-fadeIn relative z-10 pb-48">
-        <div className="flex-grow flex flex-col justify-center items-center p-6 space-y-8 mt-4">
+        <div className="flex-grow flex flex-col justify-center items-center p-4 sm:p-6 space-y-8 mt-2 max-w-4xl mx-auto w-full">
 
-          <div className="text-center space-y-1">
-            <h2 className="text-xl text-gray-400 tracking-wider font-light">Bienvenido al</h2>
-            <h1 className="text-5xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+          {/* Encabezado Principal */}
+          <div className="text-center space-y-1 mt-2">
+            <h2 className="text-lg sm:text-xl text-gray-400 tracking-wider font-light">Bienvenido al</h2>
+            <h1 className="text-4xl sm:text-5xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
               Protocolo<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">VIP</span>
             </h1>
           </div>
 
-          {/* Botón Login */}
-          <GlassCard className="w-full max-w-xs transition-all hover:bg-white/10 active:scale-95">
-            <button onClick={handleGoogleLogin} className="w-full py-3 px-4 flex items-center justify-center space-x-3">
-              <FontAwesomeIcon icon={faGoogle} className="text-white text-xl" />
-              <span className="text-sm font-bold text-gray-200">Acceso con Google</span>
-            </button>
-          </GlassCard>
+          {/* Botones de Entrada / Disparador User Gesture */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
+            {/* Botón Play / Entrar */}
+            <GlassCard className="w-full sm:w-1/2 transition-all hover:bg-cyan-500/20 active:scale-95 border-[#00f2ea]/40 shadow-[0_0_15px_rgba(0,242,234,0.2)]">
+              <button
+                onClick={handlePlayEnter}
+                className="w-full py-3 px-4 flex items-center justify-center space-x-3 text-[#00f2ea] font-bold"
+              >
+                <FontAwesomeIcon icon={faPlay} className="text-base animate-pulse" />
+                <span className="text-sm uppercase tracking-wider">Play / Entrar</span>
+              </button>
+            </GlassCard>
 
-          {/* Puertas */}
-          <div className="w-full flex flex-col items-center space-y-6">
+            {/* Botón Login Google */}
+            <GlassCard className="w-full sm:w-1/2 transition-all hover:bg-white/10 active:scale-95">
+              <button onClick={handleGoogleLogin} className="w-full py-3 px-4 flex items-center justify-center space-x-3">
+                <FontAwesomeIcon icon={faGoogle} className="text-white text-base" />
+                <span className="text-xs font-bold text-gray-200">Acceso con Google</span>
+              </button>
+            </GlassCard>
+          </div>
+
+          {/* Puertas FAN / VIP (Visibles al entrar o explorar) */}
+          <div className="w-full flex flex-col items-center space-y-6 pt-2">
             <NeonButton
               href="/fan"
               variant="fan"
@@ -104,8 +125,23 @@ export default function Home() {
             </NeonButton>
           </div>
 
+          {/* Placeholder Estilizado para Contenido Futuro */}
+          <div className="w-full max-w-xl px-2">
+            <GlassCard className="w-full p-6 text-center border-white/10 bg-gradient-to-b from-white/5 to-purple-950/20">
+              <div className="flex items-center justify-center space-x-2 text-purple-400 mb-2">
+                <FontAwesomeIcon icon={faWandMagicSparkles} className="text-sm animate-pulse" />
+                <span className="text-xs font-mono uppercase tracking-[0.2em]">Próximamente</span>
+                <FontAwesomeIcon icon={faWandMagicSparkles} className="text-sm animate-pulse" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-200 mb-1">Espacio Reservado para Nuevo Contenido</h3>
+              <p className="text-xs text-gray-400 max-w-md mx-auto">
+                Este módulo flexible alojará las próximas características VIP, eventos en vivo y lanzamientos exclusivos de la comunidad.
+              </p>
+            </GlassCard>
+          </div>
+
           {/* Redes Sociales */}
-          <div className="flex justify-center space-x-6 pt-4 pb-2">
+          <div className="flex justify-center space-x-6 pt-2 pb-2">
             <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-blue-600 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
               <FontAwesomeIcon icon={faFacebookF} />
             </a>
