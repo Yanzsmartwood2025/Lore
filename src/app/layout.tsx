@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { MediaProvider } from "@/context/MediaContext";
 import { MediaPanel } from "@/components/MediaPanel";
+import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -50,10 +51,12 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
       <body className="h-full flex flex-col bg-black text-white overflow-hidden">
-        <MediaProvider>
-          <MediaPanel />
-          {children}
-        </MediaProvider>
+        <AuthProvider>
+          <MediaProvider>
+            <MediaPanel />
+            {children}
+          </MediaProvider>
+        </AuthProvider>
       </body>
     </html>
   );

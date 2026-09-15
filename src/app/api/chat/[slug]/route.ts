@@ -1,4 +1,5 @@
 import { models } from '@/data/models';
+import { requireUser } from '@/lib/supabase/server';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -27,6 +28,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const auth = await requireUser();
+  if (!auth) return Response.json({ error: 'Inicia sesión para usar el chat.' }, { status: 401 });
   const { slug } = await params;
   const persona = models.find((model) => model.slug === slug && model.isActive);
 
@@ -60,6 +63,13 @@ export async function POST(
     return Response.json({ error: 'El chat no está configurado todavía.' }, { status: 503 });
   }
 
+  const { data: conversation, error: conversationError } = await auth.supabase
+    .from('lore_chat_conversations')
+    .upsert({ user_id: auth.user.id, persona_slug: slug, updated_at: new Date().toISOString() }, { onConflict: 'user_id,persona_slug' })
+    .select('id').single();
+  if (conversationError || !conversation) return Response.json({ error: 'No se pudo abrir la conversación.' }, { status: 500 });
+  await auth.supabase.from('lore_chat_messages').insert({ conversation_id: conversation.id, role: 'user', content: message });
+
   let lastResponse: Response | undefined;
   for (const apiKey of apiKeys) {
     const response = await fetch(MISTRAL_CHAT_URL, {
@@ -92,7 +102,9 @@ export async function POST(
       );
     }
 
-    return new Response(response.body, {
+    const [browserStream, persistenceStream] = response.body.tee();
+    void persistAssistantStream(persistenceStream, auth.supabase, conversation.id);
+    return new Response(browserStream, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache, no-transform',
@@ -105,4 +117,14 @@ export async function POST(
     { error: 'El chat está muy solicitado. Vuelve a intentarlo en un momento.' },
     { status: lastResponse?.status ?? 503 },
   );
+}
+
+async function persistAssistantStream(stream: ReadableStream<Uint8Array>, supabase: Awaited<ReturnType<typeof import('@/lib/supabase/server').createClient>>, conversationId: string) {
+  const text = await new Response(stream).text();
+  let content = '';
+  for (const line of text.split('\n')) {
+    if (!line.trim().startsWith('data:')) continue;
+    try { content += JSON.parse(line.trim().slice(5)).choices?.[0]?.delta?.content ?? ''; } catch { /* final marker */ }
+  }
+  if (content) await supabase.from('lore_chat_messages').insert({ conversation_id: conversationId, role: 'assistant', content });
 }
