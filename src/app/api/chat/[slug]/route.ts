@@ -5,14 +5,6 @@ type ChatMessage = {
   content: string;
 };
 
-type MistralResponse = {
-  choices?: Array<{
-    message?: {
-      content?: string;
-    };
-  }>;
-};
-
 const MAX_MESSAGE_LENGTH = 2_000;
 const MAX_HISTORY_MESSAGES = 20;
 const MISTRAL_CHAT_URL = 'https://api.mistral.ai/v1/chat/completions';
