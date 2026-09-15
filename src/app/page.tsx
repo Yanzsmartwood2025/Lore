@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebookF, faTiktok, faYoutube, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { TopNavMenu } from '@/components/TopNavMenu';
-import { DiscoSphere } from '@/components/DiscoSphere';
 import { Model3DCarousel } from '@/components/Model3DCarousel';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
-import { useMedia } from '@/context/MediaContext';
 import { models } from '@/data/models';
 
 const APP_VERSION = "2.0.0 (Next.js)";
@@ -15,25 +13,29 @@ const APP_VERSION = "2.0.0 (Next.js)";
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashOpacity, setSplashOpacity] = useState(1);
-  const { isPlaying } = useMedia();
-
   useEffect(() => {
     // Check sessionStorage only on client side after mount
     const sessionActive = sessionStorage.getItem('session_active_v2');
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
     if (sessionActive) {
-      setShowSplash(false);
+      hideTimer = setTimeout(() => setShowSplash(false), 0);
     } else {
       const fadeOutTimer = setTimeout(() => {
         setSplashOpacity(0);
-        const hideTimer = setTimeout(() => {
+        hideTimer = setTimeout(() => {
           setShowSplash(false);
           sessionStorage.setItem('session_active_v2', 'true');
         }, 1000);
-        return () => clearTimeout(fadeOutTimer);
       }, 2000);
-      return () => clearTimeout(fadeOutTimer);
+      return () => {
+        clearTimeout(fadeOutTimer);
+        if (hideTimer) clearTimeout(hideTimer);
+      };
     }
+    return () => {
+      if (hideTimer) clearTimeout(hideTimer);
+    };
   }, []);
 
   return (
@@ -67,13 +69,10 @@ export default function Home() {
       )}
 
       {/* LOBBY MAIN SCREEN */}
-      <div className="flex-grow flex flex-col justify-between w-full h-full overflow-y-auto animate-fadeIn relative z-10 pt-20 pb-28">
+      <div className="flex-grow flex flex-col w-full h-full overflow-y-auto animate-fadeIn relative z-10 pt-[19rem] sm:pt-[23rem] pb-16">
 
-        {/* Central Ambient Disco Sphere */}
-        <div className="flex flex-col items-center justify-center pt-2 pb-4 relative">
-          <DiscoSphere isPlaying={isPlaying} />
-
-          <div className="text-center mt-4">
+        <div className="flex flex-col items-center justify-center pt-2 relative">
+          <div className="text-center">
             <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
               Protocolo <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">VIP</span>
             </h1>
@@ -81,7 +80,7 @@ export default function Home() {
         </div>
 
         {/* 3D Model Carousel */}
-        <div className="w-full">
+        <div className="w-full flex-1">
           <Model3DCarousel models={models} />
         </div>
 

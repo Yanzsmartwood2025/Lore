@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useRef, type TouchEvent, type MouseEvent } from 'react';
+import { useState, useRef, type PointerEvent } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight, faUser, faLock, faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faLock, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
+import { DiscoSphere } from '@/components/DiscoSphere';
+import { useMedia } from '@/context/MediaContext';
 import { ModelPersona } from '@/data/models';
 
 interface Model3DCarouselProps {
@@ -13,9 +15,11 @@ interface Model3DCarouselProps {
 
 export function Model3DCarousel({ models }: Model3DCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const touchStartXRef = useRef<number | null>(null);
-  const mouseStartXRef = useRef<number | null>(null);
-  const isDraggingRef = useRef<boolean>(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const pointerStartXRef = useRef<number | null>(null);
+  const draggedRef = useRef(false);
+  const { isPlaying } = useMedia();
 
   const total = models.length;
 
@@ -27,46 +31,53 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
     setActiveIndex((prev) => (prev + 1) % total);
   };
 
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX;
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    pointerStartXRef.current = event.clientX;
+    draggedRef.current = false;
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
   };
 
-  const handleTouchEnd = (e: TouchEvent) => {
-    if (touchStartXRef.current === null) return;
-    const diff = touchStartXRef.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) handleNext();
-      else handlePrev();
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (pointerStartXRef.current === null) return;
+    const diff = event.clientX - pointerStartXRef.current;
+    setDragOffset(Math.max(-90, Math.min(90, diff)));
+    if (Math.abs(diff) > 8) draggedRef.current = true;
+  };
+
+  const finishDrag = (event: PointerEvent<HTMLDivElement>) => {
+    if (pointerStartXRef.current !== null) {
+      const diff = pointerStartXRef.current - event.clientX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) handleNext();
+        else handlePrev();
+      }
     }
-    touchStartXRef.current = null;
-  };
-
-  const handleMouseDown = (e: MouseEvent) => {
-    mouseStartXRef.current = e.clientX;
-    isDraggingRef.current = true;
-  };
-
-  const handleMouseUp = (e: MouseEvent) => {
-    if (!isDraggingRef.current || mouseStartXRef.current === null) return;
-    const diff = mouseStartXRef.current - e.clientX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) handleNext();
-      else handlePrev();
-    }
-    isDraggingRef.current = false;
-    mouseStartXRef.current = null;
+    pointerStartXRef.current = null;
+    setDragOffset(0);
+    setIsDragging(false);
   };
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto py-6 flex flex-col items-center select-none">
+    <div className="relative w-full max-w-5xl mx-auto py-2 flex flex-col items-center select-none">
       {/* Contenedor del Carrusel 3D */}
       <div
-        className="relative w-full h-[320px] sm:h-[360px] flex items-center justify-center perspective-[1000px] cursor-grab active:cursor-grabbing overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
+        className="relative w-full h-[390px] sm:h-[440px] flex items-center justify-center [perspective:1200px] cursor-grab active:cursor-grabbing overflow-hidden touch-pan-y"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowLeft') handlePrev();
+          if (event.key === 'ArrowRight') handleNext();
+        }}
+        tabIndex={0}
+        role="region"
+        aria-label="Carrusel de perfiles. Desliza o arrastra para explorar."
       >
+        <div className="absolute left-1/2 top-[42%] z-10 -translate-x-1/2 -translate-y-1/2">
+          <DiscoSphere isPlaying={isPlaying} />
+        </div>
         {models.map((model, index) => {
           // Calculate offset relative to active index in loop
           let offset = index - activeIndex;
@@ -79,10 +90,13 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
           if (!isVisible) return null;
 
           // 3D positioning parameters
-          const translateX = offset * 180;
-          const rotateY = offset * -25;
-          const scale = isActive ? 1.05 : 0.85 - Math.abs(offset) * 0.12;
-          const opacity = isActive ? 1 : 0.6 - Math.abs(offset) * 0.2;
+          const translateX = offset * 205 + dragOffset;
+          const translateY = 65 + Math.abs(offset) * 52;
+          const translateZ = isActive ? 110 : -Math.abs(offset) * 130;
+          const rotateY = offset * -32;
+          const rotateZ = offset * 5;
+          const scale = isActive ? 0.94 : 0.78 - Math.abs(offset) * 0.1;
+          const opacity = isActive ? 1 : 0.7 - Math.abs(offset) * 0.2;
           const zIndex = 20 - Math.abs(offset) * 5;
 
           const cardContent = (
@@ -134,15 +148,22 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
           return (
             <div
               key={model.id}
-              className="absolute transition-all duration-500 ease-out"
+              className={`absolute ${isDragging ? '' : 'transition-all duration-500 ease-out'}`}
               style={{
-                transform: `translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`,
+                transform: `translate3d(${translateX}px, ${translateY}px, ${translateZ}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`,
                 opacity,
                 zIndex,
               }}
             >
               {model.isActive ? (
-                <Link href={`/${model.slug}`} className="block">
+                <Link
+                  href={`/${model.slug}`}
+                  className="block"
+                  draggable={false}
+                  onClick={(event) => {
+                    if (draggedRef.current) event.preventDefault();
+                  }}
+                >
                   {cardContent}
                 </Link>
               ) : (
@@ -153,24 +174,8 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
         })}
       </div>
 
-      {/* Botones de Control Lateral */}
-      <button
-        onClick={handlePrev}
-        className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white flex items-center justify-center hover:border-[#00f2ea] hover:text-[#00f2ea] transition z-30 backdrop-blur-md"
-        aria-label="Anterior Chica"
-      >
-        <FontAwesomeIcon icon={faChevronLeft} />
-      </button>
-      <button
-        onClick={handleNext}
-        className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white flex items-center justify-center hover:border-[#00f2ea] hover:text-[#00f2ea] transition z-30 backdrop-blur-md"
-        aria-label="Siguiente Chica"
-      >
-        <FontAwesomeIcon icon={faChevronRight} />
-      </button>
-
       {/* Indicadores de Puntos */}
-      <div className="flex space-x-2 mt-4 z-30">
+      <div className="flex space-x-2 -mt-1 z-30">
         {models.map((m, idx) => (
           <button
             key={m.id}
