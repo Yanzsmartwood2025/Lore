@@ -69,7 +69,7 @@ export async function POST(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistral-small-latest',
+        model: 'open-mistral-7b',
         messages: [
           { role: 'system', content: persona.systemPrompt },
           ...history,
