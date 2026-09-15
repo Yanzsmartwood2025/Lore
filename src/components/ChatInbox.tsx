@@ -16,16 +16,70 @@ interface ChatInboxProps {
   slug: string;
 }
 
+import { models } from '@/data/models';
+
+const MAX_STORAGE_MESSAGES = 50;
+
 export function ChatInbox({ name, slug }: ChatInboxProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const storageKey = `${slug}_chat_history`;
+
+  // Cargar historial de localStorage o inicializar con mensaje de bienvenida
+  useEffect(() => {
+    const persona = models.find((m) => m.slug === slug);
+    const welcomeText =
+      persona?.welcomeMessage ??
+      `¡Hola! Qué bueno tenerte aquí conmigo 😉 Me encanta conocer gente nueva y compartir momentos especiales... cuéntame, ¿qué te trae por aquí hoy?`;
+
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved) as ChatMessage[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed.slice(-MAX_STORAGE_MESSAGES));
+          setIsInitialized(true);
+          return;
+        }
+      }
+    } catch {
+      // Si falla la lectura, se reinicia con el mensaje de bienvenida
+    }
+
+    const defaultWelcomeMessage: ChatMessage = {
+      id: 'welcome-msg',
+      role: 'assistant',
+      content: welcomeText,
+    };
+    setMessages([defaultWelcomeMessage]);
+    setIsInitialized(true);
+  }, [slug, storageKey]);
+
+  // Guardar en localStorage cuando cambien los mensajes
+  useEffect(() => {
+    if (!isInitialized || messages.length === 0) return;
+    try {
+      const toSave = messages.slice(-MAX_STORAGE_MESSAGES);
+      localStorage.setItem(storageKey, JSON.stringify(toSave));
+    } catch {
+      // Manejar error de cuota si ocurre
+    }
+  }, [messages, isInitialized, storageKey]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isSending]);
+
+  const isStreamingAssistantResponse =
+    isSending &&
+    messages.length > 0 &&
+    messages[messages.length - 1].role === 'assistant' &&
+    messages[messages.length - 1].content.length > 0;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,7 +92,14 @@ export function ChatInbox({ name, slug }: ChatInboxProps) {
       content: messageContent,
     }));
 
-    setMessages((currentMessages) => [...currentMessages, userMessage]);
+    const assistantMessageId = crypto.randomUUID();
+    const assistantMessagePlaceholder: ChatMessage = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+    };
+
+    setMessages((currentMessages) => [...currentMessages, userMessage, assistantMessagePlaceholder]);
     setInput('');
     setError(null);
     setIsSending(true);
@@ -49,18 +110,79 @@ export function ChatInbox({ name, slug }: ChatInboxProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: content, history }),
       });
-      const data = (await response.json()) as { reply?: string; error?: string };
 
-      if (!response.ok || !data.reply) {
-        throw new Error(data.error ?? 'No pudimos enviar tu mensaje.');
+      if (!response.ok) {
+        let errorMessage = 'No pudimos enviar tu mensaje.';
+        try {
+          const errorData = (await response.json()) as { error?: string };
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // Ignorar fallo de parseo JSON si la respuesta no era JSON
+        }
+        // Remover el placeholder del asistente si ni siquiera pudimos iniciar la respuesta
+        setMessages((current) => current.filter((msg) => msg.id !== assistantMessageId));
+        throw new Error(errorMessage);
       }
 
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        { id: crypto.randomUUID(), role: 'assistant', content: data.reply ?? '' },
-      ]);
+      if (!response.body) {
+        setMessages((current) => current.filter((msg) => msg.id !== assistantMessageId));
+        throw new Error('No se recibió la transmisión del chat.');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let receivedAnyText = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+
+          const dataStr = trimmed.slice(5).trim();
+          if (dataStr === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(dataStr) as {
+              choices?: Array<{ delta?: { content?: string } }>;
+            };
+            const textChunk = parsed.choices?.[0]?.delta?.content;
+            if (textChunk) {
+              receivedAnyText = true;
+              setMessages((current) =>
+                current.map((msg) =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, content: msg.content + textChunk }
+                    : msg,
+                ),
+              );
+            }
+          } catch {
+            // Ignorar líneas SSE malformadas
+          }
+        }
+      }
+
+      if (!receivedAnyText) {
+        // Si no se recibió ningún texto del stream, limpiar mensaje vacío
+        setMessages((current) => current.filter((msg) => msg.id !== assistantMessageId));
+        throw new Error('El chat no devolvió ninguna respuesta.');
+      }
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'No pudimos enviar tu mensaje.');
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Ocurrió un error inesperado al enviar el mensaje.',
+      );
     } finally {
       setIsSending(false);
     }
@@ -87,23 +209,25 @@ export function ChatInbox({ name, slug }: ChatInboxProps) {
           </div>
         )}
         <div className="space-y-3">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+          {messages
+            .filter((message) => message.content.length > 0)
+            .map((message) => (
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
-                  message.role === 'user'
-                    ? 'rounded-br-sm bg-cyan-500 text-slate-950'
-                    : 'rounded-bl-sm border border-white/10 bg-white/10 text-gray-100'
-                }`}
+                key={message.id}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                {message.content}
+                <div
+                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
+                    message.role === 'user'
+                      ? 'rounded-br-sm bg-cyan-500 text-slate-950'
+                      : 'rounded-bl-sm border border-white/10 bg-white/10 text-gray-100'
+                  }`}
+                >
+                  {message.content}
+                </div>
               </div>
-            </div>
-          ))}
-          {isSending && (
+            ))}
+          {isSending && !isStreamingAssistantResponse && (
             <div className="flex justify-start">
               <div className="rounded-2xl rounded-bl-sm border border-white/10 bg-white/10 px-4 py-3 text-sm text-cyan-200">
                 {name} está escribiendo<span className="animate-pulse">...</span>

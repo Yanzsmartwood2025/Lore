@@ -84,6 +84,7 @@ export async function POST(
           { role: 'user', content: message },
         ],
         temperature: 0.8,
+        stream: true,
       }),
     });
 
@@ -92,20 +93,20 @@ export async function POST(
       continue;
     }
 
-    if (!response.ok) {
+    if (!response.ok || !response.body) {
       return Response.json(
         { error: 'No pudimos conectar con el chat. Inténtalo de nuevo.' },
         { status: 502 },
       );
     }
 
-    const data = (await response.json()) as MistralResponse;
-    const reply = data.choices?.[0]?.message?.content?.trim();
-    if (!reply) {
-      return Response.json({ error: 'El chat no devolvió una respuesta.' }, { status: 502 });
-    }
-
-    return Response.json({ reply });
+    return new Response(response.body, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+      },
+    });
   }
 
   return Response.json(
