@@ -56,35 +56,27 @@ export default async function ModelPage({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center p-4 sm:p-6 pb-48">
-      <div className="w-full max-w-4xl flex flex-col space-y-6 mt-4">
-        {/* Navegación y Encabezado de la Persona */}
-        <div className="flex items-center justify-between">
+    <main className="min-h-screen bg-black text-white flex flex-col items-center p-2 sm:p-4 md:p-6 pb-24">
+      <div className="w-full max-w-4xl flex flex-col space-y-3">
+        {/* Navegación discreta superior */}
+        <div className="flex items-center justify-between px-2 pt-1">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-bold text-gray-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-bold text-cyan-400/80 hover:text-cyan-300 transition-colors"
           >
             <FontAwesomeIcon icon={faArrowLeft} /> Volver
           </Link>
-          <span className="text-xs text-cyan-400 font-mono uppercase tracking-widest">
-            Protocolo VIP / Persona
+          <span className="text-[10px] text-cyan-400/70 font-mono uppercase tracking-widest">
+            Chat VIP
           </span>
         </div>
 
-        {/* Tarjeta de Perfil */}
-        <GlassCard className="p-6 border-cyan-400/30 bg-gradient-to-r from-cyan-950/20 to-purple-950/20">
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 border-2 border-cyan-400/40 flex items-center justify-center text-cyan-400 shrink-0">
-              <FontAwesomeIcon icon={faUser} className="text-4xl" />
-            </div>
-            <div className="text-center sm:text-left">
-              <h1 className="text-3xl font-extrabold text-white tracking-wide">{model.name}</h1>
-              <p className="text-sm text-cyan-300 mt-1">{model.tagline}</p>
-            </div>
-          </div>
-        </GlassCard>
-
-        <ChatInbox name={model.name} slug={model.slug} />
+        <ChatInbox
+          name={model.name}
+          slug={model.slug}
+          avatar={model.avatar}
+          tagline={model.tagline}
+        />
       </div>
     </main>
   );
