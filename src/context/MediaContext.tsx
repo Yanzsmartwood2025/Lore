@@ -104,7 +104,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         listType: 'playlist',
         list: PLAYLIST_IDS[0],
         autoplay: 0,
-        controls: 1,
+        controls: 0,
         modestbranding: 1,
         rel: 0,
         playsinline: 1,
