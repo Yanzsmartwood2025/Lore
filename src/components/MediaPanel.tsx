@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowLeft,
   faExpand,
-  faMusic,
   faPause,
   faPlay,
   faVideo,
@@ -22,53 +21,13 @@ export function MediaPanel() {
   const {
     isPlaying,
     isMuted,
-    activeTab,
     togglePlay,
     toggleMute,
-    setActiveTab,
-    playRequestedVideo,
   } = useMedia();
   const [presentationMode, setPresentationMode] = useState<PresentationMode>('normal');
-  const [musicRequest, setMusicRequest] = useState('');
-  const [requestError, setRequestError] = useState('');
-  const [isRequesting, setIsRequesting] = useState(false);
 
   const isHome = pathname === '/';
   const isFullscreen = presentationMode === 'fullscreen';
-  const isMusic = activeTab === 'music';
-
-  const submitMusicRequest = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const message = musicRequest.trim();
-    if (!message || isRequesting) return;
-
-    setIsRequesting(true);
-    setRequestError('');
-
-    try {
-      const response = await fetch('/api/music-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
-      });
-      const data: { videoId?: string } = await response.json();
-
-      if (!response.ok || !data.videoId) throw new Error('No video found');
-
-      setActiveTab('music');
-      playRequestedVideo(data.videoId);
-      setMusicRequest('');
-    } catch {
-      setRequestError('No encontré esa canción, ¿puedes ser más específico?');
-    } finally {
-      setIsRequesting(false);
-    }
-  };
-
-  const openMusicPictureInPicture = () => {
-    setActiveTab('music');
-    setPresentationMode('normal');
-  };
 
   return (
     <>
@@ -112,7 +71,7 @@ export function MediaPanel() {
           className={`fixed z-[40] transition-all duration-500 ease-out ${
             isFullscreen
               ? 'inset-0 flex items-center justify-center p-0 sm:p-5'
-              : 'top-20 right-4 w-[min(22rem,calc(100vw-2rem))] hidden md:block'
+              : 'top-20 left-1/2 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2'
           }`}
           aria-label="Reproductor musical"
         >
@@ -206,31 +165,6 @@ export function MediaPanel() {
       </section>
       )}
 
-      {isHome && !isFullscreen && (
-        <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-[#f000b8]/35 bg-black/75 p-3 shadow-[0_0_20px_rgba(240,0,184,0.15)] backdrop-blur-xl">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <button type="button" onClick={openMusicPictureInPicture} className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#00f2ea]">
-              <FontAwesomeIcon icon={faMusic} /> Ver el video musical
-            </button>
-            {!isMusic && <span className="text-[10px] text-gray-400">El video está en el cuadrito</span>}
-          </div>
-          <form onSubmit={submitMusicRequest} className="flex gap-2">
-            <input
-              id="music-request"
-              type="text"
-              value={musicRequest}
-              onChange={(event) => setMusicRequest(event.target.value)}
-              placeholder="Pide una canción"
-              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs text-white placeholder:text-gray-500 outline-none focus:border-[#00f2ea]/60"
-              disabled={isRequesting}
-            />
-            <button type="submit" className="rounded-lg border border-[#00f2ea]/45 bg-[#00f2ea]/15 px-3 text-xs font-semibold text-[#00f2ea] disabled:opacity-50" disabled={!musicRequest.trim() || isRequesting}>
-              {isRequesting ? 'Buscando...' : 'Reproducir'}
-            </button>
-          </form>
-          {requestError && <p className="mt-2 text-xs text-red-300" role="alert">{requestError}</p>}
-        </div>
-      )}
     </>
   );
 }

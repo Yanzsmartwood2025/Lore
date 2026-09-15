@@ -15,6 +15,7 @@ import {
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
 import { useMedia } from '@/context/MediaContext';
+import { MusicRequestForm } from '@/components/MusicRequestForm';
 
 export function TopNavMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +28,7 @@ export function TopNavMenu() {
   return (
     <>
       {/* Botón Circular Flotante Superior */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center">
+      <div className="fixed top-4 right-[max(1rem,env(safe-area-inset-right))] z-50 flex items-center justify-center">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={`relative w-14 h-14 rounded-full flex items-center justify-center border transition-all duration-300 backdrop-blur-md shadow-lg ${
@@ -84,6 +85,8 @@ export function TopNavMenu() {
               <span>Acceso con Google</span>
             </button>
           </div>
+
+          <MusicRequestForm onRequested={() => setIsOpen(false)} />
 
           {/* Opciones Futuras: Servicios, Términos, Privacidad */}
           <div className="pt-4 border-t border-white/10 space-y-2">
