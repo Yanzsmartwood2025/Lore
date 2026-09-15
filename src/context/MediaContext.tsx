@@ -250,6 +250,41 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     play();
   };
 
+  // Expone controles al sistema operativo cuando el navegador/PWA admite la
+  // Media Session API. El navegador sigue decidiendo si permite audio en
+  // segundo plano (en especial cuando la fuente es un iframe de YouTube).
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Música en vivo',
+      artist: 'Protocolo VIP',
+      album: 'El Club de Lore',
+      artwork: [
+        { src: '/images/Lore-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/images/Lore-512x512.png', sizes: '512x512', type: 'image/png' },
+      ],
+    });
+
+    navigator.mediaSession.setActionHandler('play', play);
+    navigator.mediaSession.setActionHandler('pause', pause);
+    navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+    navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+
+    return () => {
+      navigator.mediaSession.setActionHandler('play', null);
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('previoustrack', null);
+      navigator.mediaSession.setActionHandler('nexttrack', null);
+    };
+  });
+
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+    }
+  }, [isPlaying]);
+
   return (
     <MediaContext.Provider
       value={{

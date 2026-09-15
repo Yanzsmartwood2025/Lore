@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faUser, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faLock } from '@fortawesome/free-solid-svg-icons';
 import { ChatInbox } from '@/components/ChatInbox';
 import { GlassCard } from '@/components/GlassCard';
 import { models } from '@/data/models';
