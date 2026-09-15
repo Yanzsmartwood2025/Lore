@@ -3,7 +3,7 @@
 import { useState, useRef, type PointerEvent } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
 import { DiscoSphere } from '@/components/DiscoSphere';
 import { useMedia } from '@/context/MediaContext';
@@ -117,30 +117,14 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
                 </span>
               )}
 
-              {/* Avatar / Icon Container */}
-              <div className="relative z-10 mt-4 flex flex-col items-center">
-                <div
-                  className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105 ${
-                    model.isActive
-                      ? 'bg-gradient-to-tr from-[#00f2ea]/30 to-purple-600/30 border-2 border-[#00f2ea] shadow-[0_0_20px_rgba(0,242,234,0.3)] text-[#00f2ea]'
-                      : 'bg-white/5 border border-white/20 text-gray-500'
-                  }`}
-                >
-                  <FontAwesomeIcon icon={faUser} className="text-4xl sm:text-5xl" />
-                </div>
-              </div>
+              {/* Superficie libre para montar el video vertical de cada perfil. */}
+              <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,242,234,0.10),transparent_42%)]" aria-hidden="true" />
 
               {/* Únicamente el Nombre de la chica */}
-              <div className="relative z-10 mb-4">
+              <div className="relative z-10 mt-auto mb-5">
                 <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">
                   {model.name}
                 </h3>
-                {model.isActive && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#00f2ea] bg-[#00f2ea]/10 border border-[#00f2ea]/40 px-3 py-1 rounded-full">
-                    <FontAwesomeIcon icon={faPlay} className="text-[8px]" />
-                    <span>Entrar</span>
-                  </div>
-                )}
               </div>
             </GlassCard>
           );

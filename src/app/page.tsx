@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebookF, faTiktok, faYoutube, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
+import { faTiktok, faXTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { TopNavMenu } from '@/components/TopNavMenu';
 import { Model3DCarousel } from '@/components/Model3DCarousel';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
@@ -69,7 +69,7 @@ export default function Home() {
       )}
 
       {/* LOBBY MAIN SCREEN */}
-      <div className="flex-grow flex flex-col w-full h-full overflow-y-auto animate-fadeIn relative z-10 pt-[19rem] sm:pt-[23rem] pb-16">
+      <div className="flex-grow flex flex-col w-full h-full overflow-y-auto animate-fadeIn relative z-10 pt-[16.5rem] sm:pt-[21rem] pb-12">
 
         <div className="flex flex-col items-center justify-center pt-2 relative">
           <div className="text-center">
@@ -85,18 +85,12 @@ export default function Home() {
         </div>
 
         {/* Redes Sociales posicionadas abajo */}
-        <div className="flex justify-center space-x-6 py-4 z-20">
-          <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-blue-600 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-            <FontAwesomeIcon icon={faFacebookF} />
-          </a>
+        <div className="flex justify-center space-x-8 pt-3 pb-1 z-20">
           <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-pink-500 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
             <FontAwesomeIcon icon={faTiktok} />
           </a>
-          <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-red-600 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-            <FontAwesomeIcon icon={faYoutube} />
-          </a>
           <a href="https://x.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-            <FontAwesomeIcon icon={faTwitter} />
+            <FontAwesomeIcon icon={faXTwitter} />
           </a>
           <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-purple-500 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
             <FontAwesomeIcon icon={faInstagram} />

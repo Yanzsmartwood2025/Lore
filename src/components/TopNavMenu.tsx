@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faBars,
   faTimes,
   faLock,
   faFileContract,
@@ -28,18 +27,25 @@ export function TopNavMenu() {
   return (
     <>
       {/* Botón Circular Flotante Superior */}
-      <div className="fixed top-4 right-[max(1rem,env(safe-area-inset-right))] z-50 flex items-center justify-center">
+      <div className="fixed top-[max(.65rem,env(safe-area-inset-top))] right-[max(.75rem,env(safe-area-inset-right))] z-50 flex items-center justify-center">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`relative w-14 h-14 rounded-full flex items-center justify-center border transition-all duration-300 backdrop-blur-md shadow-lg ${
+          className={`group relative flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 backdrop-blur-xl ${
             isOpen
-              ? 'border-pink-500 bg-pink-950/60 text-pink-400 shadow-[0_0_20px_rgba(240,0,184,0.5)] rotate-90 scale-105'
-              : 'border-[#00f2ea]/60 bg-black/70 text-[#00f2ea] shadow-[0_0_20px_rgba(0,242,234,0.3)] hover:scale-110 hover:border-[#00f2ea]'
+              ? 'border-pink-400/70 bg-pink-950/35 text-pink-300 shadow-[0_0_16px_rgba(240,0,184,0.28)]'
+              : 'border-[#00f2ea]/35 bg-black/35 text-[#00f2ea] shadow-[0_0_14px_rgba(0,242,234,0.18)] hover:border-[#00f2ea]/70 hover:bg-[#00f2ea]/10'
           }`}
           aria-label={isOpen ? 'Cerrar Menú' : 'Abrir Menú Principal'}
         >
-          <div className="absolute inset-0 rounded-full border border-white/20 animate-ping opacity-25 pointer-events-none" />
-          <FontAwesomeIcon icon={isOpen ? faTimes : faBars} className="text-xl transition-transform duration-300" />
+          <div className="absolute -inset-1.5 -z-10 rounded-2xl bg-[#00f2ea]/10 blur-lg opacity-60 transition-opacity group-hover:opacity-90" />
+          {isOpen ? (
+            <FontAwesomeIcon icon={faTimes} className="text-sm transition-transform duration-300" />
+          ) : (
+            <span className="relative h-[17px] w-[19px] rounded-[4px] border border-current" aria-hidden="true">
+              <span className="absolute bottom-[3px] left-[3px] top-[3px] w-px rounded-full bg-current opacity-80" />
+              <span className="absolute left-[7px] right-[3px] top-1/2 h-px -translate-y-1/2 rounded-full bg-current" />
+            </span>
+          )}
         </button>
       </div>
 
