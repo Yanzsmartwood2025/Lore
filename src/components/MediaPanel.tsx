@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, type FormEvent } from 'react';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -32,7 +33,41 @@ export function MediaPanel() {
     setVideoSize,
     toggleVideoSize,
     setActiveTab,
+    playRequestedVideo,
   } = useMedia();
+  const [musicRequest, setMusicRequest] = useState('');
+  const [requestError, setRequestError] = useState('');
+  const [isRequesting, setIsRequesting] = useState(false);
+
+  const submitMusicRequest = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const message = musicRequest.trim();
+    if (!message || isRequesting) return;
+
+    setIsRequesting(true);
+    setRequestError('');
+
+    try {
+      const response = await fetch('/api/music-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
+      const data: { videoId?: string } = await response.json();
+
+      if (!response.ok || !data.videoId) {
+        throw new Error('No video found');
+      }
+
+      setActiveTab('music');
+      playRequestedVideo(data.videoId);
+      setMusicRequest('');
+    } catch {
+      setRequestError('No encontré esa canción, ¿puedes ser más específico?');
+    } finally {
+      setIsRequesting(false);
+    }
+  };
 
   const isHome = pathname === '/';
   const isHeroMode = isHome && videoSize === 'hero';
@@ -155,6 +190,33 @@ export function MediaPanel() {
               </div>
             )}
           </div>
+
+          {isMusic && (
+            <form onSubmit={submitMusicRequest} className="border-t border-white/10 p-3">
+              <label htmlFor="music-request" className="block text-xs text-gray-300 mb-2">
+                Pide una canción
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="music-request"
+                  type="text"
+                  value={musicRequest}
+                  onChange={(event) => setMusicRequest(event.target.value)}
+                  placeholder="Ej. Blinding Lights de The Weeknd"
+                  className="min-w-0 flex-1 rounded bg-white/10 px-2 py-1 text-xs text-white placeholder:text-gray-500"
+                  disabled={isRequesting}
+                />
+                <button
+                  type="submit"
+                  className="rounded bg-[#00f2ea]/20 px-3 py-1 text-xs font-semibold text-[#00f2ea] disabled:opacity-50"
+                  disabled={!musicRequest.trim() || isRequesting}
+                >
+                  {isRequesting ? 'Buscando...' : 'Reproducir'}
+                </button>
+              </div>
+              {requestError && <p className="mt-2 text-xs text-red-300" role="alert">{requestError}</p>}
+            </form>
+          )}
 
           {/* Controls Overlay / Footer */}
           <div className="p-3 bg-black/80 border-t border-white/10 flex items-center justify-between gap-2">
