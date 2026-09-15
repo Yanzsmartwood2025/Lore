@@ -26,6 +26,7 @@ interface MediaContextType {
   toggleVideoSize: () => void;
   enterLobby: () => void;
   setActiveTab: (tab: 'music' | 'content') => void;
+  playRequestedVideo: (videoId: string) => void;
 }
 
 const MediaContext = createContext<MediaContextType | undefined>(undefined);
@@ -51,6 +52,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   const currentPlaylistIndexRef = useRef(currentPlaylistIndex);
   const isPlayingRef = useRef(isPlaying);
   const isMutedRef = useRef(isMuted);
+  const requestedVideoIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     currentPlaylistIndexRef.current = currentPlaylistIndex;
@@ -115,7 +117,9 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
           } else {
             event.target.unMute();
           }
-          if (isPlayingRef.current) {
+          if (requestedVideoIdRef.current) {
+            event.target.loadVideoById(requestedVideoIdRef.current);
+          } else if (isPlayingRef.current) {
             event.target.playVideo();
           }
         },
@@ -229,6 +233,18 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     setVideoSizeState((prev) => (prev === 'micro' ? 'expanded' : 'micro'));
   };
 
+  const playRequestedVideo = (videoId: string) => {
+    requestedVideoIdRef.current = videoId;
+    if (ytPlayerRef.current) {
+      try {
+        ytPlayerRef.current.loadVideoById(videoId);
+        setIsPlaying(true);
+      } catch {
+        // ignore
+      }
+    }
+  };
+
   const enterLobby = () => {
     setHasEntered(true);
     play();
@@ -253,6 +269,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         toggleVideoSize,
         enterLobby,
         setActiveTab,
+        playRequestedVideo,
       }}
     >
       {children}
