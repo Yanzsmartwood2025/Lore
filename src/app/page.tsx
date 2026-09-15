@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGoogle, faFacebookF, faTiktok, faYoutube, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
-import { faPlay, faWandMagicSparkles, faUser, faLock } from '@fortawesome/free-solid-svg-icons';
-import { GlassCard } from '@/components/GlassCard';
+import { faFacebookF, faTiktok, faYoutube, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
+import { TopNavMenu } from '@/components/TopNavMenu';
+import { DiscoSphere } from '@/components/DiscoSphere';
+import { Model3DCarousel } from '@/components/Model3DCarousel';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
 import { useMedia } from '@/context/MediaContext';
 import { models } from '@/data/models';
@@ -15,7 +15,7 @@ const APP_VERSION = "2.0.0 (Next.js)";
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashOpacity, setSplashOpacity] = useState(1);
-  const { enterLobby } = useMedia();
+  const { isPlaying } = useMedia();
 
   useEffect(() => {
     // Check sessionStorage only on client side after mount
@@ -30,22 +30,17 @@ export default function Home() {
           setShowSplash(false);
           sessionStorage.setItem('session_active_v2', 'true');
         }, 1000);
-        return () => clearTimeout(hideTimer);
+        return () => clearTimeout(fadeOutTimer);
       }, 2000);
       return () => clearTimeout(fadeOutTimer);
     }
   }, []);
 
-  const handleGoogleLogin = () => {
-    alert("Login con Google (Próximamente en Fase 2)");
-  };
-
-  const handlePlayEnter = () => {
-    enterLobby();
-  };
-
   return (
-    <main className="flex-grow relative w-full overflow-hidden flex flex-col min-h-screen bg-black">
+    <main className="flex-grow relative w-full overflow-hidden flex flex-col min-h-screen bg-black select-none">
+      {/* Top Menu Drawer Navigation */}
+      <TopNavMenu />
+
       {/* SPLASH SCREEN */}
       {showSplash && (
         <div
@@ -71,119 +66,52 @@ export default function Home() {
         </div>
       )}
 
-      {/* LOBBY SCREEN */}
-      <div className="flex-grow flex flex-col w-full h-full overflow-y-auto animate-fadeIn relative z-10 pb-48">
-        <div className="flex-grow flex flex-col justify-center items-center p-4 sm:p-6 space-y-8 mt-2 max-w-4xl mx-auto w-full">
+      {/* LOBBY MAIN SCREEN */}
+      <div className="flex-grow flex flex-col justify-between w-full h-full overflow-y-auto animate-fadeIn relative z-10 pt-20 pb-28">
 
-          {/* Encabezado Principal */}
-          <div className="text-center space-y-1 mt-2">
-            <h2 className="text-lg sm:text-xl text-gray-400 tracking-wider font-light">Bienvenido al</h2>
-            <h1 className="text-4xl sm:text-5xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-              Protocolo<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">VIP</span>
+        {/* Central Ambient Disco Sphere */}
+        <div className="flex flex-col items-center justify-center pt-2 pb-4 relative">
+          <DiscoSphere isPlaying={isPlaying} />
+
+          <div className="text-center mt-4">
+            <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+              Protocolo <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">VIP</span>
             </h1>
           </div>
+        </div>
 
-          {/* Botones de Entrada / Disparador User Gesture */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
-            {/* Botón Play / Entrar */}
-            <GlassCard className="w-full sm:w-1/2 transition-all hover:bg-cyan-500/20 active:scale-95 border-[#00f2ea]/40 shadow-[0_0_15px_rgba(0,242,234,0.2)]">
-              <button
-                onClick={handlePlayEnter}
-                className="w-full py-3 px-4 flex items-center justify-center space-x-3 text-[#00f2ea] font-bold"
-              >
-                <FontAwesomeIcon icon={faPlay} className="text-base animate-pulse" />
-                <span className="text-sm uppercase tracking-wider">Play / Entrar</span>
-              </button>
-            </GlassCard>
+        {/* 3D Model Carousel */}
+        <div className="w-full">
+          <Model3DCarousel models={models} />
+        </div>
 
-            {/* Botón Login Google */}
-            <GlassCard className="w-full sm:w-1/2 transition-all hover:bg-white/10 active:scale-95">
-              <button onClick={handleGoogleLogin} className="w-full py-3 px-4 flex items-center justify-center space-x-3">
-                <FontAwesomeIcon icon={faGoogle} className="text-white text-base" />
-                <span className="text-xs font-bold text-gray-200">Acceso con Google</span>
-              </button>
-            </GlassCard>
-          </div>
-
-          {/* Grid de Modelos / Personas */}
-          <div className="w-full max-w-3xl pt-2">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {models.map((model) => {
-                if (model.isActive) {
-                  return (
-                    <Link key={model.id} href={`/${model.slug}`} className="block">
-                      <GlassCard className="h-full p-4 flex flex-col items-center justify-center text-center transition-all duration-300 hover:scale-105 border-cyan-400/40 hover:border-cyan-400 shadow-[0_0_15px_rgba(0,242,234,0.15)] hover:shadow-[0_0_20px_rgba(0,242,234,0.3)] bg-cyan-950/20">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 border border-cyan-400/30 flex items-center justify-center mb-3 text-cyan-400">
-                          <FontAwesomeIcon icon={faUser} className="text-2xl" />
-                        </div>
-                        <h3 className="text-base font-bold text-white tracking-wide">{model.name}</h3>
-                        <p className="text-[11px] text-cyan-300/80 mt-1">{model.tagline}</p>
-                      </GlassCard>
-                    </Link>
-                  );
-                }
-
-                return (
-                  <GlassCard key={model.id} className="h-full p-4 flex flex-col items-center justify-center text-center opacity-60 border-white/5 bg-white/5 pointer-events-none relative overflow-hidden">
-                    <span className="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider text-pink-400 bg-pink-950/60 border border-pink-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <FontAwesomeIcon icon={faLock} className="text-[8px]" />
-                      Próximamente
-                    </span>
-                    <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-3 text-gray-500">
-                      <FontAwesomeIcon icon={faUser} className="text-2xl" />
-                    </div>
-                    <h3 className="text-base font-medium text-gray-400 tracking-wide">{model.name}</h3>
-                    <p className="text-[11px] text-gray-500 mt-1">{model.tagline}</p>
-                  </GlassCard>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Placeholder Estilizado para Contenido Futuro */}
-          <div className="w-full max-w-xl px-2">
-            <GlassCard className="w-full p-6 text-center border-white/10 bg-gradient-to-b from-white/5 to-purple-950/20">
-              <div className="flex items-center justify-center space-x-2 text-purple-400 mb-2">
-                <FontAwesomeIcon icon={faWandMagicSparkles} className="text-sm animate-pulse" />
-                <span className="text-xs font-mono uppercase tracking-[0.2em]">Próximamente</span>
-                <FontAwesomeIcon icon={faWandMagicSparkles} className="text-sm animate-pulse" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-200 mb-1">Espacio Reservado para Nuevo Contenido</h3>
-              <p className="text-xs text-gray-400 max-w-md mx-auto">
-                Este módulo flexible alojará las próximas características VIP, eventos en vivo y lanzamientos exclusivos de la comunidad.
-              </p>
-            </GlassCard>
-          </div>
-
-          {/* Redes Sociales */}
-          <div className="flex justify-center space-x-6 pt-2 pb-2">
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-blue-600 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-              <FontAwesomeIcon icon={faFacebookF} />
-            </a>
-            <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-pink-500 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-              <FontAwesomeIcon icon={faTiktok} />
-            </a>
-            <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-red-600 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-              <FontAwesomeIcon icon={faYoutube} />
-            </a>
-            <a href="https://x.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-              <FontAwesomeIcon icon={faTwitter} />
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-purple-500 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-              <FontAwesomeIcon icon={faInstagram} />
-            </a>
-          </div>
-
+        {/* Redes Sociales posicionadas abajo */}
+        <div className="flex justify-center space-x-6 py-4 z-20">
+          <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-blue-600 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
+            <FontAwesomeIcon icon={faFacebookF} />
+          </a>
+          <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-pink-500 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
+            <FontAwesomeIcon icon={faTiktok} />
+          </a>
+          <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-red-600 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
+            <FontAwesomeIcon icon={faYoutube} />
+          </a>
+          <a href="https://x.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
+            <FontAwesomeIcon icon={faTwitter} />
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-purple-500 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
+            <FontAwesomeIcon icon={faInstagram} />
+          </a>
         </div>
 
         <PwaInstallPrompt />
       </div>
 
       {/* Footer */}
-      <footer className="fixed bottom-0 w-full text-center py-3 bg-black/90 backdrop-blur-md z-30 border-t border-white/5">
+      <footer className="fixed bottom-0 w-full text-center py-2 bg-black/90 backdrop-blur-md z-30 border-t border-white/5">
         <div className="flex flex-col justify-center items-center">
           <p className="text-[10px] text-gray-600">© 2025 Todos los derechos reservados.</p>
-          <p className="text-[9px] text-gray-800 mt-1 uppercase tracking-widest">
+          <p className="text-[9px] text-gray-800 mt-0.5 uppercase tracking-widest">
             v<span>{APP_VERSION}</span>
           </p>
         </div>
