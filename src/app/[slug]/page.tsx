@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faUser, faComments, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faUser, faLock } from '@fortawesome/free-solid-svg-icons';
+import { ChatInbox } from '@/components/ChatInbox';
 import { GlassCard } from '@/components/GlassCard';
 import { models } from '@/data/models';
 
@@ -83,22 +84,7 @@ export default async function ModelPage({ params }: PageProps) {
           </div>
         </GlassCard>
 
-        {/* ========================================================================= */}
-        {/* ÁREA DE CHAT INDIVIDUAL (RESERVADA PARA IMPLEMENTACIÓN FUTURA)            */}
-        {/* ========================================================================= */}
-        {/*
-          TODO: En esta sección se integrará la conversación de chat individual para cada persona.
-          Cada modelo (Lore, Camila, etc.) manejará su propio contexto, memoria e historial de chat.
-          Por ahora se mantiene la plantilla estructural sin la lógica de mensajes.
-        */}
-        <GlassCard className="p-8 text-center border-white/10 bg-white/5 flex flex-col items-center justify-center min-h-[250px]">
-          <FontAwesomeIcon icon={faComments} className="text-4xl text-cyan-400/50 mb-3 animate-pulse" />
-          <h3 className="text-lg font-bold text-gray-200 mb-1">Área de Chat con {model.name}</h3>
-          <p className="text-xs text-gray-400 max-w-md">
-            Espacio reservado para el chat individual. En la siguiente fase se conectará la interfaz interactiva de mensajería con la IA de {model.name}.
-          </p>
-        </GlassCard>
-        {/* ========================================================================= */}
+        <ChatInbox name={model.name} slug={model.slug} />
       </div>
     </main>
   );
