@@ -1,14 +1,1198 @@
-
-> next-temp@0.1.0 dev
-> next dev
-
 ▲ Next.js 16.3.4 (Turbopack)
-- Local:         http://localhost:3000
-- Network:       http://192.168.0.2:3000
-✓ Ready in 550ms
-✓ Running next.config.ts took 44ms
+- Local:         http://localhost:3005
+- Network:       http://192.168.0.2:3005
+✓ Ready in 558ms
+✓ Running next.config.ts took 46ms
 
 ○ Compiling / ...
-⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
- HEAD / 200 in 3.8s (next.js: 3.4s, application-code: 422ms)
- GET /camila 200 in 1789ms (next.js: 1576ms, application-code: 214ms)
+⨯ ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  [90m206 |[0m       </section>
+  [90m207 |[0m
+[31m[1m>[0m [90m208 |[0m       {isHome && !isFullscreen && (
+  [90m    |[0m       [31m[1m^[0m
+  [90m209 |[0m         <div className=[32m"fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...[0m
+  [90m210 |[0m           <div className=[32m"mb-2 flex items-center justify-between gap-3"[0m>
+  [90m211 |[0m             <button [36mtype[0m=[32m"button"[0m onClick={openMusicPictureInPicture} className=[32m"flex ite...[0m
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+
+
+
+./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m'react'[0m;
+  [90m 4 |[0m [36mimport[0m { [33mFontAwesomeIcon[0m } [36mfrom[0m [32m'@fortawesome/react-fontawesome'[0m;
+[31m[1m>[0m [90m 5 |[0m [36mimport[0m {
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   faBars,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   faTimes,
+  [90m   |[0m [31m[1m^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   faLock,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   faFileContract,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   faConciergeBell,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m   faShieldHalved,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m12 |[0m   faSparkles,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m13 |[0m   faCirclePlay,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m14 |[0m } [36mfrom[0m [32m'@fortawesome/free-solid-svg-icons'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m15 |[0m [36mimport[0m { faGoogle } [36mfrom[0m [32m'@fortawesome/free-brands-svg-icons'[0m;
+  [90m16 |[0m [36mimport[0m { [33mGlassCard[0m } [36mfrom[0m [32m'@/components/GlassCard'[0m;
+  [90m17 |[0m [36mimport[0m { useMedia } [36mfrom[0m [32m'@/context/MediaContext'[0m;
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m'react'[0m;
+  [90m 4 |[0m [36mimport[0m { [33mFontAwesomeIcon[0m } [36mfrom[0m [32m'@fortawesome/react-fontawesome'[0m;
+[31m[1m>[0m [90m 5 |[0m [36mimport[0m {
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   faBars,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   faTimes,
+  [90m   |[0m [31m[1m^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   faLock,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   faFileContract,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   faConciergeBell,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m   faShieldHalved,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m12 |[0m   faSparkles,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m13 |[0m   faCirclePlay,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m14 |[0m } [36mfrom[0m [32m'@fortawesome/free-solid-svg-icons'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m15 |[0m [36mimport[0m { faGoogle } [36mfrom[0m [32m'@fortawesome/free-brands-svg-icons'[0m;
+  [90m16 |[0m [36mimport[0m { [33mGlassCard[0m } [36mfrom[0m [32m'@/components/GlassCard'[0m;
+  [90m17 |[0m [36mimport[0m { useMedia } [36mfrom[0m [32m'@/context/MediaContext'[0m;
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 5.9s (next.js: 5.6s, application-code: 293ms)
+[browser] Uncaught Error: ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+
+
+    at <unknown> (Error: ./src/components/MediaPanel.tsx:208:7)
+    at <unknown> (Error: (./src/components/MediaPanel.tsx:208:7)
+[browser] ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+⨯ ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  [90m206 |[0m       </section>
+  [90m207 |[0m
+[31m[1m>[0m [90m208 |[0m       {isHome && !isFullscreen && (
+  [90m    |[0m       [31m[1m^[0m
+  [90m209 |[0m         <div className=[32m"fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...[0m
+  [90m210 |[0m           <div className=[32m"mb-2 flex items-center justify-between gap-3"[0m>
+  [90m211 |[0m             <button [36mtype[0m=[32m"button"[0m onClick={openMusicPictureInPicture} className=[32m"flex ite...[0m
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+
+
+
+./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m'react'[0m;
+  [90m 4 |[0m [36mimport[0m { [33mFontAwesomeIcon[0m } [36mfrom[0m [32m'@fortawesome/react-fontawesome'[0m;
+[31m[1m>[0m [90m 5 |[0m [36mimport[0m {
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   faBars,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   faTimes,
+  [90m   |[0m [31m[1m^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   faLock,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   faFileContract,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   faConciergeBell,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m   faShieldHalved,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m12 |[0m   faSparkles,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m13 |[0m   faCirclePlay,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m14 |[0m } [36mfrom[0m [32m'@fortawesome/free-solid-svg-icons'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m15 |[0m [36mimport[0m { faGoogle } [36mfrom[0m [32m'@fortawesome/free-brands-svg-icons'[0m;
+  [90m16 |[0m [36mimport[0m { [33mGlassCard[0m } [36mfrom[0m [32m'@/components/GlassCard'[0m;
+  [90m17 |[0m [36mimport[0m { useMedia } [36mfrom[0m [32m'@/context/MediaContext'[0m;
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m'react'[0m;
+  [90m 4 |[0m [36mimport[0m { [33mFontAwesomeIcon[0m } [36mfrom[0m [32m'@fortawesome/react-fontawesome'[0m;
+[31m[1m>[0m [90m 5 |[0m [36mimport[0m {
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   faBars,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   faTimes,
+  [90m   |[0m [31m[1m^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   faLock,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   faFileContract,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   faConciergeBell,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m   faShieldHalved,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m12 |[0m   faSparkles,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m13 |[0m   faCirclePlay,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m14 |[0m } [36mfrom[0m [32m'@fortawesome/free-solid-svg-icons'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m15 |[0m [36mimport[0m { faGoogle } [36mfrom[0m [32m'@fortawesome/free-brands-svg-icons'[0m;
+  [90m16 |[0m [36mimport[0m { [33mGlassCard[0m } [36mfrom[0m [32m'@/components/GlassCard'[0m;
+  [90m17 |[0m [36mimport[0m { useMedia } [36mfrom[0m [32m'@/context/MediaContext'[0m;
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 41ms (next.js: 26ms, application-code: 15ms)
+[browser] Uncaught Error: ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+
+
+    at <unknown> (Error: ./src/components/MediaPanel.tsx:208:7)
+    at <unknown> (Error: (./src/components/MediaPanel.tsx:208:7)
+[browser] ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+⨯ ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  [90m206 |[0m       </section>
+  [90m207 |[0m
+[31m[1m>[0m [90m208 |[0m       {isHome && !isFullscreen && (
+  [90m    |[0m       [31m[1m^[0m
+  [90m209 |[0m         <div className=[32m"fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...[0m
+  [90m210 |[0m           <div className=[32m"mb-2 flex items-center justify-between gap-3"[0m>
+  [90m211 |[0m             <button [36mtype[0m=[32m"button"[0m onClick={openMusicPictureInPicture} className=[32m"flex ite...[0m
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+
+
+
+./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m'react'[0m;
+  [90m 4 |[0m [36mimport[0m { [33mFontAwesomeIcon[0m } [36mfrom[0m [32m'@fortawesome/react-fontawesome'[0m;
+[31m[1m>[0m [90m 5 |[0m [36mimport[0m {
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   faBars,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   faTimes,
+  [90m   |[0m [31m[1m^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   faLock,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   faFileContract,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   faConciergeBell,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m   faShieldHalved,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m12 |[0m   faSparkles,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m13 |[0m   faCirclePlay,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m14 |[0m } [36mfrom[0m [32m'@fortawesome/free-solid-svg-icons'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m15 |[0m [36mimport[0m { faGoogle } [36mfrom[0m [32m'@fortawesome/free-brands-svg-icons'[0m;
+  [90m16 |[0m [36mimport[0m { [33mGlassCard[0m } [36mfrom[0m [32m'@/components/GlassCard'[0m;
+  [90m17 |[0m [36mimport[0m { useMedia } [36mfrom[0m [32m'@/context/MediaContext'[0m;
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m'react'[0m;
+  [90m 4 |[0m [36mimport[0m { [33mFontAwesomeIcon[0m } [36mfrom[0m [32m'@fortawesome/react-fontawesome'[0m;
+[31m[1m>[0m [90m 5 |[0m [36mimport[0m {
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   faBars,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   faTimes,
+  [90m   |[0m [31m[1m^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   faLock,
+  [90m   |[0m [31m[1m^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   faFileContract,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   faConciergeBell,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m   faShieldHalved,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m12 |[0m   faSparkles,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m13 |[0m   faCirclePlay,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m14 |[0m } [36mfrom[0m [32m'@fortawesome/free-solid-svg-icons'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m15 |[0m [36mimport[0m { faGoogle } [36mfrom[0m [32m'@fortawesome/free-brands-svg-icons'[0m;
+  [90m16 |[0m [36mimport[0m { [33mGlassCard[0m } [36mfrom[0m [32m'@/components/GlassCard'[0m;
+  [90m17 |[0m [36mimport[0m { useMedia } [36mfrom[0m [32m'@/context/MediaContext'[0m;
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 20ms (next.js: 7ms, application-code: 13ms)
+[browser] Uncaught Error: ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+
+
+    at <unknown> (Error: ./src/components/MediaPanel.tsx:208:7)
+    at <unknown> (Error: (./src/components/MediaPanel.tsx:208:7)
+[browser] ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/MediaPanel.tsx:208:7
+Error: Expected '</', got '{'
+  206 |       </section>
+  207 |
+> 208 |       {isHome && !isFullscreen && (
+      |       ^
+  209 |         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -tr...
+  210 |           <div className="mb-2 flex items-center justify-between gap-3">
+  211 |             <button type="button" onClick={openMusicPictureInPicture} className="flex ite...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/MediaPanel.tsx
+    ./src/app/layout.tsx
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-client] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+[browser] ./src/components/TopNavMenu.tsx:5:1
+Error: Export faSparkles doesn't exist in target module
+   3 | import { useState } from 'react';
+   4 | import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+>  5 | import {
+     | ^^^^^^^
+>  6 |   faBars,
+     | ^^^^^^^^^
+>  7 |   faTimes,
+     | ^^^^^^^^^^
+>  8 |   faLock,
+     | ^^^^^^^^^
+>  9 |   faFileContract,
+     | ^^^^^^^^^^^^^^^^^
+> 10 |   faConciergeBell,
+     | ^^^^^^^^^^^^^^^^^^
+> 11 |   faShieldHalved,
+     | ^^^^^^^^^^^^^^^^^
+> 12 |   faSparkles,
+     | ^^^^^^^^^^^^^
+> 13 |   faCirclePlay,
+     | ^^^^^^^^^^^^^^^
+> 14 | } from '@fortawesome/free-solid-svg-icons';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+  16 | import { GlassCard } from '@/components/GlassCard';
+  17 | import { useMedia } from '@/context/MediaContext';
+
+The export faSparkles was not found in module [project]/node_modules/@fortawesome/free-solid-svg-icons/index.mjs [app-ssr] (ecmascript).
+Did you mean to import faWandSparkles?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TopNavMenu.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/TopNavMenu.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+✓ Compiled in 222ms
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3005". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ GET / 200 in 728ms (next.js: 288ms, application-code: 440ms)
+ GET / 200 in 95ms (next.js: 6ms, application-code: 89ms)

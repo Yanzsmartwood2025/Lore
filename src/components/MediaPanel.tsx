@@ -70,37 +70,68 @@ export function MediaPanel() {
     setPresentationMode('normal');
   };
 
-  if (!isHome) return null;
-
   return (
     <>
       {isFullscreen && (
         <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm" aria-hidden="true" />
       )}
+      {!isHome && !isFullscreen && (
+        <aside
+          className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-1.5 bg-black/80 backdrop-blur-md p-2 rounded-xl border border-[#00f2ea]/40 shadow-[0_0_20px_rgba(0,242,234,0.25)] transition-all animate-fadeIn"
+          aria-label="Reproductor en chat"
+        >
+          <div className="relative w-36 h-24 overflow-hidden rounded-lg bg-black">
+            <div id="yt-player-element" className="w-full h-full" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={togglePlay}
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-[#00f2ea]/20 text-[#00f2ea] border border-[#00f2ea]/60 text-xs backdrop-blur-sm transition hover:scale-105"
+                aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+              >
+                <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
+              </button>
+              <button
+                type="button"
+                onClick={toggleMute}
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-white/10 text-white border border-white/20 text-xs backdrop-blur-sm transition hover:scale-105"
+                aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
+              >
+                <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeHigh} />
+              </button>
+            </div>
+          </div>
+          <span className="text-[9px] text-cyan-300 font-medium tracking-wider uppercase">Música en Vivo</span>
+        </aside>
+      )}
 
-      {/* The mode state lives here so both surfaces always swap together. */}
-      <section
-        className={`fixed z-[60] transition-all duration-500 ease-out ${
-          isFullscreen
-            ? 'inset-0 flex items-center justify-center p-0 sm:p-5'
-            : 'top-4 right-4 w-[min(23rem,calc(100vw-2rem))]'
-        }`}
-        aria-label="Reproductor musical"
-      >
-        <div
-          className={`relative overflow-hidden border border-[#00f2ea]/45 bg-black/90 shadow-[0_0_30px_rgba(0,242,234,0.2)] transition-all duration-500 ease-out ${
+      {/* Home player container rendered when on Home */}
+      {isHome && (
+        <section
+          className={`fixed z-[40] transition-all duration-500 ease-out ${
             isFullscreen
-              ? 'h-full w-full rounded-none sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-6xl sm:rounded-3xl'
-              : 'rounded-2xl'
+              ? 'inset-0 flex items-center justify-center p-0 sm:p-5'
+              : 'top-20 right-4 w-[min(22rem,calc(100vw-2rem))] hidden md:block'
           }`}
+          aria-label="Reproductor musical"
         >
           <div
-            className={`relative bg-black transition-all duration-500 ${
-              isFullscreen ? 'h-full w-full' : 'aspect-video w-full'
+            className={`relative overflow-hidden border border-[#00f2ea]/45 bg-black/90 shadow-[0_0_30px_rgba(0,242,234,0.2)] transition-all duration-500 ease-out ${
+              isFullscreen
+                ? 'h-full w-full rounded-none sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-6xl sm:rounded-3xl'
+                : 'rounded-2xl'
             }`}
           >
-            {/* This target remains visible: YouTube is always presented without native controls. */}
-            <div id="yt-player-element" className="h-full w-full" />
+            <div
+              className={`relative bg-black transition-all duration-500 ${
+                isFullscreen ? 'h-full w-full' : 'aspect-video w-full'
+              }`}
+            >
+              {/* YouTube element container inside home panel */}
+              <div id="yt-player-element-home" className="h-full w-full relative">
+                <div id="yt-player-element" className="h-full w-full" />
+              </div>
 
             {!isFullscreen && (
               <button
@@ -173,8 +204,9 @@ export function MediaPanel() {
           </button>
         )}
       </section>
+      )}
 
-      {!isFullscreen && (
+      {isHome && !isFullscreen && (
         <div className="fixed bottom-20 left-1/2 z-40 w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-[#f000b8]/35 bg-black/75 p-3 shadow-[0_0_20px_rgba(240,0,184,0.15)] backdrop-blur-xl">
           <div className="mb-2 flex items-center justify-between gap-3">
             <button type="button" onClick={openMusicPictureInPicture} className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#00f2ea]">
