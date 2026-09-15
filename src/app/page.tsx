@@ -39,7 +39,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex-grow relative w-full overflow-hidden flex flex-col min-h-screen bg-black select-none">
+    <main className="relative flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-black select-none">
       {/* Top Menu Drawer Navigation */}
       <TopNavMenu />
 
@@ -69,30 +69,30 @@ export default function Home() {
       )}
 
       {/* LOBBY MAIN SCREEN */}
-      <div className="flex-grow flex flex-col w-full h-full overflow-y-auto animate-fadeIn relative z-10 pt-[16.5rem] sm:pt-[21rem] pb-12">
+      <div className="lobby-shell relative z-10 flex min-h-0 w-full flex-1 animate-fadeIn flex-col overflow-hidden pb-11">
 
-        <div className="flex flex-col items-center justify-center pt-2 relative">
+        <div className="relative flex flex-none flex-col items-center justify-center pt-3 pb-1">
           <div className="text-center">
-            <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+            <h1 className="text-xl sm:text-2xl font-medium text-white uppercase tracking-[0.18em] drop-shadow-[0_0_12px_rgba(255,255,255,0.25)]">
               Protocolo <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">VIP</span>
             </h1>
           </div>
         </div>
 
         {/* 3D Model Carousel */}
-        <div className="w-full flex-1">
+        <div className="w-full min-h-0 flex-1">
           <Model3DCarousel models={models} />
         </div>
 
         {/* Redes Sociales posicionadas abajo */}
-        <div className="flex justify-center space-x-8 pt-3 pb-1 z-20">
-          <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-pink-500 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
+        <div className="z-20 flex flex-none justify-center space-x-8 bg-transparent pt-2 pb-1">
+          <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="text-[1.275rem] text-gray-500 hover:text-pink-500 transition-colors hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
             <FontAwesomeIcon icon={faTiktok} />
           </a>
-          <a href="https://x.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
+          <a href="https://x.com" target="_blank" rel="noreferrer" className="text-[1.275rem] text-gray-500 hover:text-white transition-colors hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
             <FontAwesomeIcon icon={faXTwitter} />
           </a>
-          <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-purple-500 transition-colors text-2xl hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
+          <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-[1.275rem] text-gray-500 hover:text-purple-500 transition-colors hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
             <FontAwesomeIcon icon={faInstagram} />
           </a>
         </div>
@@ -101,7 +101,7 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="fixed bottom-0 w-full text-center py-2 bg-black/90 backdrop-blur-md z-30 border-t border-white/5">
+      <footer className="pointer-events-none fixed bottom-0 z-30 w-full bg-transparent py-1.5 text-center">
         <div className="flex flex-col justify-center items-center">
           <p className="text-[10px] text-gray-600">© 2025 Todos los derechos reservados.</p>
           <p className="text-[9px] text-gray-800 mt-0.5 uppercase tracking-widest">

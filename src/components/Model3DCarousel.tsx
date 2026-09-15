@@ -59,10 +59,10 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
   };
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto py-2 flex flex-col items-center select-none">
+    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col items-center select-none">
       {/* Contenedor del Carrusel 3D */}
       <div
-        className="relative w-full h-[390px] sm:h-[440px] flex items-center justify-center [perspective:1200px] cursor-grab active:cursor-grabbing overflow-hidden touch-pan-y"
+        className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden [perspective:1200px] cursor-grab active:cursor-grabbing touch-pan-y"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}

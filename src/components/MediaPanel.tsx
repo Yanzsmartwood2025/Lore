@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -19,6 +19,7 @@ import { useMedia } from '@/context/MediaContext';
 type PresentationMode = 'normal' | 'fullscreen';
 
 export function MediaPanel() {
+  const panelRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
   const {
     isPlaying,
@@ -33,6 +34,36 @@ export function MediaPanel() {
   const isHome = pathname === '/';
   const isFullscreen = isHome && presentationMode === 'fullscreen';
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) setPresentationMode('normal');
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const enterFullscreen = async () => {
+    setPresentationMode('fullscreen');
+
+    try {
+      await panelRef.current?.requestFullscreen();
+      const orientation = screen.orientation as ScreenOrientation & {
+        lock?: (orientation: string) => Promise<void>;
+      };
+      await orientation.lock?.('landscape');
+    } catch {
+      // Algunos navegadores (especialmente iOS) no permiten bloquear la
+      // orientación. La presentación ampliada sigue funcionando en ese caso.
+    }
+  };
+
+  const exitFullscreen = async () => {
+    setPresentationMode('normal');
+    screen.orientation?.unlock?.();
+    if (document.fullscreenElement) await document.exitFullscreen();
+  };
+
   return (
     <>
       {isFullscreen && <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm" aria-hidden="true" />}
@@ -40,11 +71,12 @@ export function MediaPanel() {
       {/* El mismo nodo del reproductor permanece montado al navegar: el audio no
           se reinicia cuando se abre un chat. Solo cambia su presentación. */}
       <section
+        ref={panelRef}
         className={`fixed transition-all duration-500 ease-out ${
           isFullscreen
             ? 'inset-0 z-[60] flex items-center justify-center p-0 sm:p-5'
             : isHome
-              ? 'left-1/2 top-3 z-40 w-[min(34rem,calc(100vw-1rem))] -translate-x-1/2'
+              ? 'left-1/2 top-[max(3.25rem,env(safe-area-inset-top))] z-40 w-[min(34rem,calc(100vw-1rem))] -translate-x-1/2'
               : 'right-3 top-3 z-40 w-44'
         }`}
         aria-label={isHome ? 'Reproductor musical' : 'Reproductor musical compacto'}
@@ -64,7 +96,7 @@ export function MediaPanel() {
             {isHome && !isFullscreen && (
               <button
                 type="button"
-                onClick={() => setPresentationMode('fullscreen')}
+                onClick={enterFullscreen}
                 className="absolute inset-0 z-0 cursor-pointer"
                 aria-label="Expandir video musical"
               />
@@ -73,7 +105,7 @@ export function MediaPanel() {
             {isFullscreen && (
               <button
                 type="button"
-                onClick={() => setPresentationMode('normal')}
+                onClick={exitFullscreen}
                 className="absolute left-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/55 text-white backdrop-blur-md transition hover:border-[#00f2ea] hover:text-[#00f2ea]"
                 aria-label="Salir de pantalla completa"
               >
@@ -101,7 +133,7 @@ export function MediaPanel() {
                   icon={isMuted ? faVolumeMute : faVolumeHigh}
                 />
                 {isHome && !isFullscreen && (
-                  <PlayerButton label="Pantalla completa" onClick={() => setPresentationMode('fullscreen')} icon={faExpand} />
+                  <PlayerButton label="Pantalla completa" onClick={enterFullscreen} icon={faExpand} />
                 )}
               </div>
             </div>
@@ -116,7 +148,7 @@ export function MediaPanel() {
         {isFullscreen && (
           <button
             type="button"
-            onClick={() => setPresentationMode('normal')}
+            onClick={exitFullscreen}
             className="absolute right-4 top-4 flex aspect-video w-40 flex-col items-center justify-center rounded-xl border border-[#f000b8]/60 bg-gradient-to-br from-purple-950 via-black to-[#f000b8]/20 p-3 text-center shadow-[0_0_22px_rgba(240,0,184,0.35)] transition hover:scale-[1.03] sm:right-8 sm:top-8 sm:w-56"
             aria-label="Volver al contenido principal"
           >

@@ -19,6 +19,16 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Reserva exactamente el espacio ocupado por el reproductor fijo. De este modo
+   el contenido comienza debajo de él y todo el lobby cabe en una sola pantalla. */
+.lobby-shell {
+  padding-top: calc(
+    max(3.25rem, env(safe-area-inset-top)) +
+    min(19.125rem, calc((100vw - 1rem) * 0.5625)) +
+    0.65rem
+  );
+}
+
 /* --- Animaciones personalizadas --- */
 
 @keyframes pulseGlow {
