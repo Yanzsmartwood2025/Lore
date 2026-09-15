@@ -5,10 +5,14 @@
 ▲ Next.js 16.3.4 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 552ms
-✓ Running next.config.ts took 47ms
+✓ Ready in 535ms
+✓ Running next.config.ts took 45ms
 
 ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
- HEAD / 200 in 3.4s (next.js: 3.0s, application-code: 421ms)
- GET / 200 in 89ms (next.js: 11ms, application-code: 78ms)
- GET / 200 in 65ms (next.js: 4ms, application-code: 60ms)
+ GET / 200 in 3.3s (next.js: 2.8s, application-code: 441ms)
+ GET / 200 in 84ms (next.js: 10ms, application-code: 74ms)
+ GET /lore 200 in 1612ms (next.js: 1515ms, application-code: 97ms)
+ GET /camila 200 in 154ms (next.js: 19ms, application-code: 135ms)
+ GET / 200 in 70ms (next.js: 5ms, application-code: 65ms)
+ GET /lore 200 in 60ms (next.js: 18ms, application-code: 42ms)
+ GET /camila 200 in 104ms (next.js: 16ms, application-code: 88ms)

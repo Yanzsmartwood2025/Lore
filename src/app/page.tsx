@@ -1,20 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebookF, faTiktok, faYoutube, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
-import { faHeadphonesAlt, faGem, faPlay, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
-import { NeonButton } from '@/components/NeonButton';
+import { faPlay, faWandMagicSparkles, faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
 import { useMedia } from '@/context/MediaContext';
+import { models } from '@/data/models';
 
 const APP_VERSION = "2.0.0 (Next.js)";
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashOpacity, setSplashOpacity] = useState(1);
-  const { enterLobby, hasEntered } = useMedia();
+  const { enterLobby } = useMedia();
 
   useEffect(() => {
     // Check sessionStorage only on client side after mount
@@ -104,25 +105,39 @@ export default function Home() {
             </GlassCard>
           </div>
 
-          {/* Puertas FAN / VIP (Visibles al entrar o explorar) */}
-          <div className="w-full flex flex-col items-center space-y-6 pt-2">
-            <NeonButton
-              href="/fan"
-              variant="fan"
-              icon={<FontAwesomeIcon icon={faHeadphonesAlt} />}
-              subtitle="Música & Trueque"
-            >
-              FAN
-            </NeonButton>
+          {/* Grid de Modelos / Personas */}
+          <div className="w-full max-w-3xl pt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {models.map((model) => {
+                if (model.isActive) {
+                  return (
+                    <Link key={model.id} href={`/${model.slug}`} className="block">
+                      <GlassCard className="h-full p-4 flex flex-col items-center justify-center text-center transition-all duration-300 hover:scale-105 border-cyan-400/40 hover:border-cyan-400 shadow-[0_0_15px_rgba(0,242,234,0.15)] hover:shadow-[0_0_20px_rgba(0,242,234,0.3)] bg-cyan-950/20">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 border border-cyan-400/30 flex items-center justify-center mb-3 text-cyan-400">
+                          <FontAwesomeIcon icon={faUser} className="text-2xl" />
+                        </div>
+                        <h3 className="text-base font-bold text-white tracking-wide">{model.name}</h3>
+                        <p className="text-[11px] text-cyan-300/80 mt-1">{model.tagline}</p>
+                      </GlassCard>
+                    </Link>
+                  );
+                }
 
-            <NeonButton
-              href="/vip"
-              variant="vip"
-              icon={<FontAwesomeIcon icon={faGem} />}
-              subtitle="Grok & Cripto"
-            >
-              VIP
-            </NeonButton>
+                return (
+                  <GlassCard key={model.id} className="h-full p-4 flex flex-col items-center justify-center text-center opacity-60 border-white/5 bg-white/5 pointer-events-none relative overflow-hidden">
+                    <span className="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider text-pink-400 bg-pink-950/60 border border-pink-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <FontAwesomeIcon icon={faLock} className="text-[8px]" />
+                      Próximamente
+                    </span>
+                    <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-3 text-gray-500">
+                      <FontAwesomeIcon icon={faUser} className="text-2xl" />
+                    </div>
+                    <h3 className="text-base font-medium text-gray-400 tracking-wide">{model.name}</h3>
+                    <p className="text-[11px] text-gray-500 mt-1">{model.tagline}</p>
+                  </GlassCard>
+                );
+              })}
+            </div>
           </div>
 
           {/* Placeholder Estilizado para Contenido Futuro */}
