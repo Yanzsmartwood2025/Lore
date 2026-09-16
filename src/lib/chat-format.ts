@@ -3,16 +3,13 @@ const NARRATED_ACTION_IN_PARENTHESES =
 
 export function cleanNarratedActions(content: string) {
   return content
-    .replace(/\*[^*\n]+\*/gu, '')
-    .replace(NARRATED_ACTION_IN_PARENTHESES, '')
+    .replace(/\*{1,2}[^*]+\*{1,2}/gu, ' ')
+    .replace(NARRATED_ACTION_IN_PARENTHESES, ' ')
+    .replace(/^[ \t]*[¡¿]?[ \t]*[.,;:!?]+[ \t]*(?:\n|$)/gmu, '')
+    .replace(/([.!?])\1{2,}/gu, '$1')
     .replace(/[ \t]{2,}/gu, ' ')
     .replace(/[ \t]+([,.;:!?])/gu, '$1')
     .replace(/^[ \t]+|[ \t]+$/gmu, '')
+    .replace(/\n{3,}/gu, '\n\n')
     .trim();
-}
-
-export function requestsNarratedRoleplay(message: string) {
-  return /\b(?:roleplay|juego\s+de\s+rol|haz\s+rol|interpreta\s+(?:a|el\s+papel)|narra\s+(?:acciones|gestos))\b/iu.test(
-    message,
-  );
 }
