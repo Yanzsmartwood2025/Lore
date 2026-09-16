@@ -8,7 +8,7 @@ import {
   GoogleAuthProvider,
   sendEmailVerification,
   signInWithEmailAndPassword,
-  signInWithRedirect,
+  signInWithPopup,
   signOut,
 } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase/client';
@@ -48,12 +48,15 @@ export function AuthPanel() {
   async function googleLogin() {
     setMessage('Abriendo Google…');
     try {
-      await signInWithRedirect(getFirebaseAuth(), new GoogleAuthProvider());
+      await signInWithPopup(getFirebaseAuth(), new GoogleAuthProvider());
     } catch (error) {
       const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
-      setMessage(code === 'auth/popup-closed-by-user'
-        ? 'Se cerró la ventana de Google antes de terminar.'
-        : 'No se pudo iniciar sesión con Google.');
+      const messages: Record<string, string> = {
+        'auth/popup-blocked': 'El navegador bloqueó la ventana de Google. Habilita las ventanas emergentes e inténtalo de nuevo.',
+        'auth/popup-closed-by-user': 'Se cerró la ventana de Google antes de terminar.',
+        'auth/unauthorized-domain': 'Este dominio todavía no está autorizado en Firebase.',
+      };
+      setMessage(messages[code] ?? `No se pudo iniciar sesión con Google${code ? ` (${code})` : '.'}`);
     }
   }
 
