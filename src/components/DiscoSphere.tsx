@@ -17,10 +17,11 @@ void main(){
    float diffuse=max(dot(n,l),0.);
    float rim=pow(1.-n.z,3.);
    float spec=pow(max(dot(reflect(-l,n),vec3(0.,0.,1.)),0.),65.);
-   float bands=pow(.5+.5*sin(n.y*28.+n.x*5.+time*.5),18.);
+   float longitude=atan(n.x,n.z)+time*.45;
+   float bands=pow(.5+.5*sin(longitude*22.),18.)*pow(.5+.5*sin(n.y*26.),8.);
    float core=exp(-length(p-vec2(.07,-.03))*8.);
    color=vec3(.025,.055,.085)*(diffuse+.3)+cyan*rim*.95;
-   color+=mix(violet,cyan,n.y*.5+.5)*bands*.12+vec3(1.)*spec*.85;
+   color+=mix(violet,cyan,n.y*.5+.5)*bands*.7+vec3(1.)*spec*.85;
    color+=cyan*core*(.3+energy*.12*sin(time*2.));
  }
  float orbit=length(vec2(p.x,p.y*2.5+p.x*.65));
@@ -29,7 +30,7 @@ void main(){
  float orbit2=length(vec2(p.x*2.2-p.y*.7,p.y));
  color+=violet*exp(-abs(orbit2-.92)*210.)*.45;
  color+=cyan*exp(-abs(r-radius)*90.)*.25;
- gl_FragColor=vec4(color,1.);
+ gl_FragColor=vec4(color,1.-smoothstep(.92,1.35,r));
 }`;
 
 export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?: boolean; className?: string }) {
@@ -60,18 +61,19 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
     gl.enableVertexAttribArray(position); gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
     const res = gl.getUniformLocation(program,'resolution'), t = gl.getUniformLocation(program,'time'), energy = gl.getUniformLocation(program,'energy');
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
-    let frame = 0, last = -100, visible = true;
+    let frame = 0, last = -100, visible = true, elapsed = 0;
     const observer = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; });
     observer.observe(el);
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw);
       if (!visible || document.hidden || now-last<33 || (motion.matches && last>=0)) return;
+      if (playing.current && last >= 0) elapsed += Math.min((now-last)/1000,.05);
       last=now;
       const size = el.getBoundingClientRect();
       const dpr = Math.min(devicePixelRatio,1.5);
       const w=Math.max(1,Math.round(size.width*dpr)), h=Math.max(1,Math.round(size.height*dpr));
       if(el.width!==w || el.height!==h){ el.width=w;el.height=h;gl.viewport(0,0,w,h); }
-      gl.uniform2f(res,w,h);gl.uniform1f(t,motion.matches?0:now/1000);gl.uniform1f(energy,playing.current?1:0);
+      gl.uniform2f(res,w,h);gl.uniform1f(t,motion.matches?0:elapsed);gl.uniform1f(energy,playing.current?1:0);
       gl.drawArrays(gl.TRIANGLES,0,6);
     };
     frame=requestAnimationFrame(draw);
@@ -79,5 +81,5 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
     window.addEventListener('resize',resize);motion.addEventListener('change',resize);
     return () => { cancelAnimationFrame(frame); observer.disconnect(); window.removeEventListener('resize',resize);motion.removeEventListener('change',resize);gl.deleteBuffer(buffer);shaders.forEach(s=>gl.deleteShader(s));gl.deleteProgram(program); };
   }, []);
-  return <div className={`lore-orb ${className}`} aria-hidden="true"><div className="lore-orb-fallback" /><canvas ref={canvas} /></div>;
+  return <div className={`lore-orb ${isPlaying ? 'is-playing' : ''} ${className}`} aria-hidden="true"><div className="lore-orb-fallback"><div className="lore-orb-mirrors" /></div><canvas ref={canvas} /></div>;
 }
