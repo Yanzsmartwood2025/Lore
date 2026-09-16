@@ -8,7 +8,7 @@ import {
   GoogleAuthProvider,
   sendEmailVerification,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
   signOut,
 } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase/client';
@@ -48,8 +48,7 @@ export function AuthPanel() {
   async function googleLogin() {
     setMessage('Abriendo Google…');
     try {
-      await signInWithPopup(getFirebaseAuth(), new GoogleAuthProvider());
-      setMessage('Sesión iniciada.');
+      await signInWithRedirect(getFirebaseAuth(), new GoogleAuthProvider());
     } catch (error) {
       const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
       setMessage(code === 'auth/popup-closed-by-user'
