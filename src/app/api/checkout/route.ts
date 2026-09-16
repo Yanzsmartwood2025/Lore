@@ -2,7 +2,7 @@ import { ccbillCheckout, ccbillConfig, type CheckoutProvider } from '@/lib/payme
 import { requireUser } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
-  const auth = await requireUser();
+  const auth = await requireUser(request);
   if (!auth) return Response.json({ error: 'Inicia sesión.' }, { status: 401 });
   const body = await request.json() as { packId?: string; provider?: CheckoutProvider };
   if (!body.packId || !['ccbill','nowpayments'].includes(body.provider ?? '')) return Response.json({ error: 'Checkout inválido.' }, { status: 400 });

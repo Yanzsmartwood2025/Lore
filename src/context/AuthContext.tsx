@@ -1,30 +1,38 @@
 'use client';
 
-import type { User } from '@supabase/supabase-js';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import type { User } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { getFirebaseAuth } from '@/lib/firebase/client';
 
-type AuthContextValue = { user: User | null; loading: boolean };
-const AuthContext = createContext<AuthContextValue>({ user: null, loading: true });
+type AuthContextValue = {
+  user: User | null;
+  loading: boolean;
+  getIdToken: () => Promise<string | null>;
+};
+const AuthContext = createContext<AuthContextValue>({
+  user: null,
+  loading: true,
+  getIdToken: async () => null,
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const supabase = useMemo(() => createClient(), []);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
+    const unsubscribe = onAuthStateChanged(getFirebaseAuth(), (nextUser) => {
+      setUser(nextUser);
       setLoading(false);
     });
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-    return () => data.subscription.unsubscribe();
-  }, [supabase]);
+    return unsubscribe;
+  }, []);
 
-  return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>;
+  const getIdToken = useCallback(async () => {
+    return getFirebaseAuth().currentUser?.getIdToken() ?? null;
+  }, []);
+
+  return <AuthContext.Provider value={{ user, loading, getIdToken }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);
