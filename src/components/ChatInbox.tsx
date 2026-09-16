@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { models } from '@/data/models';
+import { useMedia } from '@/context/MediaContext';
+import { isMusicCategory } from '@/lib/music';
 
 type ChatMessage = {
   id: string;
@@ -22,6 +24,7 @@ interface ChatInboxProps {
 const MAX_STORAGE_MESSAGES = 50;
 
 export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
+  const { setAmbientCategory } = useMedia();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [input, setInput] = useState('');
@@ -50,6 +53,7 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
             (m) => m && (m.role === 'user' || m.role === 'assistant') && m.content
           );
           if (validMessages.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration from browser storage
             setMessages(validMessages.slice(-MAX_STORAGE_MESSAGES));
             setIsInitialized(true);
             return;
@@ -112,6 +116,19 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
     setInput('');
     setError(null);
     setIsSending(true);
+
+    // El ambiente se decide en paralelo: nunca retrasa ni reemplaza la respuesta del chat.
+    void fetch('/api/music-category', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: content }),
+    })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = (await response.json()) as { category?: unknown };
+        if (isMusicCategory(data.category)) setAmbientCategory(data.category);
+      })
+      .catch(() => undefined);
 
     try {
       const response = await fetch(`/api/chat/${encodeURIComponent(slug)}`, {

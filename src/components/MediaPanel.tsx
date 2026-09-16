@@ -15,6 +15,7 @@ import {
   faVolumeMute,
 } from '@fortawesome/free-solid-svg-icons';
 import { useMedia } from '@/context/MediaContext';
+import { MUSIC_CATEGORIES, type MusicCategory } from '@/lib/music';
 
 type PresentationMode = 'normal' | 'fullscreen';
 
@@ -28,6 +29,8 @@ export function MediaPanel() {
     toggleMute,
     nextTrack,
     prevTrack,
+    ambientCategory,
+    setAmbientCategory,
   } = useMedia();
   const [presentationMode, setPresentationMode] = useState<PresentationMode>('normal');
 
@@ -144,6 +147,25 @@ export function MediaPanel() {
             </p>
           )}
         </div>
+
+        {isHome && !isFullscreen && (
+          <div className="mt-2 flex justify-center gap-2" aria-label="Ambiente musical">
+            {(Object.entries(MUSIC_CATEGORIES) as Array<[MusicCategory, (typeof MUSIC_CATEGORIES)[MusicCategory]]>).map(([key, category]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setAmbientCategory(key)}
+                className={`rounded-full border px-3 py-1 text-[10px] font-semibold transition ${
+                  ambientCategory === key
+                    ? 'border-[#00f2ea]/70 bg-[#00f2ea]/20 text-[#00f2ea]'
+                    : 'border-white/20 bg-black/70 text-gray-300 hover:border-white/40'
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {isFullscreen && (
           <button
