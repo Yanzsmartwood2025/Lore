@@ -2,8 +2,6 @@ import 'server-only';
 
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 
-const FIREBASE_PROJECT_ID = 'lore-376a9';
-const FIREBASE_ISSUER = `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`;
 const FIREBASE_JWKS = createRemoteJWKSet(
   new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'),
 );
@@ -16,6 +14,10 @@ export type FirebaseIdentity = JWTPayload & {
 };
 
 export async function verifyFirebaseRequest(request: Request): Promise<FirebaseIdentity | null> {
+  const projectId =
+    process.env.FIREBASE_PROJECT_ID ?? process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  if (!projectId) return null;
+
   const authorization = request.headers.get('authorization');
   if (!authorization?.startsWith('Bearer ')) return null;
 
@@ -25,8 +27,8 @@ export async function verifyFirebaseRequest(request: Request): Promise<FirebaseI
   try {
     const { payload } = await jwtVerify(token, FIREBASE_JWKS, {
       algorithms: ['RS256'],
-      audience: FIREBASE_PROJECT_ID,
-      issuer: FIREBASE_ISSUER,
+      audience: projectId,
+      issuer: `https://securetoken.google.com/${projectId}`,
     });
 
     if (!payload.sub) return null;
