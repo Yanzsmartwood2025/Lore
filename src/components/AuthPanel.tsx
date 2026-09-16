@@ -51,9 +51,12 @@ export function AuthPanel() {
       await signInWithPopup(getFirebaseAuth(), new GoogleAuthProvider());
     } catch (error) {
       const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
-      setMessage(code === 'auth/popup-closed-by-user'
-        ? 'Se cerró la ventana de Google antes de terminar.'
-        : 'No se pudo iniciar sesión con Google.');
+      const messages: Record<string, string> = {
+        'auth/popup-blocked': 'El navegador bloqueó la ventana de Google. Habilita las ventanas emergentes e inténtalo de nuevo.',
+        'auth/popup-closed-by-user': 'Se cerró la ventana de Google antes de terminar.',
+        'auth/unauthorized-domain': 'Este dominio todavía no está autorizado en Firebase.',
+      };
+      setMessage(messages[code] ?? `No se pudo iniciar sesión con Google${code ? ` (${code})` : '.'}`);
     }
   }
 
