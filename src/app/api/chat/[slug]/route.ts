@@ -1,5 +1,6 @@
 import { models } from '@/data/models';
-import { cleanNarratedActions, requestsNarratedRoleplay } from '@/lib/chat-format';
+import { cleanNarratedActions } from '@/lib/chat-format';
+import { buildChatPrompt } from '@/lib/chat-policy';
 import { requireUser } from '@/lib/supabase/server';
 
 type ChatMessage = {
@@ -63,9 +64,10 @@ export async function POST(
     return Response.json({ error: 'Persona no disponible.' }, { status: 404 });
   }
 
-  let body: { message?: unknown; history?: unknown };
+  let body: { message?: unknown };
   try {
     body = await request.json();
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Invalid body');
   } catch {
     return Response.json({ error: 'La solicitud no contiene JSON válido.' }, { status: 400 });
   }
@@ -78,9 +80,6 @@ export async function POST(
     );
   }
 
-  const history = Array.isArray(body.history)
-    ? body.history.filter(isChatMessage).slice(-MAX_HISTORY_MESSAGES)
-    : [];
   const apiKeys = [process.env.MISTRAL_API_KEY_1, process.env.MISTRAL_API_KEY_2].filter(
     (key): key is string => Boolean(key),
   );
@@ -94,7 +93,20 @@ export async function POST(
     .upsert({ user_id: auth.user.id, persona_slug: slug, updated_at: new Date().toISOString() }, { onConflict: 'user_id,persona_slug' })
     .select('id').single();
   if (conversationError || !conversation) return Response.json({ error: 'No se pudo abrir la conversación.' }, { status: 500 });
-  await auth.supabase.from('lore_chat_messages').insert({ conversation_id: conversation.id, role: 'user', content: message });
+  // Never trust assistant messages supplied by the browser. This conversation
+  // was resolved using the verified user's ID and the server-selected persona.
+  const { data: savedHistory, error: historyError } = await auth.supabase
+    .from('lore_chat_messages').select('role, content')
+    .eq('conversation_id', conversation.id)
+    .order('created_at', { ascending: false }).order('id', { ascending: false })
+    .limit(MAX_HISTORY_MESSAGES);
+  if (historyError) return Response.json({ error: 'No se pudo cargar la conversación.' }, { status: 500 });
+  const history = (savedHistory ?? []).filter(isChatMessage).reverse()
+    .map(({ role, content }) => ({ role, content: role === 'assistant' ? cleanNarratedActions(content) : content }))
+    .filter(({ content }) => content.length > 0);
+  const { error: messageError } = await auth.supabase.from('lore_chat_messages')
+    .insert({ conversation_id: conversation.id, role: 'user', content: message });
+  if (messageError) return Response.json({ error: 'No se pudo guardar el mensaje.' }, { status: 500 });
 
   let lastResponse: Response | undefined;
   for (const apiKey of apiKeys) {
@@ -107,7 +119,7 @@ export async function POST(
       body: JSON.stringify({
         model: 'open-mistral-7b',
         messages: [
-          { role: 'system', content: persona.systemPrompt },
+          { role: 'system', content: buildChatPrompt(persona.systemPrompt) },
           ...history,
           { role: 'user', content: message },
         ],
@@ -130,9 +142,7 @@ export async function POST(
 
     const mistralPayload = await response.text();
     const rawContent = readAssistantContent(mistralPayload);
-    const content = requestsNarratedRoleplay(message)
-      ? rawContent.trim()
-      : cleanNarratedActions(rawContent);
+    const content = cleanNarratedActions(rawContent);
 
     if (!content) {
       return Response.json(
@@ -150,7 +160,7 @@ export async function POST(
     return new Response(createAssistantStream(content), {
       headers: {
         'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
+        'Cache-Control': 'private, no-store, no-transform',
         Connection: 'keep-alive',
       },
     });
