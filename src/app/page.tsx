@@ -80,7 +80,7 @@ export default function Home() {
         </div>
 
         {/* 3D Model Carousel */}
-        <div className="w-full min-h-0 flex-1">
+        <div className="w-full h-[460px] flex-none">
           <Model3DCarousel models={models} />
         </div>
 
