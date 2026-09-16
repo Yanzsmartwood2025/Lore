@@ -1,4 +1,5 @@
 import { models } from '@/data/models';
+import { cleanNarratedActions, requestsNarratedRoleplay } from '@/lib/chat-format';
 import { requireUser } from '@/lib/supabase/server';
 
 type ChatMessage = {
@@ -9,6 +10,31 @@ type ChatMessage = {
 const MAX_MESSAGE_LENGTH = 2_000;
 const MAX_HISTORY_MESSAGES = 20;
 const MISTRAL_CHAT_URL = 'https://api.mistral.ai/v1/chat/completions';
+
+function readAssistantContent(payload: string) {
+  let content = '';
+
+  for (const line of payload.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('data:')) continue;
+
+    const data = trimmed.slice(5).trim();
+    if (!data || data === '[DONE]') continue;
+
+    try {
+      content += JSON.parse(data).choices?.[0]?.delta?.content ?? '';
+    } catch {
+      // Mistral can send keep-alive or metadata events without JSON content.
+    }
+  }
+
+  return content;
+}
+
+function createAssistantStream(content: string) {
+  const event = JSON.stringify({ choices: [{ delta: { content } }] });
+  return `${`data: ${event}`}\n\ndata: [DONE]\n\n`;
+}
 
 function isChatMessage(value: unknown): value is ChatMessage {
   if (!value || typeof value !== 'object') {
@@ -102,9 +128,26 @@ export async function POST(
       );
     }
 
-    const [browserStream, persistenceStream] = response.body.tee();
-    void persistAssistantStream(persistenceStream, auth.supabase, conversation.id);
-    return new Response(browserStream, {
+    const mistralPayload = await response.text();
+    const rawContent = readAssistantContent(mistralPayload);
+    const content = requestsNarratedRoleplay(message)
+      ? rawContent.trim()
+      : cleanNarratedActions(rawContent);
+
+    if (!content) {
+      return Response.json(
+        { error: 'El chat no devolvió una respuesta válida. Inténtalo de nuevo.' },
+        { status: 502 },
+      );
+    }
+
+    await auth.supabase.from('lore_chat_messages').insert({
+      conversation_id: conversation.id,
+      role: 'assistant',
+      content,
+    });
+
+    return new Response(createAssistantStream(content), {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache, no-transform',
@@ -117,14 +160,4 @@ export async function POST(
     { error: 'El chat está muy solicitado. Vuelve a intentarlo en un momento.' },
     { status: lastResponse?.status ?? 503 },
   );
-}
-
-async function persistAssistantStream(stream: ReadableStream<Uint8Array>, supabase: Awaited<ReturnType<typeof import('@/lib/supabase/server').createClient>>, conversationId: string) {
-  const text = await new Response(stream).text();
-  let content = '';
-  for (const line of text.split('\n')) {
-    if (!line.trim().startsWith('data:')) continue;
-    try { content += JSON.parse(line.trim().slice(5)).choices?.[0]?.delta?.content ?? ''; } catch { /* final marker */ }
-  }
-  if (content) await supabase.from('lore_chat_messages').insert({ conversation_id: conversationId, role: 'assistant', content });
 }
