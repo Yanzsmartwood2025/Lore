@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { models } from '@/data/models';
 import { useMedia } from '@/context/MediaContext';
+import { useAuth } from '@/context/AuthContext';
 import { isMusicCategory } from '@/lib/music';
 
 type ChatMessage = {
@@ -25,6 +26,7 @@ const MAX_STORAGE_MESSAGES = 50;
 
 export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
   const { setAmbientCategory } = useMedia();
+  const { user, getIdToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [input, setInput] = useState('');
@@ -117,6 +119,13 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
     setError(null);
     setIsSending(true);
 
+    if (!user) {
+      setMessages((current) => current.filter((msg) => msg.id !== assistantMessageId));
+      setError('Inicia sesión para usar el chat.');
+      setIsSending(false);
+      return;
+    }
+
     // El ambiente se decide en paralelo: nunca retrasa ni reemplaza la respuesta del chat.
     void fetch('/api/music-category', {
       method: 'POST',
@@ -131,9 +140,14 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
       .catch(() => undefined);
 
     try {
+      const idToken = await getIdToken();
+      if (!idToken) throw new Error('Tu sesión venció. Inicia sesión otra vez.');
       const response = await fetch(`/api/chat/${encodeURIComponent(slug)}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ message: content, history }),
       });
 

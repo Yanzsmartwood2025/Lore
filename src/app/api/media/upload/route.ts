@@ -5,7 +5,7 @@ import { requireUser } from '@/lib/supabase/server';
 const ALLOWED_TYPES = new Set(['image/jpeg','image/png','image/webp','video/mp4','video/webm']);
 
 export async function POST(request: Request) {
-  const auth = await requireUser();
+  const auth = await requireUser(request);
   if (!auth) return Response.json({ error: 'Inicia sesión.' }, { status: 401 });
   const body = await request.json() as { fileName?: string; contentType?: string; byteSize?: number; personaSlug?: string; isVip?: boolean; packId?: string };
   if (!body.contentType || !ALLOWED_TYPES.has(body.contentType) || !body.fileName || !Number.isSafeInteger(body.byteSize) || (body.byteSize ?? 0) > 100_000_000) {

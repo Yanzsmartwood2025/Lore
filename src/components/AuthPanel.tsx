@@ -1,13 +1,20 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
-import { createClient } from '@/lib/supabase/client';
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  sendEmailVerification,
+  signInWithEmailAndPassword,
+  signInWithRedirect,
+  signOut,
+} from 'firebase/auth';
+import { getFirebaseAuth } from '@/lib/firebase/client';
 import { useAuth } from '@/context/AuthContext';
 
 export function AuthPanel() {
-  const supabase = useMemo(() => createClient(), []);
   const { user, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,23 +23,45 @@ export function AuthPanel() {
   async function submit(event: { preventDefault(): void }, signUp: boolean) {
     event.preventDefault();
     setMessage('Procesando…');
-    const result = signUp
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
-    setMessage(result.error ? result.error.message : signUp ? 'Revisa tu correo para confirmar la cuenta.' : 'Sesión iniciada.');
+    try {
+      if (signUp) {
+        const result = await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
+        await sendEmailVerification(result.user);
+        setMessage('Cuenta creada. Revisa tu correo para verificarla.');
+      } else {
+        await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+        setMessage('Sesión iniciada.');
+      }
+    } catch (error) {
+      const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
+      const messages: Record<string, string> = {
+        'auth/email-already-in-use': 'Ese correo ya tiene una cuenta.',
+        'auth/invalid-credential': 'El correo o la contraseña no son correctos.',
+        'auth/invalid-email': 'Escribe un correo válido.',
+        'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+        'auth/popup-closed-by-user': 'Se cerró la ventana de Google antes de terminar.',
+      };
+      setMessage(messages[code] ?? 'No se pudo completar el acceso. Inténtalo de nuevo.');
+    }
   }
 
   async function googleLogin() {
-    const redirectTo = `${window.location.origin}/auth/callback?next=/`;
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
-    if (error) setMessage(error.message);
+    setMessage('Abriendo Google…');
+    try {
+      await signInWithRedirect(getFirebaseAuth(), new GoogleAuthProvider());
+    } catch (error) {
+      const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
+      setMessage(code === 'auth/popup-closed-by-user'
+        ? 'Se cerró la ventana de Google antes de terminar.'
+        : 'No se pudo iniciar sesión con Google.');
+    }
   }
 
   if (loading) return <p className="text-xs text-gray-400">Comprobando sesión…</p>;
   if (user) return (
     <div className="space-y-2 rounded-xl border border-emerald-400/30 bg-emerald-950/20 p-3 text-xs">
       <p className="text-emerald-300">Conectado como <strong>{user.email}</strong></p>
-      <button className="text-gray-300 underline" onClick={() => supabase.auth.signOut()}>Cerrar sesión</button>
+      <button className="text-gray-300 underline" onClick={() => signOut(getFirebaseAuth())}>Cerrar sesión</button>
     </div>
   );
 

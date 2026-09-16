@@ -54,7 +54,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const auth = await requireUser();
+  const auth = await requireUser(request);
   if (!auth) return Response.json({ error: 'Inicia sesión para usar el chat.' }, { status: 401 });
   const { slug } = await params;
   const persona = models.find((model) => model.slug === slug && model.isActive);
