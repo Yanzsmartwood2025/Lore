@@ -7,6 +7,7 @@ import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { models } from '@/data/models';
 import { useMedia } from '@/context/MediaContext';
 import { useAuth } from '@/context/AuthContext';
+import { AuthPanel } from '@/components/AuthPanel';
 import { isMusicCategory } from '@/lib/music';
 
 type ChatMessage = {
@@ -101,6 +102,11 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
     const content = input.trim();
     if (!content || isSending) return;
 
+    if (!user) {
+      setError('Inicia sesión para usar el chat.');
+      return;
+    }
+
     const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', content };
     const history = messages.map(({ role, content: messageContent }) => ({
       role,
@@ -118,13 +124,6 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
     setInput('');
     setError(null);
     setIsSending(true);
-
-    if (!user) {
-      setMessages((current) => current.filter((msg) => msg.id !== assistantMessageId));
-      setError('Inicia sesión para usar el chat.');
-      setIsSending(false);
-      return;
-    }
 
     // El ambiente se decide en paralelo: nunca retrasa ni reemplaza la respuesta del chat.
     void fetch('/api/music-category', {
@@ -305,6 +304,15 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
 
         <div ref={bottomRef} />
       </div>
+
+      {!user && (
+        <div className="relative z-10 border-t border-white/10 bg-black/50 p-3 sm:p-4">
+          <p className="mb-3 text-xs font-medium text-cyan-100">
+            Inicia sesión para conversar con {name}.
+          </p>
+          <AuthPanel />
+        </div>
+      )}
 
       {/* Formulario / Input de texto sobre cristal */}
       <form onSubmit={handleSubmit} className="relative z-10 p-3 sm:p-4 border-t border-white/10 bg-black/40 backdrop-blur-md">
