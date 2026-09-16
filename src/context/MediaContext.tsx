@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   DEFAULT_MUSIC_CATEGORY,
   MUSIC_CATEGORIES,
@@ -25,6 +26,7 @@ interface YouTubePlayer {
   mute: () => void;
   unMute: () => void;
   destroy: () => void;
+  setVolume: (volume: number) => void;
 }
 
 interface MediaContextType {
@@ -59,6 +61,10 @@ declare global {
 }
 
 export function MediaProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const targetVolume = pathname === '/' ? 65 : 22;
+  const targetVolumeRef = useRef(targetVolume);
+  const volumeRef = useRef(targetVolume);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [ambientCategory, setAmbientCategoryState] = useState<MusicCategory>(DEFAULT_MUSIC_CATEGORY);
@@ -71,6 +77,22 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   const isPlayingRef = useRef(isPlaying);
   const isMutedRef = useRef(isMuted);
   const requestedVideoIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    targetVolumeRef.current = targetVolume;
+    const start = volumeRef.current;
+    const began = performance.now();
+    let frame = 0;
+    const fade = (now: number) => {
+      const progress = Math.min(1, (now - began) / 1200);
+      const eased = progress * progress * (3 - 2 * progress);
+      volumeRef.current = start + (targetVolume - start) * eased;
+      ytPlayerRef.current?.setVolume(Math.round(volumeRef.current));
+      if (progress < 1) frame = requestAnimationFrame(fade);
+    };
+    frame = requestAnimationFrame(fade);
+    return () => cancelAnimationFrame(frame);
+  }, [targetVolume]);
 
   useEffect(() => {
     ambientCategoryRef.current = ambientCategory;
@@ -137,13 +159,13 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
       playerVars: {
         autoplay: 0,
         controls: 0,
-        modestbranding: 1,
         rel: 0,
         playsinline: 1,
       },
       events: {
         onReady: (event: { target: YouTubePlayer }) => {
           ytPlayerRef.current = event.target;
+          event.target.setVolume(targetVolumeRef.current);
           if (isMutedRef.current) {
             event.target.mute();
           } else {

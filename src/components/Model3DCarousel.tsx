@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
-import { DiscoSphere } from '@/components/DiscoSphere';
-import { useMedia } from '@/context/MediaContext';
 import { ModelPersona } from '@/data/models';
 
 interface Model3DCarouselProps {
@@ -19,7 +17,6 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
   const [isDragging, setIsDragging] = useState(false);
   const pointerStartXRef = useRef<number | null>(null);
   const draggedRef = useRef(false);
-  const { isPlaying } = useMedia();
 
   const total = models.length;
 
@@ -75,9 +72,6 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
         role="region"
         aria-label="Carrusel de perfiles. Desliza o arrastra para explorar."
       >
-        <div className="absolute left-1/2 top-[42%] z-10 -translate-x-1/2 -translate-y-1/2">
-          <DiscoSphere isPlaying={isPlaying} />
-        </div>
         {models.map((model, index) => {
           // Calculate offset relative to active index in loop
           let offset = index - activeIndex;

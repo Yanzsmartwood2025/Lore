@@ -50,7 +50,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
-      <body className="h-full flex flex-col bg-black text-white overflow-hidden">
+      <body className="min-h-full flex flex-col bg-black text-white overflow-x-hidden">
         <AuthProvider>
           <MediaProvider>
             <MediaPanel />
