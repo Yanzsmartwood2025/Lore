@@ -4,6 +4,7 @@ export interface ModelPersona {
   slug: string;
   tagline: string;
   avatar?: string;
+  danceVideoSrc?: string;
   isActive: boolean;
   systemPrompt?: string;
   welcomeMessage?: string;

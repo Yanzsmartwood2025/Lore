@@ -1,5 +1,44 @@
 @import "tailwindcss";
 
+.lore-media { width: min(1100px, calc(100% - 24px)); margin: 64px auto 12px; flex-shrink: 0; }
+.lore-media-grid { display:grid; grid-template-columns:minmax(0,1fr) 240px; gap:16px; align-items:start; }
+.lore-stage { position:relative; height:440px; overflow:hidden; border:1px solid #174451; border-radius:24px; background:#030711; }
+.lore-stage[hidden] { display:none; }
+.lore-stage video { width:100%; height:100%; object-fit:contain; }
+.lore-stage-caption { position:absolute; bottom:24px; left:24px; display:flex; flex-direction:column; pointer-events:none; }
+.lore-stage-caption span { font-size:10px; letter-spacing:.3em; color:#84cedb; }
+.lore-stage-caption strong { font-size:28px; letter-spacing:.12em; font-weight:500; }
+.lore-youtube { min-width:200px; height:200px; background:#000; outline:1px solid #23515b; }
+.lore-youtube iframe,.lore-youtube #yt-player-element { display:block; width:100%;height:100%;min-width:200px;min-height:200px; }
+.music-large { grid-template-columns:240px minmax(0,1fr); }
+.music-large .lore-stage { height:200px; }
+.music-large .lore-youtube { height:440px; }
+.music-large .lore-stage-caption { bottom:12px;left:12px; }
+.music-large .lore-stage-caption strong { font-size:18px; }
+.lore-media-actions,.lore-transport,.lore-categories { display:flex;gap:8px;flex-wrap:wrap; }
+.lore-media-actions { justify-content:flex-end;margin-top:12px; }
+.lore-media button,.lore-media select { min-height:44px;border:1px solid #28444d;border-radius:22px;padding:8px 15px;background:#07131b;color:#d6f6ff;font-size:12px;cursor:pointer; }
+.lore-media button:hover,.lore-media button[aria-pressed=true] { border-color:#42d9e8;background:#102933; }
+.lore-media button:focus-visible,.lore-media select:focus-visible { outline:2px solid #8bf0ff;outline-offset:3px; }
+.lore-controls { margin-top:12px;padding:16px;border:1px solid #193441;border-radius:20px;background:#050d15; }
+.lore-controls[hidden] { display:none; }
+.lore-categories { margin-top:12px; }
+.lore-persona-picker { display:flex;align-items:center;gap:12px;margin-top:12px;font-size:12px;color:#91b5c2; }
+.lore-media-room { max-width:900px; margin-top:16px; }
+.lore-media-room .lore-media-grid { display:flex;justify-content:flex-end; }
+.lore-media-room .lore-youtube { width:240px;height:200px; }
+.lore-orb { position:absolute;inset:0; }
+.lore-orb canvas { position:absolute;width:100%;height:100%; }
+.lore-orb-fallback { position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(55%,260px);max-height:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 30% 25%,#d9ffff,#236374 8%,#061626 45%,#27364e 65%,#27cdd7 78%,#061626);box-shadow:0 0 55px #12647b66; }
+.lore-orb-fallback::after { content:'';position:absolute;inset:-12%;border:1px solid #49d7eb99;border-radius:50%;transform:rotate(-25deg) scaleY(.4);box-shadow:0 0 14px #26bce844; }
+@media(max-width:640px) {
+ .lore-media-grid { grid-template-columns:minmax(0,1fr); }
+ .lore-youtube { grid-row:1;width:200px;justify-self:end; }
+ .lore-stage { height:360px; }
+ .music-large .lore-youtube { width:100%;height:240px; }
+ .music-large .lore-stage { width:200px;height:200px;justify-self:end; }
+}
+
 :root {
   --background: #000000;
   --foreground: #f0f0f0;

@@ -39,7 +39,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-black select-none">
+    <main className="relative flex min-h-[650px] w-full flex-col overflow-hidden bg-black select-none">
       {/* Top Menu Drawer Navigation */}
       <TopNavMenu />
 
@@ -69,7 +69,7 @@ export default function Home() {
       )}
 
       {/* LOBBY MAIN SCREEN */}
-      <div className="lobby-shell relative z-10 flex min-h-0 w-full flex-1 animate-fadeIn flex-col overflow-hidden pb-11">
+      <div className="relative z-10 flex min-h-[600px] w-full flex-1 animate-fadeIn flex-col overflow-hidden pb-11">
 
         <div className="relative flex flex-none flex-col items-center justify-center pt-3 pb-1">
           <div className="text-center">
@@ -80,7 +80,7 @@ export default function Home() {
         </div>
 
         {/* 3D Model Carousel */}
-        <div className="w-full min-h-0 flex-1">
+        <div className="w-full h-[460px] flex-none">
           <Model3DCarousel models={models} />
         </div>
 
@@ -101,7 +101,7 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="pointer-events-none fixed bottom-0 z-30 w-full bg-transparent py-1.5 text-center">
+      <footer className="pointer-events-none w-full bg-transparent py-1.5 text-center">
         <div className="flex flex-col justify-center items-center">
           <p className="text-[10px] text-gray-600">© 2025 Todos los derechos reservados.</p>
           <p className="text-[9px] text-gray-800 mt-0.5 uppercase tracking-widest">
