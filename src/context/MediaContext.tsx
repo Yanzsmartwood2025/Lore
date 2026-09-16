@@ -1,18 +1,36 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-
-export const PLAYLIST_IDS = [
-  'PLwNo4uUuFgooEMV9ctJGaKJ_T6S6IbHOu',
-  'PLuMEcroxcdXF0e_u7gMvbV3OfJ3NE9qDd',
-];
+import {
+  DEFAULT_MUSIC_CATEGORY,
+  MUSIC_CATEGORIES,
+  REQUESTED_SONG_START_SECONDS,
+  type MusicCategory,
+  type MusicSource,
+} from '@/lib/music';
 
 export type VideoSizeMode = 'hero' | 'micro' | 'expanded';
+
+interface YouTubePlayer {
+  cueVideoById: (options: { videoId: string; startSeconds?: number }) => void;
+  loadVideoById: (options: { videoId: string; startSeconds?: number }) => void;
+  cuePlaylist: (options: { listType: 'playlist'; list: string; index: number; startSeconds: number }) => void;
+  loadPlaylist: (options: { listType: 'playlist'; list: string; index: number; startSeconds: number }) => void;
+  setLoop?: (loop: boolean) => void;
+  playVideo: () => void;
+  pauseVideo: () => void;
+  nextVideo: () => void;
+  previousVideo: () => void;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+  mute: () => void;
+  unMute: () => void;
+  destroy: () => void;
+}
 
 interface MediaContextType {
   isPlaying: boolean;
   isMuted: boolean;
-  currentPlaylistIndex: number;
+  ambientCategory: MusicCategory;
   videoSize: VideoSizeMode;
   hasEntered: boolean;
   activeTab: 'music' | 'content';
@@ -26,6 +44,7 @@ interface MediaContextType {
   toggleVideoSize: () => void;
   enterLobby: () => void;
   setActiveTab: (tab: 'music' | 'content') => void;
+  setAmbientCategory: (category: MusicCategory) => void;
   playRequestedVideo: (videoId: string) => void;
 }
 
@@ -42,23 +61,36 @@ declare global {
 export function MediaProvider({ children }: { children: React.ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(0);
+  const [ambientCategory, setAmbientCategoryState] = useState<MusicCategory>(DEFAULT_MUSIC_CATEGORY);
   const [videoSize, setVideoSizeState] = useState<VideoSizeMode>('hero');
   const [hasEntered, setHasEntered] = useState(false);
   const [activeTab, setActiveTab] = useState<'music' | 'content'>('music');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ytPlayerRef = useRef<any>(null);
-  const currentPlaylistIndexRef = useRef(currentPlaylistIndex);
+  const ytPlayerRef = useRef<YouTubePlayer | null>(null);
+  const ambientCategoryRef = useRef(ambientCategory);
   const isPlayingRef = useRef(isPlaying);
   const isMutedRef = useRef(isMuted);
   const requestedVideoIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    currentPlaylistIndexRef.current = currentPlaylistIndex;
+    ambientCategoryRef.current = ambientCategory;
     isPlayingRef.current = isPlaying;
     isMutedRef.current = isMuted;
-  }, [currentPlaylistIndex, isPlaying, isMuted]);
+  }, [ambientCategory, isPlaying, isMuted]);
+
+  const loadSource = (player: YouTubePlayer, source: MusicSource, autoplay = true) => {
+    requestedVideoIdRef.current = null;
+    if (source.type === 'video') {
+      const options = { videoId: source.id, startSeconds: 0 };
+      if (autoplay) player.loadVideoById(options);
+      else player.cueVideoById(options);
+    } else {
+      const options = { listType: 'playlist' as const, list: source.id, index: 0, startSeconds: 0 };
+      if (autoplay) player.loadPlaylist(options);
+      else player.cuePlaylist(options);
+      player.setLoop?.(true);
+    }
+  };
 
   // Load YouTube API
   const [ytApiReady, setYtApiReady] = useState(() => {
@@ -69,6 +101,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     if (ytApiReady) return;
 
     if (window.YT && window.YT.Player) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- readiness comes from an external script
       setYtApiReady(true);
       return;
     }
@@ -99,10 +132,9 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
 
     if (ytPlayerRef.current) return;
 
-    const player = new window.YT.Player(containerId, {
+    new window.YT.Player(containerId, {
+      videoId: MUSIC_CATEGORIES[DEFAULT_MUSIC_CATEGORY].source.id,
       playerVars: {
-        listType: 'playlist',
-        list: PLAYLIST_IDS[0],
         autoplay: 0,
         controls: 0,
         modestbranding: 1,
@@ -110,7 +142,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         playsinline: 1,
       },
       events: {
-        onReady: (event: { target: any }) => {
+        onReady: (event: { target: YouTubePlayer }) => {
           ytPlayerRef.current = event.target;
           if (isMutedRef.current) {
             event.target.mute();
@@ -118,22 +150,24 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
             event.target.unMute();
           }
           if (requestedVideoIdRef.current) {
-            event.target.loadVideoById(requestedVideoIdRef.current);
+            event.target.loadVideoById({
+              videoId: requestedVideoIdRef.current,
+              startSeconds: REQUESTED_SONG_START_SECONDS,
+            });
           } else if (isPlayingRef.current) {
             event.target.playVideo();
           }
         },
-        onStateChange: (event: { data: number; target: any }) => {
+        onStateChange: (event: { data: number; target: YouTubePlayer }) => {
           // YT.PlayerState.ENDED === 0
           if (event.data === 0) {
-            const nextIdx = (currentPlaylistIndexRef.current + 1) % PLAYLIST_IDS.length;
-            setCurrentPlaylistIndex(nextIdx);
-            currentPlaylistIndexRef.current = nextIdx;
-            event.target.loadPlaylist({
-              listType: 'playlist',
-              list: PLAYLIST_IDS[nextIdx],
-              index: 0,
-            });
+            const category = MUSIC_CATEGORIES[ambientCategoryRef.current];
+            if (requestedVideoIdRef.current) {
+              loadSource(event.target, category.source);
+            } else if (category.source.type === 'video') {
+              event.target.seekTo(0, true);
+              event.target.playVideo();
+            }
           }
           // YT.PlayerState.PLAYING === 1
           if (event.data === 1) {
@@ -143,6 +177,10 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
           if (event.data === 2) {
             setIsPlaying(false);
           }
+        },
+        onError: (event: { target: YouTubePlayer }) => {
+          const category = MUSIC_CATEGORIES[ambientCategoryRef.current];
+          if ('fallback' in category) loadSource(event.target, category.fallback);
         },
       },
     });
@@ -158,6 +196,21 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
       }
     };
   }, [ytApiReady]);
+
+  const setAmbientCategory = (category: MusicCategory) => {
+    ambientCategoryRef.current = category;
+    setAmbientCategoryState(category);
+    setActiveTab('music');
+    if (ytPlayerRef.current) {
+      try {
+        loadSource(ytPlayerRef.current, MUSIC_CATEGORIES[category].source);
+        setIsPlaying(true);
+      } catch {
+        const selectedCategory = MUSIC_CATEGORIES[category];
+        if ('fallback' in selectedCategory) loadSource(ytPlayerRef.current, selectedCategory.fallback);
+      }
+    }
+  };
 
   const play = () => {
     if (ytPlayerRef.current) {
@@ -237,7 +290,10 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     requestedVideoIdRef.current = videoId;
     if (ytPlayerRef.current) {
       try {
-        ytPlayerRef.current.loadVideoById(videoId);
+        ytPlayerRef.current.loadVideoById({
+          videoId,
+          startSeconds: REQUESTED_SONG_START_SECONDS,
+        });
         setIsPlaying(true);
       } catch {
         // ignore
@@ -290,7 +346,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
       value={{
         isPlaying,
         isMuted,
-        currentPlaylistIndex,
+        ambientCategory,
         videoSize,
         hasEntered,
         activeTab,
@@ -304,6 +360,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         toggleVideoSize,
         enterLobby,
         setActiveTab,
+        setAmbientCategory,
         playRequestedVideo,
       }}
     >
