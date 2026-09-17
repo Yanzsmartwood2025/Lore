@@ -38,9 +38,6 @@ export function MediaPanel() {
     function requestReveal() {
       if (showYtPanel) return;
 
-      // En Home exigimos dos gestos seguidos para evitar que el panel de
-      // YouTube aparezca por accidente y moleste al intro. En los chats basta
-      // un gesto, porque el usuario ya está dentro de una conversación.
       if (!isHome) {
         setShowYtPanel(true);
         return;
@@ -94,21 +91,6 @@ export function MediaPanel() {
           <DanceVideo key={persona.danceVideoSrc} src={persona.danceVideoSrc} playing={isPlaying} />
         ) : (
           <DiscoSphere isPlaying={isPlaying} className="h-full w-full" />
-        )}
-
-        {!isHome && (
-          <div className="absolute bottom-5 left-5 z-10 flex h-12 w-36 items-end pointer-events-none drop-shadow-md sm:bottom-8 sm:left-6 sm:h-14 sm:w-44">
-            {persona.signature ? (
-              <img
-                src={persona.signature}
-                alt={`Firma de ${persona.name}`}
-                className="max-h-full w-full object-contain object-left-bottom drop-shadow-[0_0_8px_rgba(255,255,255,0.18)]"
-                draggable={false}
-              />
-            ) : (
-              <strong className="text-xl font-bold uppercase tracking-wider text-white sm:text-2xl">{persona.name}</strong>
-            )}
-          </div>
         )}
       </div>
 
