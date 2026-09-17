@@ -90,11 +90,11 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
             <GlassCard
               className={`relative flex h-60 w-44 flex-col items-center justify-between overflow-hidden rounded-3xl border p-4 text-center transition-colors duration-300 sm:h-72 sm:w-52 ${
                 isActive
-                  ? 'border-[#00f2ea] bg-black/82 shadow-[0_0_24px_rgba(0,242,234,0.28)]'
-                  : 'border-white/10 bg-black/72 shadow-md'
+                  ? 'border-[#00f2ea] bg-black/80 shadow-[0_0_24px_rgba(0,242,234,0.28)]'
+                  : 'border-white/10 bg-black/70 shadow-md'
               }`}
             >
-              <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-black/35 to-black pointer-events-none" />
+              <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-black/40 to-black pointer-events-none" />
 
               {!model.isActive && (
                 <span className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full border border-pink-500/40 bg-pink-950/80 px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-pink-400">
@@ -113,7 +113,7 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
           return (
             <div
               key={model.id}
-              className={`absolute ${isDragging ? '' : 'transition-[transform,opacity] duration-450 ease-out'}`}
+              className={`absolute ${isDragging ? '' : 'transition-[transform,opacity] duration-500 ease-out'}`}
               style={{
                 transform: `translate3d(${translateX}px, ${translateY}px, ${translateZ}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`,
                 opacity,
