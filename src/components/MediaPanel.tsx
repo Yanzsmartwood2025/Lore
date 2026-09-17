@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTiktok, faXTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { useMedia } from '@/context/MediaContext';
 import { models } from '@/data/models';
 import { DiscoSphere } from './DiscoSphere';
@@ -28,7 +30,7 @@ export function MediaPanel() {
 
   useEffect(() => {
     function requestReveal() {
-      if (showYtPanel) return;
+      if (showYtPanel || isHome) return;
       const now = Date.now();
       if (now - armedAt.current < 1400) {
         armedAt.current = 0;
@@ -39,6 +41,7 @@ export function MediaPanel() {
     }
 
     function handleWheel(event: WheelEvent) {
+      if (isHome) return;
       if (showYtPanel) {
         if (event.deltaY > 45) setShowYtPanel(false);
         return;
@@ -47,16 +50,16 @@ export function MediaPanel() {
     }
 
     function handleTouchStart(event: TouchEvent) {
+      if (isHome) return;
       touchStartY.current = event.touches[0]?.clientY ?? null;
     }
 
     function handleTouchEnd(event: TouchEvent) {
-      if (touchStartY.current === null) return;
+      if (isHome || touchStartY.current === null) return;
       const endY = event.changedTouches[0]?.clientY ?? touchStartY.current;
       const distance = endY - touchStartY.current;
       touchStartY.current = null;
 
-      // Un gesto hacia abajo equivale a explorar la zona superior oculta.
       if (!showYtPanel && distance > 55) requestReveal();
       if (showYtPanel && distance < -55) setShowYtPanel(false);
     }
@@ -69,7 +72,7 @@ export function MediaPanel() {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [showYtPanel]);
+  }, [showYtPanel, isHome]);
 
   return (
     <>
@@ -79,29 +82,62 @@ export function MediaPanel() {
         ) : (
           <DiscoSphere isPlaying={isPlaying} className="h-full w-full" />
         )}
-        <div className="absolute bottom-5 left-5 z-10 pointer-events-none drop-shadow-md sm:bottom-8 sm:left-6">
-          <span className="block text-[9px] font-semibold uppercase tracking-[0.28em] text-cyan-400">EL CLUB DE LORE</span>
-          <strong className="text-xl font-bold uppercase tracking-wider text-white sm:text-2xl">{persona.name}</strong>
-        </div>
+
+        {!isHome && (
+          <div className="absolute bottom-5 left-5 z-10 pointer-events-none drop-shadow-md sm:bottom-8 sm:left-6">
+            <span className="block text-[9px] font-semibold uppercase tracking-[0.28em] text-cyan-400">EL CLUB DE LORE</span>
+            <strong className="text-xl font-bold uppercase tracking-wider text-white sm:text-2xl">{persona.name}</strong>
+          </div>
+        )}
       </div>
 
-      <div
-        className={`fixed left-0 right-0 top-0 z-40 flex justify-center border-b border-cyan-500/30 bg-black/90 p-2 shadow-2xl backdrop-blur-md transition-transform duration-350 ease-in-out ${
-          showYtPanel ? 'translate-y-0' : '-translate-y-full'
-        }`}
-      >
-        <div className="relative h-[158px] w-[280px] overflow-hidden rounded-lg border border-cyan-500/40 bg-black sm:h-[202px] sm:w-[360px]">
-          <div className="h-full w-full" id="yt-player-element" />
-          <button
-            type="button"
-            onClick={() => setShowYtPanel(false)}
-            className="absolute right-2 top-2 rounded border border-cyan-500/40 bg-black/75 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
-            title="Ocultar reproductor"
-          >
-            ✕ Ocultar
-          </button>
+      {isHome && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-[max(.5rem,env(safe-area-inset-bottom))] z-20 flex items-end justify-between px-5 sm:px-8">
+          <div className="pointer-events-none flex min-w-0 flex-col items-start">
+            <span className="mb-0.5 text-[9px] font-semibold uppercase tracking-[0.3em] text-cyan-400/90">EL CLUB DE LORE</span>
+            <div className="h-9 w-28 overflow-hidden sm:h-10 sm:w-32">
+              <img
+                src="/assets/brand/intro/Lore-intro.png"
+                alt="Firma de Lore"
+                className="h-full w-full object-contain object-left"
+                draggable={false}
+              />
+            </div>
+          </div>
+
+          <div className="pointer-events-auto mb-1 flex items-center gap-5 text-lg text-slate-500">
+            <a href="https://tiktok.com" target="_blank" rel="noreferrer" aria-label="TikTok" className="transition-transform hover:scale-110 hover:text-cyan-300">
+              <FontAwesomeIcon icon={faTiktok} />
+            </a>
+            <a href="https://x.com" target="_blank" rel="noreferrer" aria-label="X" className="transition-transform hover:scale-110 hover:text-white">
+              <FontAwesomeIcon icon={faXTwitter} />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram" className="transition-transform hover:scale-110 hover:text-purple-300">
+              <FontAwesomeIcon icon={faInstagram} />
+            </a>
+          </div>
         </div>
-      </div>
+      )}
+
+      {!isHome && (
+        <div
+          className={`fixed left-0 right-0 top-0 z-40 flex justify-center border-b border-cyan-500/30 bg-black/90 p-2 shadow-2xl backdrop-blur-md transition-transform duration-350 ease-in-out ${
+            showYtPanel ? 'translate-y-0' : '-translate-y-full'
+          }`}
+        >
+          <div className="relative h-[158px] w-[280px] overflow-hidden rounded-lg border border-cyan-500/40 bg-black sm:h-[202px] sm:w-[360px]">
+            <div className="h-full w-full" id="yt-player-element" />
+            <button
+              type="button"
+              onClick={() => setShowYtPanel(false)}
+              className="absolute right-2 top-2 rounded border border-cyan-500/40 bg-black/75 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
+              title="Ocultar reproductor"
+            >
+              ✕ Ocultar
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
