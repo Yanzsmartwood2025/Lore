@@ -14,7 +14,6 @@ export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashOpacity, setSplashOpacity] = useState(1);
   useEffect(() => {
-    // Check sessionStorage only on client side after mount
     const sessionActive = sessionStorage.getItem('session_active_v2');
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -40,10 +39,8 @@ export default function Home() {
 
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-transparent select-none pb-28">
-      {/* Top Menu Drawer Navigation */}
       <TopNavMenu />
 
-      {/* SPLASH SCREEN */}
       {showSplash && (
         <div
           className="fixed inset-0 flex flex-col justify-center items-center w-full h-full bg-black z-50 transition-opacity duration-1000 pointer-events-auto"
@@ -68,9 +65,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* LOBBY MAIN SCREEN */}
-      <div className="relative z-10 flex min-h-[600px] w-full flex-1 animate-fadeIn flex-col overflow-hidden pb-11">
-
+      <div className="relative z-10 flex min-h-[600px] w-full flex-1 animate-fadeIn flex-col pb-11">
         <div className="relative flex flex-none flex-col items-center justify-center pt-3 pb-1">
           <div className="text-center">
             <h1 className="text-xl sm:text-2xl font-medium text-white uppercase tracking-[0.18em] drop-shadow-[0_0_12px_rgba(255,255,255,0.25)]">
@@ -79,13 +74,21 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 3D Model Carousel */}
-        <div className="w-full h-[460px] flex-none">
+        {/* Pantalla principal independiente. Queda preparada para el video destacado del Home. */}
+        <section
+          aria-label="Pantalla principal de contenido"
+          className="relative z-20 mx-auto mt-4 h-[190px] w-[calc(100%-2rem)] max-w-sm flex-none overflow-hidden rounded-2xl border border-cyan-500/20 bg-black/45 backdrop-blur-sm shadow-[0_0_24px_rgba(0,242,234,0.10)] sm:h-[230px] sm:max-w-lg"
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/10 via-black/20 to-black/55" aria-hidden="true" />
+        </section>
+
+        {/* Tarjetas de presentación separadas y más abajo */}
+        <div className="mt-7 w-full h-[460px] flex-none">
           <Model3DCarousel models={models} />
         </div>
 
-        {/* Redes Sociales posicionadas abajo */}
-        <div className="z-20 flex flex-none justify-center space-x-8 bg-transparent pt-2 pb-1">
+        {/* Redes sociales debajo del bloque de tarjetas */}
+        <div className="z-20 mt-6 flex flex-none justify-center space-x-8 bg-transparent pt-3 pb-5">
           <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="text-[1.275rem] text-gray-500 hover:text-pink-500 transition-colors hover:scale-125 hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
             <FontAwesomeIcon icon={faTiktok} />
           </a>
@@ -100,7 +103,6 @@ export default function Home() {
         <PwaInstallPrompt />
       </div>
 
-      {/* Footer */}
       <footer className="pointer-events-none w-full bg-transparent py-1.5 text-center">
         <div className="flex flex-col justify-center items-center">
           <p className="text-[10px] text-gray-600">© 2025 Todos los derechos reservados.</p>
