@@ -122,8 +122,17 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
 
               <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,242,234,0.08),transparent_42%)]" aria-hidden="true" />
 
-              <div className="relative z-10 mb-3 mt-auto">
-                <h3 className="text-lg font-black uppercase tracking-wider text-white drop-shadow-md sm:text-xl">{model.name}</h3>
+              <div className="relative z-10 mb-2 mt-auto flex h-14 w-full items-center justify-center sm:h-16">
+                {model.signature ? (
+                  <img
+                    src={model.signature}
+                    alt={`Firma de ${model.name}`}
+                    className="max-h-full w-[92%] object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.20)]"
+                    draggable={false}
+                  />
+                ) : (
+                  <h3 className="text-lg font-black uppercase tracking-wider text-white drop-shadow-md sm:text-xl">{model.name}</h3>
+                )}
               </div>
             </GlassCard>
           );

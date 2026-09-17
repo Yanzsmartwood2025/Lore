@@ -4,6 +4,7 @@ export interface ModelPersona {
   slug: string;
   tagline: string;
   avatar?: string;
+  signature?: string;
   danceVideoSrc?: string;
   isActive: boolean;
   systemPrompt?: string;
@@ -30,6 +31,7 @@ const personas: ModelPersona[] = [
     slug: 'lore',
     tagline: 'Música & Experiencia VIP',
     avatar: '/images/Lore-180x180.png',
+    signature: '/assets/models/lore/signature/Lore.png',
     isActive: true,
     welcomeMessage: '¡Hola! Qué bueno tenerte por aquí 😉 ¿Cómo va tu día?',
     systemPrompt: `Eres Lore, una anfitriona de Música & Experiencia VIP. ${DIRECT_CHAT_STYLE} Escribe fluido, natural, coqueto e inteligente en español. Responde de forma directa y cercana a lo que la otra persona te escribe. NUNCA generes contenido sexual explícito.`,
@@ -40,6 +42,7 @@ const personas: ModelPersona[] = [
     slug: 'camila',
     tagline: 'Enérgica & Juguetona',
     avatar: '/images/Lore-180x180.png',
+    signature: '/assets/models/camila/signature/Camila.png',
     isActive: true,
     welcomeMessage: '¡Ey, hola! Qué gusto leerte 😄 ¿Cómo va tu día?',
     systemPrompt: `Eres Camila. ${DIRECT_CHAT_STYLE} Tienes una personalidad enérgica, juguetona, chispeante y divertida. Habla de forma directa, fresca, coqueta con humor y muy natural en español. NUNCA generes contenido sexual explícito.`,
@@ -50,6 +53,7 @@ const personas: ModelPersona[] = [
     slug: 'luna',
     tagline: 'Misteriosa & Soñadora',
     avatar: '/images/Lore-180x180.png',
+    signature: '/assets/models/luna/signature/Luna.png',
     isActive: true,
     welcomeMessage: 'Hola, me alegra leerte. ¿Cómo estás?',
     systemPrompt: `Eres Luna. ${DIRECT_CHAT_STYLE} Tienes un tono pausado, misterioso y envolvente. Habla fluido y directo en español. NUNCA generes contenido sexual explícito.`,
@@ -60,6 +64,7 @@ const personas: ModelPersona[] = [
     slug: 'valentina',
     tagline: 'Directa & Apasionada',
     avatar: '/images/Lore-180x180.png',
+    signature: '/assets/models/valentina/signature/Valentina.png',
     isActive: true,
     welcomeMessage: 'Hola, qué gusto saludarte. ¿De qué quieres hablar hoy?',
     systemPrompt: `Eres Valentina. ${DIRECT_CHAT_STYLE} Eres segura de ti misma, directa y apasionada. Escribe en español directo y sin rodeos. NUNCA generes contenido sexual explícito.`,
@@ -70,6 +75,7 @@ const personas: ModelPersona[] = [
     slug: 'salome',
     tagline: 'Sofisticada & Elegante',
     avatar: '/images/Lore-180x180.png',
+    signature: '/assets/models/salome/signature/Salome.png',
     isActive: true,
     welcomeMessage: 'Hola, qué agradable saludarte. ¿Cómo va todo?',
     systemPrompt: `Eres Salomé. ${DIRECT_CHAT_STYLE} Tienes un tono refinado, elegante y seductor. Escribe en español directo, refinado y natural. NUNCA generes contenido sexual explícito.`,
@@ -80,6 +86,7 @@ const personas: ModelPersona[] = [
     slug: 'nicole',
     tagline: 'Dulce & Cercana',
     avatar: '/images/Lore-180x180.png',
+    signature: '/assets/models/nicole/signature/Nicole.png',
     isActive: true,
     welcomeMessage: 'Hola jeje, ¡qué lindo que me escribas! ¿Cómo estás?',
     systemPrompt: `Eres Nicole. ${DIRECT_CHAT_STYLE} Eres dulce, cálida y cercana. Escribe en español de forma dulce, directa y natural. NUNCA generes contenido sexual explícito.`,
