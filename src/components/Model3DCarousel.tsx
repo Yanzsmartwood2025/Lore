@@ -109,6 +109,19 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
                 aria-hidden="true"
               />
               <div
+                className="pointer-events-none absolute -inset-y-6 z-[1] w-8 skew-x-[-10deg] rounded-full bg-gradient-to-r from-transparent via-violet-200/55 to-transparent blur-[2px] transition-[left,opacity] duration-200 ease-out"
+                style={{
+                  left: 'calc(100% - var(--lore-sweep-x, 18%))',
+                  opacity: isActive ? 'var(--lore-card-side-glow, 0.025)' : '0.02',
+                }}
+                aria-hidden="true"
+              />
+              <div
+                className="pointer-events-none absolute inset-x-4 top-0 z-[1] h-10 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.28),rgba(0,242,234,0.10)_42%,transparent_72%)] blur-sm transition-opacity duration-100"
+                style={{ opacity: isActive ? 'var(--lore-card-glow, 0.05)' : 'var(--lore-card-side-glow, 0.025)' }}
+                aria-hidden="true"
+              />
+              <div
                 className="pointer-events-none absolute right-0 top-0 z-[1] h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(255,154,70,0.42),transparent_68%)] blur-lg transition-opacity duration-150"
                 style={{ opacity: 'var(--lore-warmth, 0.18)' }}
                 aria-hidden="true"
