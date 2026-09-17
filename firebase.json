@@ -1,0 +1,7 @@
+{
+  "functions": [{
+    "source": "firebase/functions",
+    "codebase": "lore-auth",
+    "ignore": ["node_modules", "test", "scripts", "*.log"]
+  }]
+}

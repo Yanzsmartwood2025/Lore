@@ -1,5 +1,5 @@
 import { ccbillCheckout, ccbillConfig, type CheckoutProvider } from '@/lib/payments';
-import { requireUser } from '@/lib/supabase/server';
+import { createServiceClient, requireUser } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   const auth = await requireUser(request);
@@ -8,7 +8,10 @@ export async function POST(request: Request) {
   if (!body.packId || !['ccbill','nowpayments'].includes(body.provider ?? '')) return Response.json({ error: 'Checkout inválido.' }, { status: 400 });
   const { data: pack } = await auth.supabase.from('lore_content_packs').select('id,price_cents,currency,credits').eq('id', body.packId).eq('is_active', true).single();
   if (!pack) return Response.json({ error: 'Paquete no disponible.' }, { status: 404 });
-  const { data: purchase, error } = await auth.supabase.from('lore_purchases').insert({
+  // Prices/credits come from the RLS-readable catalog, never from client input.
+  // Purchase writes are server-only; user clients can only read their purchases.
+  const payments = createServiceClient();
+  const { data: purchase, error } = await payments.from('lore_purchases').insert({
     user_id: auth.user.id, pack_id: pack.id, provider: body.provider, amount_cents: pack.price_cents, currency: pack.currency, credits: pack.credits,
   }).select('id').single();
   if (error || !purchase) return Response.json({ error: 'No se pudo iniciar el pago.' }, { status: 500 });
@@ -23,6 +26,6 @@ export async function POST(request: Request) {
   });
   const result = await payment.json() as { invoice_url?: string; id?: string; message?: string };
   if (!payment.ok || !result.invoice_url) return Response.json({ error: result.message ?? 'NOWPayments no creó el checkout.' }, { status: 502 });
-  await auth.supabase.from('lore_purchases').update({ provider_payment_id: String(result.id) }).eq('id', purchase.id);
+  await payments.from('lore_purchases').update({ provider_payment_id: String(result.id) }).eq('id', purchase.id).eq('user_id', auth.user.id);
   return Response.json({ purchaseId: purchase.id, checkoutUrl: result.invoice_url, sandbox: true });
 }

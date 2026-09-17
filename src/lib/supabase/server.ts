@@ -1,70 +1,43 @@
-import { createClient as createAdminClient } from '@supabase/supabase-js';
+import 'server-only';
+
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { publicSupabaseEnv, serverSupabaseEnv } from '@/lib/env';
 import { verifyFirebaseRequest } from '@/lib/firebase/server';
+import { ensureLoreProfile } from '@/lib/supabase/profile';
 
-export async function createClient() {
+export async function createClient(accessToken: string | null = null) {
   const { url, anonKey } = publicSupabaseEnv();
-  return createAdminClient(url, anonKey, {
+  return createSupabaseClient(url, anonKey, {
+    accessToken: async () => accessToken,
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
 export function createServiceClient() {
   const { url, serviceRoleKey } = serverSupabaseEnv();
-  return createAdminClient(url, serviceRoleKey, {
+  return createSupabaseClient(url, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
 export async function requireUser(request: Request) {
   const identity = await verifyFirebaseRequest(request);
-  if (!identity) return null;
+  if (!identity || identity.role !== 'authenticated') return null;
 
-  const supabase = createServiceClient();
+  // Supabase independently verifies this Firebase JWT and applies RLS.
+  // No synthetic Supabase Auth user and no service-role client for user queries.
+  const token = request.headers.get('authorization')!.slice('Bearer '.length).trim();
+  const supabase = await createClient(token);
   const email = typeof identity.email === 'string' ? identity.email : null;
-  if (!email) return null;
-
-  const { data: existingProfile, error: lookupError } = await supabase
-    .from('lore_profiles')
-    .select('id')
-    .eq('firebase_uid', identity.sub)
-    .maybeSingle();
-  if (lookupError) {
-    console.error('Unable to find Firebase identity in Lore:', lookupError.message);
-    return null;
-  }
-  if (existingProfile) return { supabase, user: { id: existingProfile.id, firebaseUid: identity.sub, email } };
-
-  const displayName = typeof identity.name === 'string' ? identity.name : email.split('@')[0];
-  const avatarUrl = typeof identity.picture === 'string' ? identity.picture : null;
-  const { data: createdUser, error: createError } = await supabase.auth.admin.createUser({
+  await ensureLoreProfile(supabase, {
+    id: identity.sub,
     email,
-    email_confirm: true,
-    user_metadata: {
-      full_name: displayName,
-      avatar_url: avatarUrl,
-      firebase_uid: identity.sub,
-    },
+    displayName: typeof identity.name === 'string' ? identity.name : email?.split('@')[0] ?? null,
+    avatarUrl: typeof identity.picture === 'string' ? identity.picture : null,
   });
-  if (createError || !createdUser.user) {
-    console.error('Unable to create Lore identity:', createError?.message);
-    return null;
-  }
-
-  const { error: profileError } = await supabase.from('lore_profiles').update({
-    firebase_uid: identity.sub,
-    email,
-    display_name: displayName,
-    avatar_url: avatarUrl,
-    updated_at: new Date().toISOString(),
-  }).eq('id', createdUser.user.id);
-  if (profileError) {
-    console.error('Unable to link Firebase identity to Lore profile:', profileError.message);
-    return null;
-  }
 
   return {
     supabase,
-    user: { id: createdUser.user.id, firebaseUid: identity.sub, email },
+    user: { id: identity.sub, firebaseUid: identity.sub, email },
   };
 }
