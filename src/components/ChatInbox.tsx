@@ -234,8 +234,14 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
   }
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl border border-white/25 bg-white/[0.025] text-white shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
-      <header className="relative z-10 flex items-center justify-between border-b border-white/15 bg-white/[0.035] px-4 py-3 backdrop-blur-[3px]">
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl border border-white/25 bg-transparent text-white shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+      {/* Escenario interior independiente: hoy queda limpio y negro; aquí irá el video de cada persona. */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-black" data-persona-video-stage aria-hidden="true" />
+
+      <header
+        data-youtube-gesture-zone="true"
+        className="relative z-10 flex items-center justify-between border-b border-white/15 bg-white/[0.035] px-4 py-3 backdrop-blur-[3px]"
+      >
         <Link
           href="/"
           aria-label={`Volver al inicio desde el chat de ${name}`}
@@ -275,7 +281,7 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
       </header>
 
       <div
-        className="flex-1 space-y-4 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10"
+        className="relative z-10 flex-1 space-y-4 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10"
         aria-live="polite"
       >
         {messages.length === 0 && (
