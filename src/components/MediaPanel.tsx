@@ -18,6 +18,7 @@ export function MediaPanel() {
   const touchStartY = useRef<number | null>(null);
 
   const persona = models.find((model) => model.slug === (isHome ? selected : pathname.split('/')[1])) ?? models[0];
+  const loreSignature = models[0].signature ?? '/assets/brand/intro/Lore-intro.png';
 
   useEffect(() => {
     const onPersonaChange = (event: Event) => {
@@ -96,8 +97,17 @@ export function MediaPanel() {
         )}
 
         {!isHome && (
-          <div className="absolute bottom-5 left-5 z-10 pointer-events-none drop-shadow-md sm:bottom-8 sm:left-6">
-            <strong className="text-xl font-bold uppercase tracking-wider text-white sm:text-2xl">{persona.name}</strong>
+          <div className="absolute bottom-5 left-5 z-10 flex h-12 w-36 items-end pointer-events-none drop-shadow-md sm:bottom-8 sm:left-6 sm:h-14 sm:w-44">
+            {persona.signature ? (
+              <img
+                src={persona.signature}
+                alt={`Firma de ${persona.name}`}
+                className="max-h-full w-full object-contain object-left-bottom drop-shadow-[0_0_8px_rgba(255,255,255,0.18)]"
+                draggable={false}
+              />
+            ) : (
+              <strong className="text-xl font-bold uppercase tracking-wider text-white sm:text-2xl">{persona.name}</strong>
+            )}
           </div>
         )}
       </div>
@@ -107,7 +117,7 @@ export function MediaPanel() {
           <div className="pointer-events-none flex min-w-0 flex-col items-start">
             <div className="h-10 w-32 overflow-hidden sm:h-11 sm:w-36">
               <img
-                src="/assets/brand/intro/Lore-intro.png"
+                src={loreSignature}
                 alt="Firma de Lore"
                 className="h-full w-full object-contain object-left"
                 draggable={false}
