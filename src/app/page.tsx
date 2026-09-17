@@ -10,10 +10,10 @@ import { models } from '@/data/models';
 import styles from './splash.module.css';
 
 const APP_VERSION = "2.0.0 (Next.js)";
-const SPLASH_SESSION_KEY = 'session_active_v4';
+const SPLASH_SESSION_KEY = 'session_active_v5';
 const SPLASH_FRAMES = [
-  { src: '/intro/lore-signature-intro.png', alt: 'Lore', hold: 2200, kind: 'signature' },
-  { src: '/intro/ajn-liq-128-official.jpg', alt: 'AJN-LIQ-128', hold: 1800, kind: 'identity' },
+  { src: '/assets/brand/intro/Lore-intro.png', alt: 'Lore', hold: 2200, kind: 'signature' },
+  { src: '/assets/brand/intro/ajnliq128.png', alt: 'AJN-LIQ-128', hold: 1800, kind: 'identity' },
 ] as const;
 
 export default function Home() {
@@ -27,6 +27,8 @@ export default function Home() {
       return;
     }
 
+    const firstFrame = new Image();
+    firstFrame.src = SPLASH_FRAMES[0].src;
     const secondFrame = new Image();
     secondFrame.src = SPLASH_FRAMES[1].src;
 

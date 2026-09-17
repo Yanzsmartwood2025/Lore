@@ -21,15 +21,15 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/images/Lore-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/images/Lore-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/assets/brand/pwa/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/assets/brand/pwa/icon-32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: "/images/Lore-180x180.png",
+    apple: "/assets/brand/pwa/icon-180.png",
   },
   openGraph: {
     title: "PROTOCOLO VIP | El Club de Lore",
     description: "La Jefa del Neón 👑 | ¿Te atreves a entrar a la travesura?",
-    images: ["/images/Lore-512x512.png"],
+    images: ["/assets/brand/pwa/icon-512.png"],
     type: "website",
   },
 };
