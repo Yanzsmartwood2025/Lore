@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -34,6 +34,9 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const headerPointerStartRef = useRef<{ pointerId: number; x: number; y: number } | null>(null);
+  const suppressHeaderLinkClickRef = useRef(false);
+  const suppressHeaderClickTimerRef = useRef<number | null>(null);
 
   const storageKey = `${slug}_chat_history`;
   const persona = models.find((m) => m.slug === slug);
@@ -92,6 +95,72 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
     messages.length > 0 &&
     messages[messages.length - 1].role === 'assistant' &&
     messages[messages.length - 1].content.length > 0;
+
+  useEffect(() => {
+    return () => {
+      if (suppressHeaderClickTimerRef.current !== null) {
+        window.clearTimeout(suppressHeaderClickTimerRef.current);
+      }
+    };
+  }, []);
+
+  function revealYoutubeFromHeader() {
+    window.dispatchEvent(new CustomEvent('lore:youtube-reveal'));
+  }
+
+  function handleHeaderPointerDown(event: ReactPointerEvent<HTMLElement>) {
+    if (event.pointerType === 'mouse') return;
+    headerPointerStartRef.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+    };
+
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Algunos navegadores no permiten capturar el puntero; el gesto sigue funcionando sin captura.
+    }
+  }
+
+  function handleHeaderPointerUp(event: ReactPointerEvent<HTMLElement>) {
+    const start = headerPointerStartRef.current;
+    if (!start || start.pointerId !== event.pointerId) return;
+
+    headerPointerStartRef.current = null;
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      // Sin acción: el gesto ya terminó.
+    }
+
+    if (Math.abs(deltaY) < 24 || Math.abs(deltaY) <= Math.abs(deltaX)) return;
+
+    suppressHeaderLinkClickRef.current = true;
+    revealYoutubeFromHeader();
+
+    if (suppressHeaderClickTimerRef.current !== null) {
+      window.clearTimeout(suppressHeaderClickTimerRef.current);
+    }
+    suppressHeaderClickTimerRef.current = window.setTimeout(() => {
+      suppressHeaderLinkClickRef.current = false;
+      suppressHeaderClickTimerRef.current = null;
+    }, 350);
+  }
+
+  function handleHeaderPointerCancel() {
+    headerPointerStartRef.current = null;
+  }
+
+  function handleHeaderWheel(event: ReactWheelEvent<HTMLElement>) {
+    if (Math.abs(event.deltaY) < 24) return;
+    revealYoutubeFromHeader();
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -240,12 +309,21 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
 
       <header
         data-youtube-gesture-zone="true"
-        className="relative z-10 flex items-center justify-between border-b border-white/15 bg-white/[0.035] px-4 py-3 backdrop-blur-[3px]"
+        onPointerDown={handleHeaderPointerDown}
+        onPointerUp={handleHeaderPointerUp}
+        onPointerCancel={handleHeaderPointerCancel}
+        onWheel={handleHeaderWheel}
+        className="relative z-10 flex touch-none select-none items-center justify-between border-b border-white/15 bg-white/[0.035] px-4 py-3 backdrop-blur-[3px]"
       >
         <Link
           href="/"
           aria-label={`Volver al inicio desde el chat de ${name}`}
           title="Volver al inicio"
+          onClick={(event) => {
+            if (!suppressHeaderLinkClickRef.current) return;
+            event.preventDefault();
+            suppressHeaderLinkClickRef.current = false;
+          }}
           className="group inline-flex min-w-0 items-center rounded-xl px-1 py-0.5 outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-white/60"
         >
           {signatureSrc ? (
