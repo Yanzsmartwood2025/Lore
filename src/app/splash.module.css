@@ -38,9 +38,10 @@
   -webkit-user-drag: none;
 }
 
+/* La primera firma respira un poco más dentro del negro del intro. */
 .signature .image {
-  max-width: 94vw;
-  max-height: 72dvh;
+  max-width: 84vw;
+  max-height: 66dvh;
 }
 
 .identity .image {
@@ -55,8 +56,8 @@
   }
 
   .signature .image {
-    max-width: 94vw;
-    max-height: 64dvh;
+    max-width: 84vw;
+    max-height: 58dvh;
   }
 
   .identity .image {

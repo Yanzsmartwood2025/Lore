@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { MediaProvider } from "@/context/MediaContext";
 import { MediaPanel } from "@/components/MediaPanel";
+import { LegacyPwaCleanup } from "@/components/LegacyPwaCleanup";
 import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({
@@ -16,6 +17,10 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://lore-sigma.vercel.app"),
+  alternates: {
+    canonical: "/",
+  },
   title: "PROTOCOLO VIP | El Club de Lore",
   description: "La Jefa del Neón 👑 | ¿Te atreves a entrar a la travesura?",
   manifest: "/manifest.json",
@@ -51,6 +56,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-black text-white overflow-x-hidden">
+        <LegacyPwaCleanup />
         <AuthProvider>
           <MediaProvider>
             <MediaPanel />
