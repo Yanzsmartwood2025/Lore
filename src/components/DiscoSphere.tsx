@@ -7,27 +7,34 @@ uniform float time;
 uniform float energy;
 uniform float beat;
 uniform float warmth;
+
+vec2 rotate2(vec2 v, float a){
+ float c=cos(a), s=sin(a);
+ return vec2(c*v.x-s*v.y,s*v.x+c*v.y);
+}
+
 void main(){
  vec2 p=(gl_FragCoord.xy*2.-resolution)/min(resolution.x,resolution.y);
  vec3 cyan=vec3(.04,.88,1.), violet=vec3(.64,.17,1.), amber=vec3(1.,.46,.12);
- float r=length(p), radius=.58+beat*.012, safeR=max(r,.001);
+ float flash=beat*beat;
+ float r=length(p), radius=.58+beat*.020, safeR=max(r,.001);
  vec3 color=vec3(.006,.012,.028);
 
- // Ambiente de club: lavados amplios cyan/violeta y un toque ámbar cálido.
- float room=exp(-r*1.45);
+ // Ambiente de club: el bombo levanta toda la sala sin convertirla en un flash blanco.
+ float room=exp(-r*1.35);
  float sweepA=.5+.5*sin(time*.19+p.x*1.7-p.y*.7);
  float sweepB=.5+.5*sin(time*.13-p.x*1.1+p.y*1.4+1.8);
- color+=cyan*room*(.028+.045*sweepA);
- color+=violet*room*(.018+.032*sweepB);
- color+=amber*room*warmth*(.010+.05*beat);
+ color+=cyan*room*(.032+.052*sweepA+.095*flash);
+ color+=violet*room*(.020+.038*sweepB+.070*flash);
+ color+=amber*room*warmth*(.012+.105*flash);
 
- // Dos haces móviles salen visualmente desde la esfera y barren el escenario.
+ // Haces anchos que nacen desde el núcleo y golpean visualmente el escenario.
  vec2 stage=p-vec2(0.,-.05);
  float stageA=atan(stage.y,stage.x);
  float coneA=pow(max(cos(stageA-time*.20-.15),0.),30.)*exp(-r*.65);
  float coneB=pow(max(cos(stageA+time*.16+2.45),0.),34.)*exp(-r*.65);
- color+=mix(cyan,amber,warmth*.72)*coneA*(.022+.13*beat);
- color+=violet*coneB*(.018+.095*beat);
+ color+=mix(cyan,amber,warmth*.72)*coneA*(.026+.22*beat);
+ color+=violet*coneB*(.020+.16*beat);
 
  if(r<radius){
    vec3 n=normalize(vec3(p/radius,sqrt(max(0.,1.-r*r/(radius*radius)))));
@@ -36,31 +43,68 @@ void main(){
    float rim=pow(1.-n.z,3.);
    float spec=pow(max(dot(reflect(-l,n),vec3(0.,0.,1.)),0.),65.);
    float longitude=atan(n.x,n.z)+time*.38;
+   float latitude=asin(clamp(n.y,-1.,1.));
    float bands=pow(.5+.5*sin(longitude*22.),18.)*pow(.5+.5*sin(n.y*26.),8.);
    float core=exp(-length(p-vec2(.07,-.03))*8.);
-   color=vec3(.025,.055,.085)*(diffuse+.3)+cyan*rim*(.95+beat*.2);
-   color+=mix(violet,cyan,n.y*.5+.5)*bands*(.68+beat*.18)+vec3(1.)*spec*(.82+beat*.26);
-   color+=mix(cyan,amber,warmth*.55)*core*(.28+energy*.10+beat*.65);
+
+   color=vec3(.025,.055,.085)*(diffuse+.3)+cyan*rim*(1.02+beat*.52);
+   color+=mix(violet,cyan,n.y*.5+.5)*bands*(.72+beat*.34)+vec3(1.)*spec*(.88+beat*.48);
+   color+=mix(cyan,amber,warmth*.55)*core*(.30+energy*.10+beat*1.02);
+
+   // Matriz de puntos LED sobre la esfera. Los puntos se encienden por zonas y
+   // cambian cyan/violeta/ámbar según la fase del beat.
+   float ledLon=pow(.5+.5*cos(longitude*18.-time*.82),24.);
+   float ledLat=pow(.5+.5*cos(latitude*15.+time*.30),20.);
+   float leds=ledLon*ledLat;
+   float ledWave=.5+.5*sin(longitude*3.6+latitude*4.2-time*2.0);
+   vec3 ledColor=mix(cyan,violet,ledWave);
+   ledColor=mix(ledColor,amber,warmth*beat*.46);
+   color+=ledColor*leds*(.34+energy*.18+beat*1.55);
  }
 
- float orbit=length(vec2(p.x,p.y*2.5+p.x*.65));
- color+=mix(cyan,violet,.5+.5*sin(time*.35+p.x*3.))*exp(-abs(orbit-.83)*180.)*(.72+beat*.18);
- float orbit2=length(vec2(p.x*2.2-p.y*.7,p.y));
- color+=mix(violet,amber,warmth*.35)*exp(-abs(orbit2-.92)*210.)*(.4+beat*.12);
- color+=cyan*exp(-abs(r-radius)*90.)*(.22+beat*.24);
+ // Anillo 1: rotación propia, profundidad aparente y LEDs que corren por el contorno.
+ vec2 q1=rotate2(p,time*.11);
+ vec2 e1v=vec2(q1.x,q1.y*2.5+q1.x*.65);
+ float orbit=length(e1v);
+ float ring1=exp(-abs(orbit-.83)*185.);
+ float ringA1=atan(e1v.y,e1v.x);
+ float chase1=pow(.5+.5*sin(ringA1*11.-time*4.5),16.);
+ vec3 ringColor1=mix(cyan,violet,.5+.5*sin(ringA1*2.2+time*.36));
+ float depth1=(r<radius && q1.y>.0)?.10:1.;
+ color+=ringColor1*ring1*depth1*(.64+chase1*(.70+beat*1.25)+beat*.30);
+ color+=mix(cyan,amber,warmth*.52)*ring1*chase1*depth1*(.10+beat*.72);
 
+ // Anillo 2: gira en sentido contrario y a otra velocidad para que sea independiente.
+ vec2 q2=rotate2(p,-time*.075+1.05);
+ vec2 e2v=vec2(q2.x*2.2-q2.y*.7,q2.y);
+ float orbit2=length(e2v);
+ float ring2=exp(-abs(orbit2-.92)*205.);
+ float ringA2=atan(e2v.y,e2v.x);
+ float chase2=pow(.5+.5*sin(ringA2*13.+time*3.75+1.7),17.);
+ vec3 ringColor2=mix(violet,amber,warmth*(.28+.32*beat));
+ float depth2=(r<radius && q2.y<.0)?.12:1.;
+ color+=ringColor2*ring2*depth2*(.46+chase2*(.58+beat*1.05)+beat*.24);
+ color+=cyan*ring2*chase2*depth2*(.08+beat*.52);
+
+ // Corona LED exterior de la propia esfera: segmentos cortos que responden al bombo.
  float a=atan(p.y,p.x);
+ float rimLine=exp(-abs(r-radius)*105.);
+ float rimLed=pow(.5+.5*sin(a*26.-time*5.2),13.);
+ vec3 rimColor=mix(cyan,violet,.5+.5*sin(a*3.+time*.5));
+ rimColor=mix(rimColor,amber,warmth*beat*.36);
+ color+=rimColor*rimLine*(.30+rimLed*(.36+beat*1.18)+beat*.38);
+
  float halo=smoothstep(.62,.76,r)*(1.-smoothstep(.76,1.42,r));
  float beamA=pow(max(cos(a-time*.28),0.),34.)*halo;
  float beamB=pow(max(cos(a+time*.22+2.35),0.),38.)*halo;
- color+=mix(cyan,amber,warmth*.45)*beamA*(.018+energy*.075+beat*.16);
- color+=violet*beamB*(.012+energy*.055+beat*.12);
- float bounce=exp(-abs(r-(.95+.035*sin(time*.8)))*40.)*(.012+energy*.025+beat*.08);
+ color+=mix(cyan,amber,warmth*.45)*beamA*(.020+energy*.075+beat*.22);
+ color+=violet*beamB*(.014+energy*.055+beat*.17);
+ float bounce=exp(-abs(r-(.95+.035*sin(time*.8)))*40.)*(.014+energy*.025+beat*.13);
  color+=mix(cyan,mix(violet,amber,warmth),.45)*bounce;
 
- // Rebote bajo: una franja suave da la sensación de que la luz golpea el vidrio.
+ // Rebote bajo que refuerza la sensación de vidrio en las tarjetas.
  float floorGlow=exp(-abs(p.y+.72)*9.)*exp(-abs(p.x)*.65);
- color+=mix(cyan,amber,warmth*.58)*floorGlow*(.008+.055*beat);
+ color+=mix(cyan,amber,warmth*.58)*floorGlow*(.010+.095*beat);
 
  gl_FragColor=vec4(color,1.-smoothstep(.94,1.38,safeR));
 }`;
@@ -180,7 +224,7 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
           beatImpulse = 0;
           beatWarmth += (.18 - beatWarmth) * .12;
         } else if (delta > 0) {
-          beatImpulse *= Math.exp(-delta * 8.5);
+          beatImpulse *= Math.exp(-delta * 7.2);
           beatWarmth += (.18 - beatWarmth) * Math.min(1, delta * 1.6);
         }
 
@@ -238,7 +282,7 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
 
     function handleYouTubeBeat(event: Event) {
       const detail = (event as CustomEvent<{ strength?: number; warmth?: number }>).detail;
-      beatImpulse = Math.max(beatImpulse, Math.min(1.15, detail?.strength ?? .72));
+      beatImpulse = Math.max(beatImpulse, Math.min(1.35, (detail?.strength ?? .72) * 1.14));
       beatWarmth = Math.max(.12, Math.min(1, detail?.warmth ?? .18));
       startLoop();
     }
