@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
-import { DiscoSphere } from '@/components/DiscoSphere';
-import { useMedia } from '@/context/MediaContext';
 import { ModelPersona } from '@/data/models';
 
 interface Model3DCarouselProps {
@@ -14,7 +12,6 @@ interface Model3DCarouselProps {
 }
 
 export function Model3DCarousel({ models }: Model3DCarouselProps) {
-  const { isPlaying } = useMedia();
   const [activeIndex, setActiveIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -60,7 +57,7 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
 
   return (
     <div className="relative mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col items-center select-none">
-      {/* Contenedor del Carrusel 3D */}
+      {/* Carrusel 3D independiente del fondo global */}
       <div
         className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden [perspective:1200px] cursor-grab active:cursor-grabbing touch-pan-y"
         onPointerDown={handlePointerDown}
@@ -75,14 +72,7 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
         role="region"
         aria-label="Carrusel de perfiles. Desliza o arrastra para explorar."
       >
-        <div className={`lore-club-background ${isPlaying ? 'is-playing' : ''}`} aria-hidden="true">
-          <div className="lore-club-beams" />
-          <div className="lore-club-fog lore-club-fog-left" />
-          <div className="lore-club-fog lore-club-fog-right" />
-          <div className="lore-club-sphere"><DiscoSphere isPlaying={isPlaying} /></div>
-        </div>
         {models.map((model, index) => {
-          // Calculate offset relative to active index in loop
           let offset = index - activeIndex;
           if (offset < -Math.floor(total / 2)) offset += total;
           if (offset > Math.floor(total / 2)) offset -= total;
@@ -92,7 +82,6 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
 
           if (!isVisible) return null;
 
-          // 3D positioning parameters
           const translateX = offset * 205 + dragOffset;
           const translateY = 65 + Math.abs(offset) * 52;
           const translateZ = isActive ? 110 : -Math.abs(offset) * 130;
@@ -110,7 +99,6 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
                   : 'border-white/10 bg-black/60 shadow-lg'
               }`}
             >
-              {/* Slot preparado para Media/Video/Imagen de fondo */}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black z-0 pointer-events-none" />
 
               {!model.isActive && (
@@ -120,10 +108,8 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
                 </span>
               )}
 
-              {/* Superficie libre para montar el video vertical de cada perfil. */}
               <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,242,234,0.10),transparent_42%)]" aria-hidden="true" />
 
-              {/* Únicamente el Nombre de la chica */}
               <div className="relative z-10 mt-auto mb-5">
                 <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">
                   {model.name}
@@ -161,7 +147,6 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
         })}
       </div>
 
-      {/* Indicadores de Puntos */}
       <div className="flex space-x-2 -mt-1 z-30">
         {models.map((m, idx) => (
           <button
