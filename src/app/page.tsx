@@ -39,7 +39,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative flex min-h-[650px] w-full flex-col overflow-hidden bg-black select-none">
+    <main className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-transparent select-none pb-28">
       {/* Top Menu Drawer Navigation */}
       <TopNavMenu />
 

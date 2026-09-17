@@ -56,7 +56,7 @@ export default async function ModelPage({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center p-2 sm:p-4 md:p-6 pb-24">
+    <main className="min-h-screen bg-transparent text-white flex flex-col items-center p-2 sm:p-4 md:p-6 pb-32 relative z-10">
       <div className="w-full max-w-4xl flex flex-col space-y-3">
         {/* Navegación discreta superior */}
         <div className="flex items-center justify-between px-2 pt-1">
