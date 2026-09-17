@@ -10,16 +10,15 @@ import { models } from '@/data/models';
 import styles from './splash.module.css';
 
 const APP_VERSION = "2.0.0 (Next.js)";
-const SPLASH_SESSION_KEY = 'session_active_v3';
+const SPLASH_SESSION_KEY = 'session_active_v4';
 const SPLASH_FRAMES = [
   { src: '/intro/lore-signature-intro.png', alt: 'Lore', hold: 2200, kind: 'signature' },
-  { src: '/intro/ajn-liq-128.svg', alt: 'AJN-LIQ-128', hold: 1800, kind: 'identity' },
+  { src: '/intro/ajn-liq-128-official.jpg', alt: 'AJN-LIQ-128', hold: 1800, kind: 'identity' },
 ] as const;
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [frameIndex, setFrameIndex] = useState(0);
-  const [frameVisible, setFrameVisible] = useState(false);
 
   useEffect(() => {
     const sessionActive = sessionStorage.getItem(SPLASH_SESSION_KEY);
@@ -28,35 +27,23 @@ export default function Home() {
       return;
     }
 
-    let holdTimer: ReturnType<typeof setTimeout> | undefined;
-    let transitionTimer: ReturnType<typeof setTimeout> | undefined;
-    let cancelled = false;
+    const secondFrame = new Image();
+    secondFrame.src = SPLASH_FRAMES[1].src;
 
-    const runFrame = (index: number) => {
-      if (cancelled) return;
-      if (index >= SPLASH_FRAMES.length) {
+    let firstTimer: ReturnType<typeof setTimeout> | undefined;
+    let secondTimer: ReturnType<typeof setTimeout> | undefined;
+
+    firstTimer = setTimeout(() => {
+      setFrameIndex(1);
+      secondTimer = setTimeout(() => {
         sessionStorage.setItem(SPLASH_SESSION_KEY, 'true');
         setShowSplash(false);
-        return;
-      }
+      }, SPLASH_FRAMES[1].hold);
+    }, SPLASH_FRAMES[0].hold);
 
-      setFrameIndex(index);
-      requestAnimationFrame(() => {
-        if (!cancelled) setFrameVisible(true);
-      });
-
-      holdTimer = setTimeout(() => {
-        setFrameVisible(false);
-        transitionTimer = setTimeout(() => runFrame(index + 1), 520);
-      }, SPLASH_FRAMES[index].hold);
-    };
-
-    const startTimer = setTimeout(() => runFrame(0), 40);
     return () => {
-      cancelled = true;
-      clearTimeout(startTimer);
-      if (holdTimer) clearTimeout(holdTimer);
-      if (transitionTimer) clearTimeout(transitionTimer);
+      if (firstTimer) clearTimeout(firstTimer);
+      if (secondTimer) clearTimeout(secondTimer);
     };
   }, []);
 
@@ -67,10 +54,9 @@ export default function Home() {
       <TopNavMenu />
 
       {showSplash && (
-        <div className={`${styles.splash} ${frameVisible ? styles.visible : styles.hidden}`} aria-label="Presentación de Lore">
+        <div className={styles.splash} aria-label="Presentación de Lore">
           <div className={`${styles.frame} ${currentFrame.kind === 'signature' ? styles.signature : styles.identity}`}>
             <img src={currentFrame.src} alt={currentFrame.alt} className={styles.image} draggable={false} />
-            <div className={styles.lightSweep} aria-hidden="true" />
           </div>
         </div>
       )}

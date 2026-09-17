@@ -7,33 +7,26 @@
   justify-content: center;
   overflow: hidden;
   background: #000;
-  transition: opacity 520ms ease;
 }
-
-.visible { opacity: 1; }
-.hidden { opacity: 0; }
 
 .frame {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   background: #000;
 }
 
-/* La firma tiene trazos muy largos. Se deja respirar y sin recorte. */
 .signature {
   width: min(96vw, 1180px);
   height: min(64vh, 680px);
-  overflow: visible;
   padding: clamp(18px, 4vw, 48px);
   box-sizing: border-box;
 }
 
 .identity {
-  width: min(90vw, 760px);
-  height: min(60vh, 760px);
+  width: min(92vw, 900px);
+  height: min(68vh, 900px);
 }
 
 .image {
@@ -43,43 +36,8 @@
   object-fit: contain;
   object-position: center;
   background: #000;
-  animation: introBreath 2.7s ease-out both;
   user-select: none;
   -webkit-user-drag: none;
-}
-
-/* En la firma el movimiento siempre ocurre hacia dentro para no cortar letras. */
-.signature .image {
-  animation: signatureBreath 2.7s ease-out both;
-  transform-origin: center center;
-}
-
-.lightSweep {
-  position: absolute;
-  inset: -20%;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(112deg, transparent 39%, rgba(255,255,255,.03) 46%, rgba(255,255,255,.13) 50%, rgba(255,255,255,.03) 54%, transparent 61%);
-  transform: translateX(-80%);
-  animation: introSweep 1.8s ease-in-out .35s 1 both;
-  mix-blend-mode: screen;
-}
-
-@keyframes introBreath {
-  from { transform: scale(.985); opacity: .72; filter: brightness(.88); }
-  to { transform: scale(1.025); opacity: 1; filter: brightness(1); }
-}
-
-@keyframes signatureBreath {
-  from { transform: scale(.86); opacity: .72; filter: brightness(.88); }
-  to { transform: scale(.92); opacity: 1; filter: brightness(1); }
-}
-
-@keyframes introSweep {
-  0% { transform: translateX(-80%); opacity: 0; }
-  18% { opacity: .7; }
-  82% { opacity: .55; }
-  100% { transform: translateX(80%); opacity: 0; }
 }
 
 @media (max-width: 640px) {
@@ -88,29 +46,12 @@
     height: 48vh;
     min-height: 300px;
     padding: 24px 28px;
-    overflow: visible;
-  }
-
-  .signature .image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transform-origin: center center;
   }
 
   .identity {
-    width: 92vw;
-    height: 46vh;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .image,
-  .lightSweep {
-    animation: none !important;
-  }
-
-  .signature .image {
-    transform: scale(.92);
+    width: 100vw;
+    height: 56vh;
+    padding: 18px;
+    box-sizing: border-box;
   }
 }
