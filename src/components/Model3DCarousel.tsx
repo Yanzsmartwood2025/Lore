@@ -72,8 +72,6 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
           if (offset > Math.floor(total / 2)) offset -= total;
 
           const isActive = offset === 0;
-          // Solo tres tarjetas vivas a la vez: la activa y una por cada lado.
-          // Las demás no consumen blur, composición ni pintura en el teléfono.
           const isVisible = Math.abs(offset) <= 1;
           if (!isVisible) return null;
 
@@ -95,6 +93,26 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
               }`}
             >
               <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-black/40 to-black pointer-events-none" />
+
+              {/* Reflejo de luz sincronizado con YouTube: una sola capa barata por tarjeta visible. */}
+              <div
+                className="pointer-events-none absolute -inset-y-8 z-[1] w-16 -skew-x-12 rounded-full bg-gradient-to-r from-transparent via-cyan-200/80 to-transparent blur-sm transition-[left,opacity] duration-150 ease-out"
+                style={{
+                  left: 'var(--lore-sweep-x, 18%)',
+                  opacity: isActive ? 'var(--lore-card-glow, 0.05)' : 'var(--lore-card-side-glow, 0.025)',
+                }}
+                aria-hidden="true"
+              />
+              <div
+                className="pointer-events-none absolute inset-x-3 bottom-0 z-[1] h-16 rounded-t-[50%] bg-[radial-gradient(ellipse_at_bottom,rgba(0,242,234,0.58),rgba(139,55,255,0.20)_45%,transparent_72%)] blur-md transition-opacity duration-100"
+                style={{ opacity: isActive ? 'var(--lore-card-glow, 0.05)' : 'var(--lore-card-side-glow, 0.025)' }}
+                aria-hidden="true"
+              />
+              <div
+                className="pointer-events-none absolute right-0 top-0 z-[1] h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(255,154,70,0.42),transparent_68%)] blur-lg transition-opacity duration-150"
+                style={{ opacity: 'var(--lore-warmth, 0.18)' }}
+                aria-hidden="true"
+              />
 
               {!model.isActive && (
                 <span className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full border border-pink-500/40 bg-pink-950/80 px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-pink-400">
