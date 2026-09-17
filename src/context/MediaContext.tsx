@@ -9,6 +9,7 @@ import {
   type MusicCategory,
   type MusicSource,
 } from '@/lib/music';
+import { getYouTubeLightingFrame, getYouTubeLightingProfile } from '@/lib/youtubeLighting';
 
 export type VideoSizeMode = 'hero' | 'micro' | 'expanded';
 
@@ -27,6 +28,8 @@ interface YouTubePlayer {
   unMute: () => void;
   destroy: () => void;
   setVolume: (volume: number) => void;
+  getCurrentTime?: () => number;
+  getVideoData?: () => { video_id?: string };
 }
 
 interface MediaContextType {
@@ -114,7 +117,6 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Load YouTube API
   const [ytApiReady, setYtApiReady] = useState(() => {
     return typeof window !== 'undefined' && Boolean(window.YT && window.YT.Player);
   });
@@ -144,7 +146,6 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     };
   }, [ytApiReady]);
 
-  // Initialize YT Player once
   useEffect(() => {
     if (!ytApiReady) return;
 
@@ -181,7 +182,6 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
           }
         },
         onStateChange: (event: { data: number; target: YouTubePlayer }) => {
-          // YT.PlayerState.ENDED === 0
           if (event.data === 0) {
             const category = MUSIC_CATEGORIES[ambientCategoryRef.current];
             if (requestedVideoIdRef.current) {
@@ -191,14 +191,8 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
               event.target.playVideo();
             }
           }
-          // YT.PlayerState.PLAYING === 1
-          if (event.data === 1) {
-            setIsPlaying(true);
-          }
-          // YT.PlayerState.PAUSED === 2
-          if (event.data === 2) {
-            setIsPlaying(false);
-          }
+          if (event.data === 1) setIsPlaying(true);
+          if (event.data === 2) setIsPlaying(false);
         },
         onError: (event: { target: YouTubePlayer }) => {
           const category = MUSIC_CATEGORIES[ambientCategoryRef.current];
@@ -218,6 +212,74 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
       }
     };
   }, [ytApiReady]);
+
+  // Reloj visual exclusivo de YouTube. Trabaja a 12.5 Hz, no provoca renders
+  // de React y se apaga al pausar o mandar la app a segundo plano.
+  useEffect(() => {
+    const root = document.documentElement;
+    let timer = 0;
+    let lastBeatIndex = -1;
+
+    const resetLighting = () => {
+      root.style.setProperty('--lore-card-glow', '0.05');
+      root.style.setProperty('--lore-card-side-glow', '0.025');
+      root.style.setProperty('--lore-sweep-x', '18%');
+      root.style.setProperty('--lore-warmth', '0.18');
+      root.style.setProperty('--lore-beat-pulse', '0');
+    };
+
+    const tick = () => {
+      const player = ytPlayerRef.current;
+      if (!isPlaying || !player || document.hidden) {
+        resetLighting();
+        return;
+      }
+
+      const seconds = player.getCurrentTime?.();
+      if (typeof seconds !== 'number' || !Number.isFinite(seconds)) return;
+
+      const videoId = player.getVideoData?.().video_id;
+      const profile = getYouTubeLightingProfile(videoId, ambientCategoryRef.current);
+      const light = getYouTubeLightingFrame(seconds, profile);
+
+      root.style.setProperty('--lore-card-glow', light.cardGlow.toFixed(3));
+      root.style.setProperty('--lore-card-side-glow', (light.cardGlow * 0.52).toFixed(3));
+      root.style.setProperty('--lore-sweep-x', `${light.sweep.toFixed(1)}%`);
+      root.style.setProperty('--lore-warmth', light.warmth.toFixed(3));
+      root.style.setProperty('--lore-beat-pulse', light.pulse.toFixed(3));
+
+      if (light.beatIndex !== lastBeatIndex) {
+        lastBeatIndex = light.beatIndex;
+        window.dispatchEvent(new CustomEvent('lore:youtube-beat', {
+          detail: {
+            strength: light.barBeat === 0 ? 1 : 0.72,
+            warmth: light.warmth,
+            beatIndex: light.beatIndex,
+            barBeat: light.barBeat,
+            barIndex: light.barIndex,
+          },
+        }));
+      }
+    };
+
+    resetLighting();
+    if (isPlaying) {
+      tick();
+      timer = window.setInterval(tick, 80);
+    }
+
+    const handleVisibility = () => {
+      if (document.hidden) resetLighting();
+      else if (isPlaying) tick();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      if (timer) window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      resetLighting();
+    };
+  }, [isPlaying]);
 
   const setAmbientCategory = (category: MusicCategory) => {
     ambientCategoryRef.current = category;
@@ -257,11 +319,8 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   };
 
   const togglePlay = () => {
-    if (isPlaying) {
-      pause();
-    } else {
-      play();
-    }
+    if (isPlaying) pause();
+    else play();
   };
 
   const nextTrack = () => {
@@ -300,13 +359,8 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const setVideoSize = (size: VideoSizeMode) => {
-    setVideoSizeState(size);
-  };
-
-  const toggleVideoSize = () => {
-    setVideoSizeState((prev) => (prev === 'micro' ? 'expanded' : 'micro'));
-  };
+  const setVideoSize = (size: VideoSizeMode) => setVideoSizeState(size);
+  const toggleVideoSize = () => setVideoSizeState((prev) => (prev === 'micro' ? 'expanded' : 'micro'));
 
   const playRequestedVideo = (videoId: string) => {
     requestedVideoIdRef.current = videoId;
@@ -328,9 +382,6 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     play();
   };
 
-  // Expone controles al sistema operativo cuando el navegador/PWA admite la
-  // Media Session API. El navegador sigue decidiendo si permite audio en
-  // segundo plano (en especial cuando la fuente es un iframe de YouTube).
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
 
@@ -393,8 +444,6 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
 
 export function useMedia() {
   const context = useContext(MediaContext);
-  if (!context) {
-    throw new Error('useMedia must be used within a MediaProvider');
-  }
+  if (!context) throw new Error('useMedia must be used within a MediaProvider');
   return context;
 }
