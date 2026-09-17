@@ -29,12 +29,20 @@ export function getYouTubeLightingFrame(seconds: number, profile: YouTubeLightin
   const beats = Math.max(0, seconds - profile.offsetSeconds) * profile.bpm / 60;
   const beatIndex = Math.floor(beats);
   const phase = beats - beatIndex;
-  const pulse = Math.pow(Math.max(0, 1 - phase * 4.25), 2);
+
+  // Ataque corto y visible para que el bombo se sienta como un golpe de luz,
+  // con una cola breve para que no parezca un simple parpadeo digital.
+  const attack = Math.pow(Math.max(0, 1 - phase * 5.2), 1.55);
+  const tail = Math.pow(Math.max(0, 1 - phase * 2.15), 3.2) * 0.28;
+  const pulse = Math.min(1.2, attack + tail);
+
   const barBeat = ((beatIndex % 4) + 4) % 4;
   const barIndex = Math.floor(beatIndex / 4);
-  const sweep = 10 + (0.5 + 0.5 * Math.sin(beats * Math.PI / 8)) * 80;
-  const warmth = barBeat === 0 ? 0.9 : barBeat === 2 ? 0.42 : 0.18;
-  const cardGlow = 0.08 + pulse * 0.34;
+  const sweep = 8 + (0.5 + 0.5 * Math.sin(beats * Math.PI / 8)) * 84;
+  const warmth = barBeat === 0 ? 0.96 : barBeat === 2 ? 0.48 : 0.2;
+
+  // Más reflexión en las tarjetas para que el "vidrio" recoja el golpe de la sala.
+  const cardGlow = 0.1 + pulse * (barBeat === 0 ? 0.54 : 0.44);
 
   return { beatIndex, barBeat, barIndex, pulse, sweep, warmth, cardGlow };
 }
