@@ -70,9 +70,9 @@ export default function Home() {
 
         <section
           aria-label="Pantalla principal de contenido"
-          className="relative z-20 mx-auto mt-2 h-[clamp(220px,30dvh,310px)] w-[calc(100%-1.25rem)] max-w-xl flex-none overflow-hidden rounded-2xl border border-cyan-500/20 bg-black/70 shadow-[0_0_20px_rgba(0,242,234,0.08)]"
+          className="relative z-20 mx-auto mt-2 h-[clamp(220px,30dvh,310px)] w-[calc(100%-1.25rem)] max-w-xl flex-none overflow-hidden rounded-2xl border border-cyan-400/25 bg-black shadow-[0_0_28px_rgba(0,242,234,0.12)]"
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/10 via-black/20 to-black/50" aria-hidden="true" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,242,234,0.07),transparent_42%),linear-gradient(to_bottom,#000_0%,#020407_100%)]" aria-hidden="true" />
         </section>
 
         <div className="mt-2 min-h-0 w-full flex-1">
