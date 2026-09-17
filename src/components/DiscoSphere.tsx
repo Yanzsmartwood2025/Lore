@@ -30,8 +30,6 @@ void main(){
  color+=violet*exp(-abs(orbit2-.92)*210.)*.4;
  color+=cyan*exp(-abs(r-radius)*90.)*.22;
 
- // Dos haces baratos dentro del mismo shader: dan sensación de luz que sale,
- // toca el entorno y vuelve sin añadir partículas ni capas DOM pesadas.
  float a=atan(p.y,p.x);
  float halo=smoothstep(.62,.76,r)*(1.-smoothstep(.76,1.42,r));
  float beamA=pow(max(cos(a-time*.28),0.),34.)*halo;
@@ -50,10 +48,11 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
   useEffect(() => { playing.current = isPlaying; }, [isPlaying]);
 
   useEffect(() => {
-    const el = canvas.current;
-    if (!el) return;
+    const currentElement = canvas.current;
+    if (!currentElement) return;
+    const element: HTMLCanvasElement = currentElement;
 
-    const gl = el.getContext('webgl', {
+    const currentGl = element.getContext('webgl', {
       alpha: true,
       antialias: false,
       depth: false,
@@ -61,7 +60,8 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
       powerPreference: 'low-power',
       preserveDrawingBuffer: false,
     });
-    if (!gl) return;
+    if (!currentGl) return;
+    const gl: WebGLRenderingContext = currentGl;
 
     let frame = 0;
     let last = -100;
@@ -77,21 +77,21 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
 
     function destroyResources() {
-      if (buffer) gl!.deleteBuffer(buffer);
-      if (program) gl!.deleteProgram(program);
-      shaders.forEach((shader) => gl!.deleteShader(shader));
+      if (buffer) gl.deleteBuffer(buffer);
+      if (program) gl.deleteProgram(program);
+      shaders.forEach((shader) => gl.deleteShader(shader));
       buffer = null;
       program = null;
       shaders = [];
     }
 
     function compile(type: number, source: string) {
-      const shader = gl!.createShader(type);
+      const shader = gl.createShader(type);
       if (!shader) return null;
-      gl!.shaderSource(shader, source);
-      gl!.compileShader(shader);
-      if (!gl!.getShaderParameter(shader, gl!.COMPILE_STATUS)) {
-        gl!.deleteShader(shader);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        gl.deleteShader(shader);
         return null;
       }
       shaders.push(shader);
@@ -100,28 +100,28 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
 
     function setup() {
       destroyResources();
-      const vertex = compile(gl!.VERTEX_SHADER, 'attribute vec2 position; void main(){ gl_Position=vec4(position,0.,1.); }');
-      const pixel = compile(gl!.FRAGMENT_SHADER, fragment);
+      const vertex = compile(gl.VERTEX_SHADER, 'attribute vec2 position; void main(){ gl_Position=vec4(position,0.,1.); }');
+      const pixel = compile(gl.FRAGMENT_SHADER, fragment);
       if (!vertex || !pixel) return false;
 
-      program = gl!.createProgram();
+      program = gl.createProgram();
       if (!program) return false;
-      gl!.attachShader(program, vertex);
-      gl!.attachShader(program, pixel);
-      gl!.linkProgram(program);
-      if (!gl!.getProgramParameter(program, gl!.LINK_STATUS)) return false;
+      gl.attachShader(program, vertex);
+      gl.attachShader(program, pixel);
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return false;
 
-      buffer = gl!.createBuffer();
-      gl!.bindBuffer(gl!.ARRAY_BUFFER, buffer);
-      gl!.bufferData(gl!.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl!.STATIC_DRAW);
-      gl!.useProgram(program);
-      const position = gl!.getAttribLocation(program, 'position');
-      gl!.enableVertexAttribArray(position);
-      gl!.vertexAttribPointer(position, 2, gl!.FLOAT, false, 0, 0);
-      res = gl!.getUniformLocation(program, 'resolution');
-      t = gl!.getUniformLocation(program, 'time');
-      energy = gl!.getUniformLocation(program, 'energy');
-      el.style.opacity = '1';
+      buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
+      gl.useProgram(program);
+      const position = gl.getAttribLocation(program, 'position');
+      gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+      res = gl.getUniformLocation(program, 'resolution');
+      t = gl.getUniformLocation(program, 'time');
+      energy = gl.getUniformLocation(program, 'energy');
+      element.style.opacity = '1';
       last = -100;
       return true;
     }
@@ -146,24 +146,23 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
         else if (!reducedMotion && !playing.current && last >= 0) elapsed += Math.min((now - last) / 1000, .025);
         last = now;
 
-        const size = el.getBoundingClientRect();
+        const size = element.getBoundingClientRect();
         const mobile = Math.min(window.innerWidth, window.innerHeight) <= 700;
         const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1 : 1.25);
         const w = Math.max(1, Math.round(size.width * dpr));
         const h = Math.max(1, Math.round(size.height * dpr));
-        if (el.width !== w || el.height !== h) {
-          el.width = w;
-          el.height = h;
-          gl!.viewport(0, 0, w, h);
+        if (element.width !== w || element.height !== h) {
+          element.width = w;
+          element.height = h;
+          gl.viewport(0, 0, w, h);
         }
 
-        gl!.uniform2f(res, w, h);
-        gl!.uniform1f(t, reducedMotion ? 0 : elapsed);
-        gl!.uniform1f(energy, playing.current ? 1 : 0);
-        gl!.drawArrays(gl!.TRIANGLES, 0, 6);
+        gl.uniform2f(res, w, h);
+        gl.uniform1f(t, reducedMotion ? 0 : elapsed);
+        gl.uniform1f(energy, playing.current ? 1 : 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
-      // En reduced-motion dibujamos una sola imagen y liberamos el loop.
       if (!reducedMotion) frame = requestAnimationFrame(draw);
     }
 
@@ -189,9 +188,7 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
       event.preventDefault();
       contextLost = true;
       stopLoop();
-      // Android puede liberar la GPU al cambiar de app. El fallback negro/neón
-      // queda visible hasta que WebGL se restaure, evitando el flash blanco.
-      el.style.opacity = '0';
+      element.style.opacity = '0';
     }
 
     function handleContextRestored() {
@@ -205,11 +202,11 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
       else stopLoop();
     });
 
-    observer.observe(el);
+    observer.observe(element);
     document.addEventListener('visibilitychange', handleVisibility);
     motion.addEventListener('change', handleMotionChange);
-    el.addEventListener('webglcontextlost', handleContextLost, false);
-    el.addEventListener('webglcontextrestored', handleContextRestored, false);
+    element.addEventListener('webglcontextlost', handleContextLost, false);
+    element.addEventListener('webglcontextrestored', handleContextRestored, false);
 
     if (setup()) startLoop();
 
@@ -218,8 +215,8 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
       observer.disconnect();
       document.removeEventListener('visibilitychange', handleVisibility);
       motion.removeEventListener('change', handleMotionChange);
-      el.removeEventListener('webglcontextlost', handleContextLost, false);
-      el.removeEventListener('webglcontextrestored', handleContextRestored, false);
+      element.removeEventListener('webglcontextlost', handleContextLost, false);
+      element.removeEventListener('webglcontextrestored', handleContextRestored, false);
       destroyResources();
     };
   }, []);
