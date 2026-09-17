@@ -56,26 +56,12 @@ export default async function ModelPage({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-transparent text-white flex flex-col items-center p-2 sm:p-4 md:p-6 pb-32 relative z-10">
-      <div className="w-full max-w-4xl flex flex-col space-y-3">
-        {/* Navegación discreta superior */}
-        <div className="flex items-center justify-between px-2 pt-1">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-bold text-cyan-400/80 hover:text-cyan-300 transition-colors"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} /> Volver
-          </Link>
-          <span className="text-[10px] text-cyan-400/70 font-mono uppercase tracking-widest">
-            Chat VIP
-          </span>
-        </div>
-
+    <main className="relative z-10 flex h-[100dvh] w-full flex-col items-center overflow-hidden bg-transparent p-2 text-white sm:p-4 md:p-6">
+      <div className="h-full min-h-0 w-full max-w-4xl">
         <ChatInbox
           name={model.name}
           slug={model.slug}
           avatar={model.avatar}
-          tagline={model.tagline}
         />
       </div>
     </main>
