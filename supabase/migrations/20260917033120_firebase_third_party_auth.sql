@@ -116,5 +116,23 @@ grant all on public.lore_profiles, public.lore_credit_transactions, public.lore_
 
 -- Purchase creation/pricing and assistant messages are trusted server operations.
 -- The payment-confirmation RPC remains service_role-only as in the base migration.
+create function public.save_lore_assistant_message(p_conversation_id uuid, p_user_id text, p_content text)
+returns uuid language plpgsql security invoker set search_path = '' as $$
+declare message_id uuid;
+begin
+  -- Lock while checking ownership: a conversation cannot be deleted/replaced
+  -- by another account between the ownership check and the privileged insert.
+  perform 1 from public.lore_chat_conversations
+    where id = p_conversation_id and user_id = p_user_id for share;
+  if not found then
+    raise exception 'Conversation unavailable' using errcode = '42501';
+  end if;
+  insert into public.lore_chat_messages(conversation_id, role, content)
+    values (p_conversation_id, 'assistant', p_content) returning id into message_id;
+  return message_id;
+end; $$;
+revoke all on function public.save_lore_assistant_message(uuid,text,text) from public, anon, authenticated;
+grant execute on function public.save_lore_assistant_message(uuid,text,text) to service_role;
+
 notify pgrst, 'reload schema';
 commit;

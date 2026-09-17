@@ -61,6 +61,8 @@ antiguos. No relaciona cuentas por coincidencia de correo.
   asistente. Sus datos provienen del catálogo/propietario verificados, no de IDs
   arbitrarios del navegador. Los usuarios no pueden falsificar mensajes assistant
   ni escribir compras o saldos directamente.
+- El RPC que guarda respuestas es `SECURITY INVOKER`, exclusivo de `service_role`,
+  y comprueba/bloquea la conversación y su propietario en la misma transacción.
 - Los historiales locales están separados por UID. No se importan historiales
   antiguos compartidos, porque no existe prueba de a qué cuenta pertenecen.
 

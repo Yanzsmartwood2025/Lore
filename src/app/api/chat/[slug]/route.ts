@@ -153,10 +153,10 @@ export async function POST(
 
     // Only the server can persist assistant messages. The conversation above
     // was resolved under the caller's JWT/RLS; never accept its ID from input.
-    const { error: assistantError } = await createServiceClient().from('lore_chat_messages').insert({
-      conversation_id: conversation.id,
-      role: 'assistant',
-      content,
+    const { error: assistantError } = await createServiceClient().rpc('save_lore_assistant_message', {
+      p_conversation_id: conversation.id,
+      p_user_id: auth.user.id,
+      p_content: content,
     });
     if (assistantError) return Response.json({ error: 'No se pudo guardar la respuesta.' }, { status: 500 });
 

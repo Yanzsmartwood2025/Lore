@@ -77,6 +77,7 @@ try {
   await db.exec(`insert into lore_chat_messages(conversation_id,role,content) values ('${ownConversation}','user','hello')`);
   check(await scalar('select count(*)::int from lore_chat_messages'), 1, 'Own chat read/write succeeds');
   await denied(`insert into lore_chat_messages(conversation_id,role,content) values ('${ownConversation}','assistant','forged')`, 'Cannot forge assistant reply');
+  await denied(`select save_lore_assistant_message('${ownConversation}', 'firebase-user-B', 'forged')`, 'User cannot invoke server-only assistant RPC');
   await denied("update lore_chat_conversations set user_id='firebase-user-A' where user_id='firebase-user-B'", 'Cannot transfer conversation ownership');
   check((await db.query(`update lore_chat_conversations set persona_slug='forged' where id='${conversationId}' returning id`)).rows.length, 0, 'Cannot update another user conversation');
   check((await db.query(`delete from lore_chat_conversations where id='${conversationId}' returning id`)).rows.length, 0, 'Cannot delete another user conversation');
@@ -88,6 +89,10 @@ try {
   check(await scalar('select count(*)::int from lore_profiles'), 0, 'Anonymous cannot read profiles');
   await denied('select * from lore_chat_conversations', 'Anonymous cannot access conversations');
   check(await scalar('select count(*)::int from lore_media_assets'), 1, 'Public media remains accessible');
+  await login('', 'service_role');
+  await denied(`select save_lore_assistant_message('${conversationId}', 'firebase-user-B', 'wrong owner')`, 'Server RPC rejects mismatched conversation owner');
+  await db.exec(`select save_lore_assistant_message('${conversationId}', 'firebase-user-A', 'verified response')`);
+  check(await scalar(`select count(*)::int from lore_chat_messages where conversation_id='${conversationId}'`), 2, 'Server RPC stores reply for verified owner');
   console.log(`${checks} isolated PostgreSQL checks passed. Live Firebase/Supabase JWT tests still required.`);
 } finally {
   await db.close();
