@@ -20,13 +20,8 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
 
   const total = models.length;
 
-  const handlePrev = () => {
-    setActiveIndex((prev) => (prev - 1 + total) % total);
-  };
-
-  const handleNext = () => {
-    setActiveIndex((prev) => (prev + 1) % total);
-  };
+  const handlePrev = () => setActiveIndex((prev) => (prev - 1 + total) % total);
+  const handleNext = () => setActiveIndex((prev) => (prev + 1) % total);
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     pointerStartXRef.current = event.clientX;
@@ -57,9 +52,8 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
 
   return (
     <div className="relative mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col items-center select-none">
-      {/* Carrusel 3D independiente del fondo global */}
       <div
-        className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden [perspective:1200px] cursor-grab active:cursor-grabbing touch-pan-y"
+        className="relative flex min-h-0 w-full flex-1 cursor-grab items-center justify-center overflow-hidden [perspective:1200px] active:cursor-grabbing touch-pan-y"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}
@@ -79,41 +73,37 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
 
           const isActive = offset === 0;
           const isVisible = Math.abs(offset) <= 2;
-
           if (!isVisible) return null;
 
-          const translateX = offset * 205 + dragOffset;
-          const translateY = 65 + Math.abs(offset) * 52;
-          const translateZ = isActive ? 110 : -Math.abs(offset) * 130;
+          const translateX = offset * 185 + dragOffset;
+          const translateY = 24 + Math.abs(offset) * 34;
+          const translateZ = isActive ? 100 : -Math.abs(offset) * 120;
           const rotateY = offset * -32;
-          const rotateZ = offset * 5;
-          const scale = isActive ? 0.94 : 0.78 - Math.abs(offset) * 0.1;
+          const rotateZ = offset * 4;
+          const scale = isActive ? 0.98 : 0.78 - Math.abs(offset) * 0.1;
           const opacity = isActive ? 1 : 0.7 - Math.abs(offset) * 0.2;
           const zIndex = 20 - Math.abs(offset) * 5;
 
           const cardContent = (
             <GlassCard
-              className={`w-52 h-72 sm:w-60 sm:h-80 p-5 flex flex-col items-center justify-between text-center transition-all duration-500 ease-out border rounded-3xl backdrop-blur-xl relative overflow-hidden group ${
+              className={`relative flex h-60 w-44 flex-col items-center justify-between overflow-hidden rounded-3xl border p-4 text-center backdrop-blur-xl transition-all duration-500 ease-out sm:h-72 sm:w-52 ${
                 isActive
-                  ? 'border-[#00f2ea] shadow-[0_0_35px_rgba(0,242,234,0.4)] bg-black/80'
+                  ? 'border-[#00f2ea] bg-black/80 shadow-[0_0_30px_rgba(0,242,234,0.35)]'
                   : 'border-white/10 bg-black/60 shadow-lg'
               }`}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black z-0 pointer-events-none" />
+              <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-black/40 to-black pointer-events-none" />
 
               {!model.isActive && (
-                <span className="absolute top-3 right-3 z-10 text-[9px] font-bold uppercase tracking-wider text-pink-400 bg-pink-950/80 border border-pink-500/40 px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
-                  <FontAwesomeIcon icon={faLock} className="text-[8px]" />
-                  Próximamente
+                <span className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full border border-pink-500/40 bg-pink-950/80 px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-pink-400">
+                  <FontAwesomeIcon icon={faLock} className="text-[8px]" /> Próximamente
                 </span>
               )}
 
               <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,242,234,0.10),transparent_42%)]" aria-hidden="true" />
 
-              <div className="relative z-10 mt-auto mb-5">
-                <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">
-                  {model.name}
-                </h3>
+              <div className="relative z-10 mb-3 mt-auto">
+                <h3 className="text-lg font-black uppercase tracking-wider text-white drop-shadow-md sm:text-xl">{model.name}</h3>
               </div>
             </GlassCard>
           );
@@ -147,17 +137,17 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
         })}
       </div>
 
-      <div className="flex space-x-2 -mt-1 z-30">
-        {models.map((m, idx) => (
+      <div className="z-30 -mt-1 flex space-x-2 pb-0.5">
+        {models.map((model, idx) => (
           <button
-            key={m.id}
+            key={model.id}
             onClick={() => setActiveIndex(idx)}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-1.5 rounded-full transition-all duration-300 ${
               idx === activeIndex
                 ? 'w-6 bg-[#00f2ea] shadow-[0_0_10px_rgba(0,242,234,0.8)]'
-                : 'w-2 bg-white/30 hover:bg-white/60'
+                : 'w-1.5 bg-white/30 hover:bg-white/60'
             }`}
-            aria-label={`Ir a ${m.name}`}
+            aria-label={`Ir a ${model.name}`}
           />
         ))}
       </div>
