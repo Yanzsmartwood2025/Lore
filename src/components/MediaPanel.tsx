@@ -16,6 +16,7 @@ export function MediaPanel() {
   const [showYtPanel, setShowYtPanel] = useState(false);
   const armedAt = useRef(0);
   const touchStartY = useRef<number | null>(null);
+  const touchStartedInGestureZone = useRef(false);
 
   const persona = models.find((model) => model.slug === (isHome ? selected : pathname.split('/')[1])) ?? models[0];
   const loreSignature = models[0].signature ?? '/assets/brand/intro/Lore-intro.png';
@@ -35,6 +36,11 @@ export function MediaPanel() {
   }, [pathname]);
 
   useEffect(() => {
+    function isGestureZone(target: EventTarget | null) {
+      if (isHome) return true;
+      return target instanceof Element && Boolean(target.closest('[data-youtube-gesture-zone="true"]'));
+    }
+
     function requestReveal() {
       if (showYtPanel) return;
 
@@ -53,6 +59,7 @@ export function MediaPanel() {
     }
 
     function handleWheel(event: WheelEvent) {
+      if (!isGestureZone(event.target)) return;
       if (showYtPanel) {
         if (event.deltaY > 45) setShowYtPanel(false);
         return;
@@ -61,14 +68,22 @@ export function MediaPanel() {
     }
 
     function handleTouchStart(event: TouchEvent) {
-      touchStartY.current = event.touches[0]?.clientY ?? null;
+      touchStartedInGestureZone.current = isGestureZone(event.target);
+      touchStartY.current = touchStartedInGestureZone.current
+        ? (event.touches[0]?.clientY ?? null)
+        : null;
     }
 
     function handleTouchEnd(event: TouchEvent) {
-      if (touchStartY.current === null) return;
+      if (!touchStartedInGestureZone.current || touchStartY.current === null) {
+        touchStartedInGestureZone.current = false;
+        touchStartY.current = null;
+        return;
+      }
       const endY = event.changedTouches[0]?.clientY ?? touchStartY.current;
       const distance = endY - touchStartY.current;
       touchStartY.current = null;
+      touchStartedInGestureZone.current = false;
 
       if (!showYtPanel && distance > 55) requestReveal();
       if (showYtPanel && distance < -55) setShowYtPanel(false);
