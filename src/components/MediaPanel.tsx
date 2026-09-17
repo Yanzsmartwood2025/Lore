@@ -29,8 +29,22 @@ export function MediaPanel() {
   }, []);
 
   useEffect(() => {
+    setShowYtPanel(false);
+    armedAt.current = 0;
+  }, [pathname]);
+
+  useEffect(() => {
     function requestReveal() {
-      if (showYtPanel || isHome) return;
+      if (showYtPanel) return;
+
+      // En Home exigimos dos gestos seguidos para evitar que el panel de
+      // YouTube aparezca por accidente y moleste al intro. En los chats basta
+      // un gesto, porque el usuario ya está dentro de una conversación.
+      if (!isHome) {
+        setShowYtPanel(true);
+        return;
+      }
+
       const now = Date.now();
       if (now - armedAt.current < 1400) {
         armedAt.current = 0;
@@ -41,7 +55,6 @@ export function MediaPanel() {
     }
 
     function handleWheel(event: WheelEvent) {
-      if (isHome) return;
       if (showYtPanel) {
         if (event.deltaY > 45) setShowYtPanel(false);
         return;
@@ -50,12 +63,11 @@ export function MediaPanel() {
     }
 
     function handleTouchStart(event: TouchEvent) {
-      if (isHome) return;
       touchStartY.current = event.touches[0]?.clientY ?? null;
     }
 
     function handleTouchEnd(event: TouchEvent) {
-      if (isHome || touchStartY.current === null) return;
+      if (touchStartY.current === null) return;
       const endY = event.changedTouches[0]?.clientY ?? touchStartY.current;
       const distance = endY - touchStartY.current;
       touchStartY.current = null;
@@ -85,7 +97,6 @@ export function MediaPanel() {
 
         {!isHome && (
           <div className="absolute bottom-5 left-5 z-10 pointer-events-none drop-shadow-md sm:bottom-8 sm:left-6">
-            <span className="block text-[9px] font-semibold uppercase tracking-[0.28em] text-cyan-400">EL CLUB DE LORE</span>
             <strong className="text-xl font-bold uppercase tracking-wider text-white sm:text-2xl">{persona.name}</strong>
           </div>
         )}
@@ -94,8 +105,7 @@ export function MediaPanel() {
       {isHome && (
         <div className="pointer-events-none fixed inset-x-0 bottom-[max(.5rem,env(safe-area-inset-bottom))] z-20 flex items-end justify-between px-5 sm:px-8">
           <div className="pointer-events-none flex min-w-0 flex-col items-start">
-            <span className="mb-0.5 text-[9px] font-semibold uppercase tracking-[0.3em] text-cyan-400/90">EL CLUB DE LORE</span>
-            <div className="h-9 w-28 overflow-hidden sm:h-10 sm:w-32">
+            <div className="h-10 w-32 overflow-hidden sm:h-11 sm:w-36">
               <img
                 src="/assets/brand/intro/Lore-intro.png"
                 alt="Firma de Lore"
@@ -119,25 +129,23 @@ export function MediaPanel() {
         </div>
       )}
 
-      {!isHome && (
-        <div
-          className={`fixed left-0 right-0 top-0 z-40 flex justify-center border-b border-cyan-500/30 bg-black/90 p-2 shadow-2xl backdrop-blur-md transition-transform duration-350 ease-in-out ${
-            showYtPanel ? 'translate-y-0' : '-translate-y-full'
-          }`}
-        >
-          <div className="relative h-[158px] w-[280px] overflow-hidden rounded-lg border border-cyan-500/40 bg-black sm:h-[202px] sm:w-[360px]">
-            <div className="h-full w-full" id="yt-player-element" />
-            <button
-              type="button"
-              onClick={() => setShowYtPanel(false)}
-              className="absolute right-2 top-2 rounded border border-cyan-500/40 bg-black/75 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
-              title="Ocultar reproductor"
-            >
-              ✕ Ocultar
-            </button>
-          </div>
+      <div
+        className={`fixed left-0 right-0 top-0 z-40 flex justify-center border-b border-cyan-500/30 bg-black/90 p-2 shadow-2xl backdrop-blur-md transition-transform duration-350 ease-in-out ${
+          showYtPanel ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        <div className="relative h-[158px] w-[280px] overflow-hidden rounded-lg border border-cyan-500/40 bg-black sm:h-[202px] sm:w-[360px]">
+          <div className="h-full w-full" id="yt-player-element" />
+          <button
+            type="button"
+            onClick={() => setShowYtPanel(false)}
+            className="absolute right-2 top-2 rounded border border-cyan-500/40 bg-black/75 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
+            title="Ocultar reproductor"
+          >
+            ✕ Ocultar
+          </button>
         </div>
-      )}
+      </div>
     </>
   );
 }
