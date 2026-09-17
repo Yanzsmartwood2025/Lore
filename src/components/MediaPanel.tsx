@@ -16,7 +16,6 @@ export function MediaPanel() {
   const [showYtPanel, setShowYtPanel] = useState(false);
   const armedAt = useRef(0);
   const touchStartY = useRef<number | null>(null);
-  const touchStartedInGestureZone = useRef(false);
 
   const persona = models.find((model) => model.slug === (isHome ? selected : pathname.split('/')[1])) ?? models[0];
   const loreSignature = models[0].signature ?? '/assets/brand/intro/Lore-intro.png';
@@ -36,18 +35,19 @@ export function MediaPanel() {
   }, [pathname]);
 
   useEffect(() => {
-    function isGestureZone(target: EventTarget | null) {
-      if (isHome) return true;
-      return target instanceof Element && Boolean(target.closest('[data-youtube-gesture-zone="true"]'));
-    }
+    const revealFromChatHeader = () => {
+      if (!isHome) setShowYtPanel(true);
+    };
+
+    window.addEventListener('lore:youtube-reveal', revealFromChatHeader);
+    return () => window.removeEventListener('lore:youtube-reveal', revealFromChatHeader);
+  }, [isHome]);
+
+  useEffect(() => {
+    if (!isHome) return;
 
     function requestReveal() {
       if (showYtPanel) return;
-
-      if (!isHome) {
-        setShowYtPanel(true);
-        return;
-      }
 
       const now = Date.now();
       if (now - armedAt.current < 1400) {
@@ -59,7 +59,6 @@ export function MediaPanel() {
     }
 
     function handleWheel(event: WheelEvent) {
-      if (!isGestureZone(event.target)) return;
       if (showYtPanel) {
         if (event.deltaY > 45) setShowYtPanel(false);
         return;
@@ -68,22 +67,14 @@ export function MediaPanel() {
     }
 
     function handleTouchStart(event: TouchEvent) {
-      touchStartedInGestureZone.current = isGestureZone(event.target);
-      touchStartY.current = touchStartedInGestureZone.current
-        ? (event.touches[0]?.clientY ?? null)
-        : null;
+      touchStartY.current = event.touches[0]?.clientY ?? null;
     }
 
     function handleTouchEnd(event: TouchEvent) {
-      if (!touchStartedInGestureZone.current || touchStartY.current === null) {
-        touchStartedInGestureZone.current = false;
-        touchStartY.current = null;
-        return;
-      }
+      if (touchStartY.current === null) return;
       const endY = event.changedTouches[0]?.clientY ?? touchStartY.current;
       const distance = endY - touchStartY.current;
       touchStartY.current = null;
-      touchStartedInGestureZone.current = false;
 
       if (!showYtPanel && distance > 55) requestReveal();
       if (showYtPanel && distance < -55) setShowYtPanel(false);
