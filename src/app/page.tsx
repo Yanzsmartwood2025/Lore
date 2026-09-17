@@ -50,7 +50,7 @@ export default function Home() {
   const currentFrame = SPLASH_FRAMES[frameIndex];
 
   return (
-    <main className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-black select-none">
+    <main className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-transparent select-none">
       <TopNavMenu />
 
       {showSplash && (
