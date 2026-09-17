@@ -36,9 +36,9 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const storageKey = `${slug}_chat_history`;
-
   const persona = models.find((m) => m.slug === slug);
   const avatarSrc = avatar || persona?.avatar || '/images/Lore-180x180.png';
+  const signatureSrc = persona?.signature;
 
   useEffect(() => {
     const welcomeText =
@@ -51,7 +51,7 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
         const parsed = JSON.parse(saved) as ChatMessage[];
         if (Array.isArray(parsed) && parsed.length > 0) {
           const validMessages = parsed.filter(
-            (m) => m && (m.role === 'user' || m.role === 'assistant') && m.content
+            (m) => m && (m.role === 'user' || m.role === 'assistant') && m.content,
           );
           if (validMessages.length > 0) {
             setMessages(validMessages.slice(-MAX_STORAGE_MESSAGES));
@@ -61,25 +61,25 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
         }
       }
     } catch {
-      // Si falla la lectura, se reinicia
+      // Si falla la lectura, se reinicia.
     }
 
-    const defaultWelcomeMessage: ChatMessage = {
-      id: 'welcome-msg',
-      role: 'assistant',
-      content: welcomeText,
-    };
-    setMessages([defaultWelcomeMessage]);
+    setMessages([
+      {
+        id: 'welcome-msg',
+        role: 'assistant',
+        content: welcomeText,
+      },
+    ]);
     setIsInitialized(true);
   }, [slug, storageKey, persona]);
 
   useEffect(() => {
     if (!isInitialized || messages.length === 0) return;
     try {
-      const toSave = messages.slice(-MAX_STORAGE_MESSAGES);
-      localStorage.setItem(storageKey, JSON.stringify(toSave));
+      localStorage.setItem(storageKey, JSON.stringify(messages.slice(-MAX_STORAGE_MESSAGES)));
     } catch {
-      // Manejar error de cuota si ocurre
+      // Manejar error de cuota si ocurre.
     }
   }, [messages, isInitialized, storageKey]);
 
@@ -103,7 +103,11 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
       return;
     }
 
-    const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', content };
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content,
+    };
     const history = messages.map(({ role, content: messageContent }) => ({
       role,
       content: messageContent,
@@ -116,7 +120,11 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
       content: '',
     };
 
-    setMessages((currentMessages) => [...currentMessages, userMessage, assistantMessagePlaceholder]);
+    setMessages((currentMessages) => [
+      ...currentMessages,
+      userMessage,
+      assistantMessagePlaceholder,
+    ]);
     setInput('');
     setError(null);
     setIsSending(true);
@@ -136,6 +144,7 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
     try {
       const idToken = await getIdToken();
       if (!idToken) throw new Error('Tu sesión venció. Inicia sesión otra vez.');
+
       const response = await fetch(`/api/chat/${encodeURIComponent(slug)}`, {
         method: 'POST',
         headers: {
@@ -151,14 +160,18 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
           const errorData = (await response.json()) as { error?: string };
           if (errorData.error) errorMessage = errorData.error;
         } catch {
-          // Ignorar fallo de parseo JSON
+          // Ignorar fallo de parseo JSON.
         }
-        setMessages((current) => current.filter((msg) => msg.id !== assistantMessageId));
+        setMessages((current) =>
+          current.filter((msg) => msg.id !== assistantMessageId),
+        );
         throw new Error(errorMessage);
       }
 
       if (!response.body) {
-        setMessages((current) => current.filter((msg) => msg.id !== assistantMessageId));
+        setMessages((current) =>
+          current.filter((msg) => msg.id !== assistantMessageId),
+        );
         throw new Error('No se recibió la transmisión del chat.');
       }
 
@@ -198,13 +211,15 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
               );
             }
           } catch {
-            // Ignorar líneas SSE malformadas
+            // Ignorar líneas SSE malformadas.
           }
         }
       }
 
       if (!receivedAnyText) {
-        setMessages((current) => current.filter((msg) => msg.id !== assistantMessageId));
+        setMessages((current) =>
+          current.filter((msg) => msg.id !== assistantMessageId),
+        );
         throw new Error('El chat no devolvió ninguna respuesta.');
       }
     } catch (requestError) {
@@ -219,32 +234,35 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
   }
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl border border-white/20 bg-slate-950/50 text-white shadow-2xl backdrop-blur-xl">
-      <div className="absolute inset-0 -z-10 overflow-hidden opacity-30 pointer-events-none">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-cyan-500/30 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-fuchsia-600/30 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(0,242,234,0.15)_0%,transparent_70%)]" />
-      </div>
-
-      <header className="relative z-10 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40 backdrop-blur-md">
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl border border-white/25 bg-white/[0.025] text-white shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+      <header className="relative z-10 flex items-center justify-between border-b border-white/15 bg-white/[0.035] px-4 py-3 backdrop-blur-[3px]">
         <Link
           href="/"
           aria-label={`Volver al inicio desde el chat de ${name}`}
           title="Volver al inicio"
-          className="group inline-flex min-w-0 items-center rounded-lg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+          className="group inline-flex min-w-0 items-center rounded-xl px-1 py-0.5 outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-white/60"
         >
-          <h2 className="truncate text-base font-bold tracking-wide text-white transition-colors group-hover:text-cyan-300 group-active:text-cyan-400">
-            {name}
-          </h2>
+          {signatureSrc ? (
+            <img
+              src={signatureSrc}
+              alt={`Firma de ${name}`}
+              className="h-9 w-32 object-contain object-left drop-shadow-[0_0_7px_rgba(255,255,255,0.20)] sm:h-10 sm:w-36"
+              draggable={false}
+            />
+          ) : (
+            <span className="truncate text-base font-semibold tracking-wide text-white">
+              {name}
+            </span>
+          )}
         </Link>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+          <div className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.045] px-2.5 py-1 text-[11px] font-medium text-white/90 shadow-[inset_0_0_12px_rgba(255,255,255,0.035)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
             <span>En línea</span>
           </div>
 
-          <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-cyan-400/60 shadow-[0_0_12px_rgba(0,242,234,0.4)] shrink-0 bg-slate-800">
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-white/35 bg-white/[0.035] shadow-[0_0_14px_rgba(255,255,255,0.10)]">
             <Image
               src={avatarSrc}
               alt={name}
@@ -256,10 +274,13 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent" aria-live="polite">
+      <div
+        className="flex-1 space-y-4 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10"
+        aria-live="polite"
+      >
         {messages.length === 0 && (
-          <div className="flex h-full items-center justify-center text-center p-6">
-            <p className="text-sm text-cyan-200/70 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-2xl border border-white/10">
+          <div className="flex h-full items-center justify-center p-6 text-center">
+            <p className="rounded-2xl border border-white/15 bg-white/[0.045] px-4 py-2 text-sm text-white/75">
               Escríbele a {name} para comenzar la conversación...
             </p>
           </div>
@@ -273,10 +294,10 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm sm:text-base leading-relaxed tracking-wide transition-all shadow-lg ${
+                className={`max-w-[85%] rounded-2xl border px-4 py-3 text-sm leading-relaxed tracking-wide text-white shadow-[0_6px_18px_rgba(0,0,0,0.14)] sm:max-w-[75%] sm:text-base ${
                   message.role === 'user'
-                    ? 'rounded-tr-none bg-gradient-to-r from-cyan-500/90 to-blue-600/90 text-slate-950 font-medium backdrop-blur-md border border-cyan-300/40 shadow-[0_4px_15px_rgba(0,242,234,0.2)]'
-                    : 'rounded-tl-none bg-slate-900/60 text-slate-100 backdrop-blur-md border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:border-cyan-400/30 font-sans'
+                    ? 'rounded-tr-none border-white/30 bg-white/[0.14]'
+                    : 'rounded-tl-none border-white/18 bg-white/[0.055]'
                 }`}
               >
                 <div className="whitespace-pre-wrap break-words">
@@ -288,11 +309,13 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
 
         {isSending && !isStreamingAssistantResponse && (
           <div className="flex justify-start">
-            <div className="rounded-2xl rounded-tl-none bg-slate-900/60 backdrop-blur-md border border-cyan-400/30 px-4 py-3 text-xs sm:text-sm text-cyan-300 flex items-center gap-2 shadow-[0_0_15px_rgba(0,242,234,0.15)]">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" />
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce delay-150" />
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce delay-300" />
-              <span className="ml-1 text-cyan-200/80 font-medium">{name} está escribiendo...</span>
+            <div className="flex items-center gap-2 rounded-2xl rounded-tl-none border border-white/20 bg-white/[0.055] px-4 py-3 text-xs text-white/80 shadow-[0_6px_18px_rgba(0,0,0,0.12)] sm:text-sm">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white [animation-delay:150ms]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white [animation-delay:300ms]" />
+              <span className="ml-1 font-medium text-white/75">
+                {name} está escribiendo...
+              </span>
             </div>
           </div>
         )}
@@ -301,18 +324,27 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
       </div>
 
       {!user && (
-        <div className="relative z-10 border-t border-white/10 bg-black/50 p-3 sm:p-4">
-          <p className="mb-3 text-xs font-medium text-cyan-100">
+        <div className="relative z-10 border-t border-white/15 bg-white/[0.035] p-3 sm:p-4">
+          <p className="mb-3 text-xs font-medium text-white/80">
             Inicia sesión para conversar con {name}.
           </p>
           <AuthPanel />
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="relative z-10 p-3 sm:p-4 border-t border-white/10 bg-black/40 backdrop-blur-md">
-        {error && <p className="mb-2 text-xs text-rose-400 font-medium" role="alert">{error}</p>}
+      <form
+        onSubmit={handleSubmit}
+        className="relative z-10 border-t border-white/15 bg-white/[0.035] p-3 backdrop-blur-[3px] sm:p-4"
+      >
+        {error && (
+          <p className="mb-2 text-xs font-medium text-rose-300" role="alert">
+            {error}
+          </p>
+        )}
         <div className="flex items-center gap-2">
-          <label htmlFor="chat-message" className="sr-only">Escribe un mensaje para {name}</label>
+          <label htmlFor="chat-message" className="sr-only">
+            Escribe un mensaje para {name}
+          </label>
           <input
             id="chat-message"
             value={input}
@@ -320,12 +352,12 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
             maxLength={2000}
             disabled={isSending}
             placeholder={`Escríbele directamente a ${name}...`}
-            className="min-w-0 flex-1 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-md px-4 py-3 text-sm sm:text-base text-white placeholder:text-gray-400/70 outline-none focus:border-cyan-400/80 focus:ring-1 focus:ring-cyan-400/50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-w-0 flex-1 rounded-2xl border border-white/20 bg-white/[0.045] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-white/45 focus:ring-1 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
           />
           <button
             type="submit"
             disabled={!input.trim() || isSending}
-            className="inline-flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-[0_0_15px_rgba(0,242,234,0.4)] transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-white/[0.11] text-white shadow-[0_0_14px_rgba(255,255,255,0.08)] transition-all hover:bg-white/[0.17] active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white/[0.11] sm:h-12 sm:w-12"
             aria-label="Enviar mensaje"
           >
             <FontAwesomeIcon icon={faPaperPlane} className="text-base" />
