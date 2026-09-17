@@ -13,6 +13,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
 import { useMedia } from '@/context/MediaContext';
+import { useAuth } from '@/context/AuthContext';
 import { MusicRequestForm } from '@/components/MusicRequestForm';
 import { AuthPanel } from '@/components/AuthPanel';
 import { MenuMusicControls } from '@/components/MenuMusicControls';
@@ -20,6 +21,7 @@ import { MenuMusicControls } from '@/components/MenuMusicControls';
 export function TopNavMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const { enterLobby } = useMedia();
+  const { user } = useAuth();
 
   return (
     <>
@@ -79,7 +81,16 @@ export function TopNavMenu() {
                   <p className="text-[9px] uppercase tracking-[0.22em] text-slate-500">Cuenta</p>
                   <p className="text-xs font-medium text-white">Acceso VIP</p>
                 </div>
-                <span className="rounded-full border border-white/10 bg-black/50 px-2 py-1 text-[9px] uppercase tracking-wider text-slate-500">Login</span>
+                <span
+                  className={`flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-wider ${
+                    user
+                      ? 'border-emerald-300/35 bg-emerald-400/10 text-emerald-200 shadow-[0_0_12px_rgba(52,211,153,0.12)]'
+                      : 'border-white/10 bg-black/50 text-slate-500'
+                  }`}
+                >
+                  {user && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,0.95)]" />}
+                  {user ? 'Online' : 'Login'}
+                </span>
               </div>
               <AuthPanel />
             </div>
