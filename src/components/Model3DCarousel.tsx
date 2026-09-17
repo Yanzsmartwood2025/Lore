@@ -72,27 +72,29 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
           if (offset > Math.floor(total / 2)) offset -= total;
 
           const isActive = offset === 0;
-          const isVisible = Math.abs(offset) <= 2;
+          // Solo tres tarjetas vivas a la vez: la activa y una por cada lado.
+          // Las demás no consumen blur, composición ni pintura en el teléfono.
+          const isVisible = Math.abs(offset) <= 1;
           if (!isVisible) return null;
 
           const translateX = offset * 185 + dragOffset;
           const translateY = 24 + Math.abs(offset) * 34;
-          const translateZ = isActive ? 100 : -Math.abs(offset) * 120;
+          const translateZ = isActive ? 100 : -120;
           const rotateY = offset * -32;
           const rotateZ = offset * 4;
-          const scale = isActive ? 0.98 : 0.78 - Math.abs(offset) * 0.1;
-          const opacity = isActive ? 1 : 0.7 - Math.abs(offset) * 0.2;
+          const scale = isActive ? 0.98 : 0.78;
+          const opacity = isActive ? 1 : 0.58;
           const zIndex = 20 - Math.abs(offset) * 5;
 
           const cardContent = (
             <GlassCard
-              className={`relative flex h-60 w-44 flex-col items-center justify-between overflow-hidden rounded-3xl border p-4 text-center backdrop-blur-xl transition-all duration-500 ease-out sm:h-72 sm:w-52 ${
+              className={`relative flex h-60 w-44 flex-col items-center justify-between overflow-hidden rounded-3xl border p-4 text-center transition-colors duration-300 sm:h-72 sm:w-52 ${
                 isActive
-                  ? 'border-[#00f2ea] bg-black/80 shadow-[0_0_30px_rgba(0,242,234,0.35)]'
-                  : 'border-white/10 bg-black/60 shadow-lg'
+                  ? 'border-[#00f2ea] bg-black/82 shadow-[0_0_24px_rgba(0,242,234,0.28)]'
+                  : 'border-white/10 bg-black/72 shadow-md'
               }`}
             >
-              <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-black/40 to-black pointer-events-none" />
+              <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-black/35 to-black pointer-events-none" />
 
               {!model.isActive && (
                 <span className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full border border-pink-500/40 bg-pink-950/80 px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-pink-400">
@@ -100,7 +102,7 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
                 </span>
               )}
 
-              <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,242,234,0.10),transparent_42%)]" aria-hidden="true" />
+              <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,242,234,0.08),transparent_42%)]" aria-hidden="true" />
 
               <div className="relative z-10 mb-3 mt-auto">
                 <h3 className="text-lg font-black uppercase tracking-wider text-white drop-shadow-md sm:text-xl">{model.name}</h3>
@@ -111,11 +113,12 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
           return (
             <div
               key={model.id}
-              className={`absolute ${isDragging ? '' : 'transition-all duration-500 ease-out'}`}
+              className={`absolute ${isDragging ? '' : 'transition-[transform,opacity] duration-450 ease-out'}`}
               style={{
                 transform: `translate3d(${translateX}px, ${translateY}px, ${translateZ}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`,
                 opacity,
                 zIndex,
+                willChange: isDragging ? 'transform' : undefined,
               }}
             >
               {model.isActive ? (
@@ -144,7 +147,7 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
             onClick={() => setActiveIndex(idx)}
             className={`h-1.5 rounded-full transition-all duration-300 ${
               idx === activeIndex
-                ? 'w-6 bg-[#00f2ea] shadow-[0_0_10px_rgba(0,242,234,0.8)]'
+                ? 'w-6 bg-[#00f2ea] shadow-[0_0_8px_rgba(0,242,234,0.65)]'
                 : 'w-1.5 bg-white/30 hover:bg-white/60'
             }`}
             aria-label={`Ir a ${model.name}`}
