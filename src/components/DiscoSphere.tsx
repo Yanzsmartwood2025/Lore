@@ -18,15 +18,19 @@ void main(){
  vec3 cyan=vec3(.04,.88,1.), violet=vec3(.64,.17,1.), amber=vec3(1.,.46,.12);
  float flash=beat*beat;
  float r=length(p), radius=.58+beat*.020, safeR=max(r,.001);
+ float roomAngle=atan(p.y,p.x);
  vec3 color=vec3(.006,.012,.028);
 
- // Ambiente de club: el bombo levanta toda la sala sin convertirla en un flash blanco.
- float room=exp(-r*1.35);
+ // Ambiente de club premium: luz amplia y móvil, sin flashes agresivos.
+ float room=exp(-r*1.18);
  float sweepA=.5+.5*sin(time*.19+p.x*1.7-p.y*.7);
  float sweepB=.5+.5*sin(time*.13-p.x*1.1+p.y*1.4+1.8);
- color+=cyan*room*(.032+.052*sweepA+.095*flash);
- color+=violet*room*(.020+.038*sweepB+.070*flash);
- color+=amber*room*warmth*(.012+.105*flash);
+ float sweepC=.5+.5*sin(time*.10+roomAngle*2.0+r*1.9);
+ float roomArc=pow(.5+.5*cos(roomAngle-time*.12),7.)*exp(-r*.72);
+ color+=cyan*room*(.040+.060*sweepA+.105*flash);
+ color+=violet*room*(.028+.046*sweepB+.078*flash);
+ color+=mix(cyan,violet,sweepC)*roomArc*(.018+.085*energy+.090*beat);
+ color+=amber*room*warmth*(.014+.112*flash);
 
  // Haces anchos que nacen desde el núcleo y golpean visualmente el escenario.
  vec2 stage=p-vec2(0.,-.05);
@@ -46,10 +50,20 @@ void main(){
    float latitude=asin(clamp(n.y,-1.,1.));
    float bands=pow(.5+.5*sin(longitude*22.),18.)*pow(.5+.5*sin(n.y*26.),8.);
    float core=exp(-length(p-vec2(.07,-.03))*8.);
+   float deepCore=exp(-r*4.9);
+   float hotCore=exp(-r*10.5);
+   float innerBreath=.5+.5*sin(time*1.18);
+   float innerOrbit=.5+.5*sin(longitude*4.0-latitude*2.5-time*1.7);
 
-   color=vec3(.025,.055,.085)*(diffuse+.3)+cyan*rim*(1.02+beat*.52);
-   color+=mix(violet,cyan,n.y*.5+.5)*bands*(.72+beat*.34)+vec3(1.)*spec*(.88+beat*.48);
-   color+=mix(cyan,amber,warmth*.55)*core*(.30+energy*.10+beat*1.02);
+   color=vec3(.025,.055,.085)*(diffuse+.3)+cyan*rim*(1.06+beat*.56);
+   color+=mix(violet,cyan,n.y*.5+.5)*bands*(.76+beat*.38)+vec3(1.)*spec*(.90+beat*.50);
+   color+=mix(cyan,amber,warmth*.55)*core*(.34+energy*.12+beat*1.08);
+
+   // Núcleo luminoso visible desde dentro: respira y cambia de tono con el ritmo.
+   vec3 innerColor=mix(cyan,violet,.38+.34*innerOrbit);
+   innerColor=mix(innerColor,amber,warmth*beat*.28);
+   color+=innerColor*deepCore*(.10+.13*innerBreath+.32*energy+.44*beat);
+   color+=mix(vec3(1.),cyan,.55)*hotCore*(.035+.12*innerBreath+.42*beat);
 
    // Matriz de puntos LED sobre la esfera. Los puntos se encienden por zonas y
    // cambian cyan/violeta/ámbar según la fase del beat.
@@ -86,6 +100,17 @@ void main(){
  color+=ringColor2*ring2*depth2*(.46+chase2*(.58+beat*1.05)+beat*.24);
  color+=cyan*ring2*chase2*depth2*(.08+beat*.52);
 
+ // Anillo 3 fino: más luces girando sin recargar la escena.
+ vec2 q3=rotate2(p,time*.052-.45);
+ vec2 e3v=vec2(q3.x*1.55+q3.y*.48,q3.y*2.7);
+ float orbit3=length(e3v);
+ float ring3=exp(-abs(orbit3-1.04)*225.);
+ float ringA3=atan(e3v.y,e3v.x);
+ float chase3=pow(.5+.5*sin(ringA3*17.-time*3.05),20.);
+ vec3 ringColor3=mix(cyan,violet,.5+.5*sin(ringA3*2.8-time*.24));
+ color+=ringColor3*ring3*(.16+chase3*(.38+beat*.78));
+ color+=mix(cyan,amber,warmth*.36)*ring3*chase3*(.03+beat*.25);
+
  // Corona LED exterior de la propia esfera: segmentos cortos que responden al bombo.
  float a=atan(p.y,p.x);
  float rimLine=exp(-abs(r-radius)*105.);
@@ -97,16 +122,23 @@ void main(){
  float halo=smoothstep(.62,.76,r)*(1.-smoothstep(.76,1.42,r));
  float beamA=pow(max(cos(a-time*.28),0.),34.)*halo;
  float beamB=pow(max(cos(a+time*.22+2.35),0.),38.)*halo;
- color+=mix(cyan,amber,warmth*.45)*beamA*(.020+energy*.075+beat*.22);
- color+=violet*beamB*(.014+energy*.055+beat*.17);
+ float beamC=pow(max(cos(a-time*.13+4.25),0.),42.)*halo;
+ color+=mix(cyan,amber,warmth*.45)*beamA*(.026+energy*.082+beat*.24);
+ color+=violet*beamB*(.020+energy*.064+beat*.19);
+ color+=mix(cyan,violet,.42)*beamC*(.010+energy*.045+beat*.12);
  float bounce=exp(-abs(r-(.95+.035*sin(time*.8)))*40.)*(.014+energy*.025+beat*.13);
  color+=mix(cyan,mix(violet,amber,warmth),.45)*bounce;
 
  // Rebote bajo que refuerza la sensación de vidrio en las tarjetas.
- float floorGlow=exp(-abs(p.y+.72)*9.)*exp(-abs(p.x)*.65);
- color+=mix(cyan,amber,warmth*.58)*floorGlow*(.010+.095*beat);
+ float floorGlow=exp(-abs(p.y+.72)*8.)*exp(-abs(p.x)*.58);
+ color+=mix(cyan,amber,warmth*.58)*floorGlow*(.014+.11*beat);
 
- gl_FragColor=vec4(color,1.-smoothstep(.94,1.38,safeR));
+ // La sala completa conserva un brillo muy tenue para que los rebotes alcancen
+ // los extremos del Home incluso en pantallas anchas.
+ float edgeRoom=exp(-r*.58)*(.006+.013*energy+.010*beat);
+ color+=mix(cyan,violet,.48)*edgeRoom;
+
+ gl_FragColor=vec4(color,1.0);
 }`;
 
 export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?: boolean; className?: string }) {

@@ -96,7 +96,7 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
 
               {/* Reflejo de luz sincronizado con YouTube: una sola capa barata por tarjeta visible. */}
               <div
-                className="pointer-events-none absolute -inset-y-8 z-[1] w-16 -skew-x-12 rounded-full bg-gradient-to-r from-transparent via-cyan-200/80 to-transparent blur-sm transition-[left,opacity] duration-150 ease-out"
+                className="pointer-events-none absolute -inset-y-8 z-[1] w-16 -skew-x-12 rounded-full bg-gradient-to-r from-transparent via-cyan-100/85 to-transparent blur-sm transition-[left,opacity] duration-150 ease-out"
                 style={{
                   left: 'var(--lore-sweep-x, 18%)',
                   opacity: isActive ? 'var(--lore-card-glow, 0.05)' : 'var(--lore-card-side-glow, 0.025)',
@@ -104,7 +104,15 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
                 aria-hidden="true"
               />
               <div
-                className="pointer-events-none absolute inset-x-3 bottom-0 z-[1] h-16 rounded-t-[50%] bg-[radial-gradient(ellipse_at_bottom,rgba(0,242,234,0.58),rgba(139,55,255,0.20)_45%,transparent_72%)] blur-md transition-opacity duration-100"
+                className="pointer-events-none absolute -inset-y-10 z-[1] w-10 skew-x-12 rounded-full bg-gradient-to-r from-transparent via-violet-300/55 to-transparent blur-md transition-[right,opacity] duration-200 ease-out"
+                style={{
+                  right: 'var(--lore-sweep-x, 18%)',
+                  opacity: isActive ? 'var(--lore-card-side-glow, 0.025)' : '0.02',
+                }}
+                aria-hidden="true"
+              />
+              <div
+                className="pointer-events-none absolute inset-x-2 bottom-0 z-[1] h-20 rounded-t-[50%] bg-[radial-gradient(ellipse_at_bottom,rgba(0,242,234,0.66),rgba(139,55,255,0.26)_46%,transparent_74%)] blur-md transition-opacity duration-100"
                 style={{ opacity: isActive ? 'var(--lore-card-glow, 0.05)' : 'var(--lore-card-side-glow, 0.025)' }}
                 aria-hidden="true"
               />
@@ -120,7 +128,11 @@ export function Model3DCarousel({ models }: Model3DCarouselProps) {
                 </span>
               )}
 
-              <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,242,234,0.08),transparent_42%)]" aria-hidden="true" />
+              <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,242,234,0.09),transparent_42%)]" aria-hidden="true" />
+              <div
+                className="pointer-events-none absolute inset-0 z-[1] rounded-3xl border border-white/[0.04] shadow-[inset_0_0_18px_rgba(0,242,234,0.035),inset_-10px_0_24px_rgba(139,55,255,0.025)]"
+                aria-hidden="true"
+              />
 
               <div className="relative z-10 mb-2 mt-auto flex h-14 w-full items-center justify-center sm:h-16">
                 {model.signature ? (
