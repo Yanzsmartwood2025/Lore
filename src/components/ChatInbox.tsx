@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { models } from '@/data/models';
@@ -20,12 +21,11 @@ interface ChatInboxProps {
   name: string;
   slug: string;
   avatar?: string;
-  tagline?: string;
 }
 
 const MAX_STORAGE_MESSAGES = 50;
 
-export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
+export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
   const { setAmbientCategory } = useMedia();
   const { user, getIdToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -39,9 +39,7 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
 
   const persona = models.find((m) => m.slug === slug);
   const avatarSrc = avatar || persona?.avatar || '/images/Lore-180x180.png';
-  const modelTagline = tagline || persona?.tagline || 'En línea';
 
-  // Cargar historial de localStorage o inicializar con mensaje de bienvenida limpio
   useEffect(() => {
     const welcomeText =
       persona?.welcomeMessage ??
@@ -56,7 +54,6 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
             (m) => m && (m.role === 'user' || m.role === 'assistant') && m.content
           );
           if (validMessages.length > 0) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration from browser storage
             setMessages(validMessages.slice(-MAX_STORAGE_MESSAGES));
             setIsInitialized(true);
             return;
@@ -76,7 +73,6 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
     setIsInitialized(true);
   }, [slug, storageKey, persona]);
 
-  // Guardar en localStorage cuando cambien los mensajes
   useEffect(() => {
     if (!isInitialized || messages.length === 0) return;
     try {
@@ -125,7 +121,6 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
     setError(null);
     setIsSending(true);
 
-    // El ambiente se decide en paralelo: nunca retrasa ni reemplaza la respuesta del chat.
     void fetch('/api/music-category', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -154,9 +149,7 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
         let errorMessage = 'No pudimos enviar tu mensaje.';
         try {
           const errorData = (await response.json()) as { error?: string };
-          if (errorData.error) {
-            errorMessage = errorData.error;
-          }
+          if (errorData.error) errorMessage = errorData.error;
         } catch {
           // Ignorar fallo de parseo JSON
         }
@@ -226,22 +219,25 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
   }
 
   return (
-    <div className="relative w-full rounded-3xl border border-white/20 bg-slate-950/50 backdrop-blur-xl shadow-2xl overflow-hidden text-white flex flex-col h-[calc(100vh-120px)] max-h-[750px] min-h-[500px]">
-      {/* Fondo de pantalla de cristal con brillo ambientado y animación */}
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl border border-white/20 bg-slate-950/50 text-white shadow-2xl backdrop-blur-xl">
       <div className="absolute inset-0 -z-10 overflow-hidden opacity-30 pointer-events-none">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-cyan-500/30 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-fuchsia-600/30 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(0,242,234,0.15)_0%,transparent_70%)]" />
       </div>
 
-      {/* Encabezado compacto con foto oficial del personaje a la derecha */}
       <header className="relative z-10 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div>
-          <h2 className="text-base font-bold text-white tracking-wide">{name}</h2>
-          <p className="text-xs text-cyan-300/80 font-medium">{modelTagline}</p>
-        </div>
+        <Link
+          href="/"
+          aria-label={`Volver al inicio desde el chat de ${name}`}
+          title="Volver al inicio"
+          className="group inline-flex min-w-0 items-center rounded-lg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+        >
+          <h2 className="truncate text-base font-bold tracking-wide text-white transition-colors group-hover:text-cyan-300 group-active:text-cyan-400">
+            {name}
+          </h2>
+        </Link>
 
-        {/* Lado derecho: Círculo con foto oficial y estado en línea */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
@@ -260,7 +256,6 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
         </div>
       </header>
 
-      {/* Área del Chat sobre cristal */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent" aria-live="polite">
         {messages.length === 0 && (
           <div className="flex h-full items-center justify-center text-center p-6">
@@ -314,7 +309,6 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
         </div>
       )}
 
-      {/* Formulario / Input de texto sobre cristal */}
       <form onSubmit={handleSubmit} className="relative z-10 p-3 sm:p-4 border-t border-white/10 bg-black/40 backdrop-blur-md">
         {error && <p className="mb-2 text-xs text-rose-400 font-medium" role="alert">{error}</p>}
         <div className="flex items-center gap-2">
