@@ -30,8 +30,6 @@ void main(){
  color+=violet*exp(-abs(orbit2-.92)*210.)*.4;
  color+=cyan*exp(-abs(r-radius)*90.)*.22;
 
- // Dos haces baratos dentro del mismo shader: dan sensación de luz que sale,
- // toca el entorno y vuelve sin añadir partículas ni capas DOM pesadas.
  float a=atan(p.y,p.x);
  float halo=smoothstep(.62,.76,r)*(1.-smoothstep(.76,1.42,r));
  float beamA=pow(max(cos(a-time*.28),0.),34.)*halo;
@@ -50,10 +48,11 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
   useEffect(() => { playing.current = isPlaying; }, [isPlaying]);
 
   useEffect(() => {
-    const element = canvas.current;
-    if (!element) return;
+    const currentElement = canvas.current;
+    if (!currentElement) return;
+    const element: HTMLCanvasElement = currentElement;
 
-    const gl = element.getContext('webgl', {
+    const currentGl = element.getContext('webgl', {
       alpha: true,
       antialias: false,
       depth: false,
@@ -61,7 +60,8 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
       powerPreference: 'low-power',
       preserveDrawingBuffer: false,
     });
-    if (!gl) return;
+    if (!currentGl) return;
+    const gl: WebGLRenderingContext = currentGl;
 
     let frame = 0;
     let last = -100;
@@ -163,7 +163,6 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
-      // En reduced-motion dibujamos una sola imagen y liberamos el loop.
       if (!reducedMotion) frame = requestAnimationFrame(draw);
     }
 
@@ -189,8 +188,6 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
       event.preventDefault();
       contextLost = true;
       stopLoop();
-      // Android puede liberar la GPU al cambiar de app. El fallback negro/neón
-      // queda visible hasta que WebGL se restaure, evitando el flash blanco.
       element.style.opacity = '0';
     }
 
