@@ -14,25 +14,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100vw;
+  height: 100dvh;
   background: #000;
-}
-
-.signature {
-  width: min(96vw, 1180px);
-  height: min(64vh, 680px);
-  padding: clamp(18px, 4vw, 48px);
   box-sizing: border-box;
 }
 
+.signature,
 .identity {
-  width: min(92vw, 900px);
-  height: min(68vh, 900px);
+  padding: clamp(18px, 4vw, 48px);
 }
 
 .image {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
+  max-width: 92vw;
+  max-height: 76dvh;
   object-fit: contain;
   object-position: center;
   background: #000;
@@ -40,18 +38,29 @@
   -webkit-user-drag: none;
 }
 
+.signature .image {
+  max-width: 94vw;
+  max-height: 72dvh;
+}
+
+.identity .image {
+  max-width: 92vw;
+  max-height: 78dvh;
+}
+
 @media (max-width: 640px) {
-  .signature {
-    width: 100vw;
-    height: 48vh;
-    min-height: 300px;
-    padding: 24px 28px;
+  .signature,
+  .identity {
+    padding: 18px;
   }
 
-  .identity {
-    width: 100vw;
-    height: 56vh;
-    padding: 18px;
-    box-sizing: border-box;
+  .signature .image {
+    max-width: 94vw;
+    max-height: 64dvh;
+  }
+
+  .identity .image {
+    max-width: 94vw;
+    max-height: 72dvh;
   }
 }
