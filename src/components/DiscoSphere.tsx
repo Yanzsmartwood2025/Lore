@@ -28,6 +28,14 @@ void main(){
  color+=violet*room*(.020+.038*sweepB+.070*flash);
  color+=amber*room*warmth*(.012+.105*flash);
 
+ // Lavados ambientales lentos: iluminan el fondo sin flashes agresivos.
+ float washL=exp(-length(p-vec2(-.92,.18))*1.65);
+ float washR=exp(-length(p-vec2(.96,-.08))*1.72);
+ float washTop=exp(-length(p-vec2(.08,.92))*1.55);
+ color+=cyan*washL*(.010+.030*sweepA+.046*flash);
+ color+=violet*washR*(.008+.027*sweepB+.040*flash);
+ color+=mix(cyan,amber,warmth*.42)*washTop*(.006+.020*energy+.034*flash);
+
  // Haces anchos que nacen desde el núcleo y golpean visualmente el escenario.
  vec2 stage=p-vec2(0.,-.05);
  float stageA=atan(stage.y,stage.x);
@@ -35,6 +43,10 @@ void main(){
  float coneB=pow(max(cos(stageA+time*.16+2.45),0.),34.)*exp(-r*.65);
  color+=mix(cyan,amber,warmth*.72)*coneA*(.026+.22*beat);
  color+=violet*coneB*(.020+.16*beat);
+ float coneC=pow(max(cos(stageA-time*.11+1.58),0.),42.)*exp(-r*.72);
+ float coneD=pow(max(cos(stageA+time*.09-1.18),0.),46.)*exp(-r*.75);
+ color+=cyan*coneC*(.010+.085*beat);
+ color+=mix(violet,amber,warmth*.34)*coneD*(.008+.072*beat);
 
  if(r<radius){
    vec3 n=normalize(vec3(p/radius,sqrt(max(0.,1.-r*r/(radius*radius)))));
@@ -46,10 +58,17 @@ void main(){
    float latitude=asin(clamp(n.y,-1.,1.));
    float bands=pow(.5+.5*sin(longitude*22.),18.)*pow(.5+.5*sin(n.y*26.),8.);
    float core=exp(-length(p-vec2(.07,-.03))*8.);
+   float innerPulse=exp(-r*4.7)*(.55+.45*sin(time*.86+latitude*2.4));
+   float innerAngle=atan(p.y,p.x)+time*.31;
+   float innerRibbon=pow(.5+.5*cos(innerAngle*3.0+sin(r*13.-time*.72)),7.)*exp(-r*2.7);
+   float innerSpark=pow(.5+.5*sin(innerAngle*8.0-time*1.35),18.)*exp(-r*3.5);
 
-   color=vec3(.025,.055,.085)*(diffuse+.3)+cyan*rim*(1.02+beat*.52);
-   color+=mix(violet,cyan,n.y*.5+.5)*bands*(.72+beat*.34)+vec3(1.)*spec*(.88+beat*.48);
-   color+=mix(cyan,amber,warmth*.55)*core*(.30+energy*.10+beat*1.02);
+   color=vec3(.025,.055,.085)*(diffuse+.3)+cyan*rim*(1.06+beat*.58);
+   color+=mix(violet,cyan,n.y*.5+.5)*bands*(.76+beat*.38)+vec3(1.)*spec*(.90+beat*.50);
+   color+=mix(cyan,amber,warmth*.55)*core*(.38+energy*.14+beat*1.12);
+   color+=mix(cyan,violet,.42+.20*sin(time*.17))*innerPulse*(.10+.16*energy+.36*beat);
+   color+=mix(violet,amber,warmth*.32)*innerRibbon*(.055+.10*energy+.20*beat);
+   color+=cyan*innerSpark*(.025+.08*energy+.18*beat);
 
    // Matriz de puntos LED sobre la esfera. Los puntos se encienden por zonas y
    // cambian cyan/violeta/ámbar según la fase del beat.
@@ -69,10 +88,11 @@ void main(){
  float ring1=exp(-abs(orbit-.83)*185.);
  float ringA1=atan(e1v.y,e1v.x);
  float chase1=pow(.5+.5*sin(ringA1*11.-time*4.5),16.);
+ float chase1b=pow(.5+.5*sin(ringA1*17.+time*3.15+1.4),22.);
  vec3 ringColor1=mix(cyan,violet,.5+.5*sin(ringA1*2.2+time*.36));
  float depth1=(r<radius && q1.y>.0)?.10:1.;
- color+=ringColor1*ring1*depth1*(.64+chase1*(.70+beat*1.25)+beat*.30);
- color+=mix(cyan,amber,warmth*.52)*ring1*chase1*depth1*(.10+beat*.72);
+ color+=ringColor1*ring1*depth1*(.66+chase1*(.72+beat*1.28)+chase1b*(.22+beat*.38)+beat*.30);
+ color+=mix(cyan,amber,warmth*.52)*ring1*(chase1+chase1b*.55)*depth1*(.10+beat*.72);
 
  // Anillo 2: gira en sentido contrario y a otra velocidad para que sea independiente.
  vec2 q2=rotate2(p,-time*.075+1.05);
@@ -81,10 +101,11 @@ void main(){
  float ring2=exp(-abs(orbit2-.92)*205.);
  float ringA2=atan(e2v.y,e2v.x);
  float chase2=pow(.5+.5*sin(ringA2*13.+time*3.75+1.7),17.);
+ float chase2b=pow(.5+.5*sin(ringA2*19.-time*2.65+.35),23.);
  vec3 ringColor2=mix(violet,amber,warmth*(.28+.32*beat));
  float depth2=(r<radius && q2.y<.0)?.12:1.;
- color+=ringColor2*ring2*depth2*(.46+chase2*(.58+beat*1.05)+beat*.24);
- color+=cyan*ring2*chase2*depth2*(.08+beat*.52);
+ color+=ringColor2*ring2*depth2*(.48+chase2*(.60+beat*1.08)+chase2b*(.20+beat*.34)+beat*.24);
+ color+=cyan*ring2*(chase2+chase2b*.48)*depth2*(.08+beat*.54);
 
  // Corona LED exterior de la propia esfera: segmentos cortos que responden al bombo.
  float a=atan(p.y,p.x);
@@ -101,6 +122,17 @@ void main(){
  color+=violet*beamB*(.014+energy*.055+beat*.17);
  float bounce=exp(-abs(r-(.95+.035*sin(time*.8)))*40.)*(.014+energy*.025+beat*.13);
  color+=mix(cyan,mix(violet,amber,warmth),.45)*bounce;
+
+ // Cinturón de puntos exteriores: más luces girando, pero pequeñas y controladas.
+ float outerTrack=exp(-abs(r-1.06)*72.);
+ float outerSparkA=pow(.5+.5*sin(a*18.-time*3.15),18.);
+ float outerSparkB=pow(.5+.5*sin(a*23.+time*2.35+1.2),22.);
+ color+=cyan*outerTrack*outerSparkA*(.025+.055*energy+.13*beat);
+ color+=mix(violet,amber,warmth*.30)*outerTrack*outerSparkB*(.018+.045*energy+.10*beat);
+
+ // Rebotes laterales y bajos para que el vidrio de las tarjetas recoja la sala.
+ float sideBounce=exp(-abs(abs(p.x)-.78)*10.)*exp(-abs(p.y+.20)*1.25);
+ color+=mix(cyan,violet,.52)*sideBounce*(.004+.015*energy+.048*beat);
 
  // Rebote bajo que refuerza la sensación de vidrio en las tarjetas.
  float floorGlow=exp(-abs(p.y+.72)*9.)*exp(-abs(p.x)*.65);
