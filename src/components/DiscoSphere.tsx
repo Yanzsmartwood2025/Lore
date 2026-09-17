@@ -139,10 +139,11 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
       frame = 0;
       if (!shouldRun()) return;
 
-      const interval = motion.matches ? Infinity : (playing.current ? 33 : 66);
-      if (now - last >= interval) {
-        if (playing.current && last >= 0) elapsed += Math.min((now - last) / 1000, .05);
-        else if (!playing.current && last >= 0) elapsed += Math.min((now - last) / 1000, .025);
+      const reducedMotion = motion.matches;
+      const interval = playing.current ? 33 : 66;
+      if (now - last >= interval || reducedMotion) {
+        if (!reducedMotion && playing.current && last >= 0) elapsed += Math.min((now - last) / 1000, .05);
+        else if (!reducedMotion && !playing.current && last >= 0) elapsed += Math.min((now - last) / 1000, .025);
         last = now;
 
         const size = el.getBoundingClientRect();
@@ -157,11 +158,13 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
         }
 
         gl!.uniform2f(res, w, h);
-        gl!.uniform1f(t, motion.matches ? 0 : elapsed);
+        gl!.uniform1f(t, reducedMotion ? 0 : elapsed);
         gl!.uniform1f(energy, playing.current ? 1 : 0);
         gl!.drawArrays(gl!.TRIANGLES, 0, 6);
       }
-      frame = requestAnimationFrame(draw);
+
+      // En reduced-motion dibujamos una sola imagen y liberamos el loop.
+      if (!reducedMotion) frame = requestAnimationFrame(draw);
     }
 
     function startLoop() {
@@ -174,6 +177,12 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
         last = -100;
         startLoop();
       }
+    }
+
+    function handleMotionChange() {
+      stopLoop();
+      last = -100;
+      startLoop();
     }
 
     function handleContextLost(event: Event) {
@@ -198,6 +207,7 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
 
     observer.observe(el);
     document.addEventListener('visibilitychange', handleVisibility);
+    motion.addEventListener('change', handleMotionChange);
     el.addEventListener('webglcontextlost', handleContextLost, false);
     el.addEventListener('webglcontextrestored', handleContextRestored, false);
 
@@ -207,6 +217,7 @@ export function DiscoSphere({ isPlaying = false, className = '' }: { isPlaying?:
       stopLoop();
       observer.disconnect();
       document.removeEventListener('visibilitychange', handleVisibility);
+      motion.removeEventListener('change', handleMotionChange);
       el.removeEventListener('webglcontextlost', handleContextLost, false);
       el.removeEventListener('webglcontextrestored', handleContextRestored, false);
       destroyResources();
