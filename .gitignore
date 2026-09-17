@@ -2,6 +2,11 @@
 
 # dependencies
 /node_modules
+**/node_modules/
+firebase-debug.log*
+.firebase/
+/supabase/.temp/
+**/*service-account*.json
 /.pnp
 .pnp.*
 .yarn/*

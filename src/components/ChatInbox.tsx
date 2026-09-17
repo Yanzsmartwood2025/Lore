@@ -25,17 +25,26 @@ interface ChatInboxProps {
 
 const MAX_STORAGE_MESSAGES = 50;
 
-export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
+export function ChatInbox(props: ChatInboxProps) {
+  const { user } = useAuth();
+  return <AccountChatInbox key={`${user?.uid ?? 'guest'}:${props.slug}`} {...props} />;
+}
+
+function AccountChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
   const { setAmbientCategory } = useMedia();
-  const { user, getIdToken } = useAuth();
+  const { user, loading, error: authError, getIdToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [initializedKey, setInitializedKey] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  useEffect(() => () => requestRef.current?.abort(), []);
 
-  const storageKey = `${slug}_chat_history`;
+  // Never load legacy shared history or another account's messages.
+  const storageKey = `lore:${user?.uid ?? 'guest'}:${slug}:chat_history`;
+  const isInitialized = initializedKey === storageKey;
 
   const persona = models.find((m) => m.slug === slug);
   const avatarSrc = avatar || persona?.avatar || '/images/Lore-180x180.png';
@@ -58,7 +67,7 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
           if (validMessages.length > 0) {
             // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration from browser storage
             setMessages(validMessages.slice(-MAX_STORAGE_MESSAGES));
-            setIsInitialized(true);
+            setInitializedKey(storageKey);
             return;
           }
         }
@@ -73,7 +82,7 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
       content: welcomeText,
     };
     setMessages([defaultWelcomeMessage]);
-    setIsInitialized(true);
+    setInitializedKey(storageKey);
   }, [slug, storageKey, persona]);
 
   // Guardar en localStorage cuando cambien los mensajes
@@ -100,12 +109,15 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = input.trim();
-    if (!content || isSending) return;
+    if (!content || isSending || loading || authError) return;
 
     if (!user) {
       setError('Inicia sesión para usar el chat.');
       return;
     }
+
+    const controller = new AbortController();
+    requestRef.current = controller;
 
     const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', content };
     const history = messages.map(({ role, content: messageContent }) => ({
@@ -143,6 +155,7 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
       if (!idToken) throw new Error('Tu sesión venció. Inicia sesión otra vez.');
       const response = await fetch(`/api/chat/${encodeURIComponent(slug)}`, {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           Authorization: `Bearer ${idToken}`,
           'Content-Type': 'application/json',
@@ -305,10 +318,10 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
         <div ref={bottomRef} />
       </div>
 
-      {!user && (
+      {(!user || loading || authError) && (
         <div className="relative z-10 border-t border-white/10 bg-black/50 p-3 sm:p-4">
           <p className="mb-3 text-xs font-medium text-cyan-100">
-            Inicia sesión para conversar con {name}.
+            {user ? 'Preparando tu cuenta para conversar…' : `Inicia sesión para conversar con ${name}.`}
           </p>
           <AuthPanel />
         </div>
@@ -324,13 +337,13 @@ export function ChatInbox({ name, slug, avatar, tagline }: ChatInboxProps) {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             maxLength={2000}
-            disabled={isSending}
+            disabled={isSending || loading || Boolean(authError)}
             placeholder={`Escríbele directamente a ${name}...`}
             className="min-w-0 flex-1 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-md px-4 py-3 text-sm sm:text-base text-white placeholder:text-gray-400/70 outline-none focus:border-cyan-400/80 focus:ring-1 focus:ring-cyan-400/50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
           />
           <button
             type="submit"
-            disabled={!input.trim() || isSending}
+            disabled={!input.trim() || isSending || loading || Boolean(authError)}
             className="inline-flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-[0_0_15px_rgba(0,242,234,0.4)] transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
             aria-label="Enviar mensaje"
           >

@@ -1,7 +1,7 @@
 import { models } from '@/data/models';
 import { cleanNarratedActions } from '@/lib/chat-format';
 import { buildChatPrompt } from '@/lib/chat-policy';
-import { requireUser } from '@/lib/supabase/server';
+import { createServiceClient, requireUser } from '@/lib/supabase/server';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -151,11 +151,14 @@ export async function POST(
       );
     }
 
-    await auth.supabase.from('lore_chat_messages').insert({
+    // Only the server can persist assistant messages. The conversation above
+    // was resolved under the caller's JWT/RLS; never accept its ID from input.
+    const { error: assistantError } = await createServiceClient().from('lore_chat_messages').insert({
       conversation_id: conversation.id,
       role: 'assistant',
       content,
     });
+    if (assistantError) return Response.json({ error: 'No se pudo guardar la respuesta.' }, { status: 500 });
 
     return new Response(createAssistantStream(content), {
       headers: {

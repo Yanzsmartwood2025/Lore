@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:auth": "node scripts/test-firebase-rls.mjs && node --test scripts/test-firebase-token.mjs && npm --prefix firebase/functions test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.888.0",
@@ -17,12 +18,14 @@
     "@fortawesome/react-fontawesome": "^3.5.0",
     "@supabase/supabase-js": "^2.57.4",
     "firebase": "^12.19.0",
+    "firebase-admin": "14.4.0",
     "jose": "^6.2.12",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "20.19.43",
     "@types/react": "19.3.0",

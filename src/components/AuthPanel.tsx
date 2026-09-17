@@ -15,7 +15,7 @@ import { getFirebaseAuth } from '@/lib/firebase/client';
 import { useAuth } from '@/context/AuthContext';
 
 export function AuthPanel() {
-  const { user, loading } = useAuth();
+  const { user, loading, error, retryProfile } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -64,6 +64,8 @@ export function AuthPanel() {
   if (user) return (
     <div className="space-y-2 rounded-xl border border-emerald-400/30 bg-emerald-950/20 p-3 text-xs">
       <p className="text-emerald-300">Conectado como <strong>{user.email}</strong></p>
+      {error && <p className="text-amber-200" role="alert">{error}</p>}
+      {error && <button type="button" className="mr-3 underline" onClick={() => void retryProfile()}>Reintentar conexión</button>}
       <button className="text-gray-300 underline" onClick={() => signOut(getFirebaseAuth())}>Cerrar sesión</button>
     </div>
   );
