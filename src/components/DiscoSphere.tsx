@@ -27,7 +27,7 @@ vec2 rotate2(vec2 v, float a){
 void main(){
  vec2 p=(gl_FragCoord.xy*2.-resolution)/min(resolution.x,resolution.y);
  vec3 cyan=paletteA, violet=paletteB, amber=paletteC;
- float flash=beat*beat;
+ float flash=beat*beat*.72;
  float r=length(p), radius=.58+beat*.020, safeR=max(r,.001);
  float roomAngle=atan(p.y,p.x);
  vec3 color=vec3(.006,.012,.028);
@@ -35,7 +35,11 @@ void main(){
  // Ambiente de club premium: luz amplia y móvil, sin flashes agresivos.
  float room=exp(-r*1.18);
  float hazeField=exp(-r*.72)*(.5+.5*sin(time*.085+p.x*1.25-p.y*.82));
- color+=mix(cyan,violet,.5+.5*sin(time*.11))*hazeField*haze*(.010+.028*energy+.024*beat);
+ float hazeRibbonA=(.5+.5*sin(p.x*2.4+p.y*.72-time*.11+sin(p.y*1.7-time*.08)))*exp(-r*.62);
+ float hazeRibbonB=(.5+.5*sin(-p.x*1.9+p.y*.92+time*.09+1.7))*exp(-r*.68);
+ float layeredHaze=(hazeRibbonA*.62+hazeRibbonB*.38);
+ color+=mix(cyan,violet,.5+.5*sin(time*.11))*hazeField*haze*(.010+.028*energy+.020*beat);
+ color+=mix(cyan,violet,.42+.18*sin(time*.07))*layeredHaze*haze*(.006+.012*energy+.010*beat);
  float sweepA=.5+.5*sin(time*.19+p.x*1.7-p.y*.7);
  float sweepB=.5+.5*sin(time*.13-p.x*1.1+p.y*1.4+1.8);
  float sweepC=.5+.5*sin(time*.10+roomAngle*2.0+r*1.9);
@@ -52,8 +56,23 @@ void main(){
  float coneSharpB=34./max(.58,beamWidth);
  float coneA=pow(max(cos(stageA-time*.20*rotationSpeed-.15),0.),coneSharpA)*exp(-r*.65);
  float coneB=pow(max(cos(stageA+time*.16*rotationSpeed+2.45),0.),coneSharpB)*exp(-r*.65);
- color+=mix(cyan,amber,warmth*.72)*coneA*beamIntensity*(.026+.22*beat);
- color+=violet*coneB*beamIntensity*(.020+.16*beat);
+ color+=mix(cyan,amber,warmth*.40)*coneA*beamIntensity*(.022+.15*beat);
+ color+=violet*coneB*beamIntensity*(.018+.12*beat);
+
+ // Moving heads virtuales: dos haces cruzados desde la parte alta del escenario.
+ // Aportan sensación de discoteca sin aumentar el brillo global.
+ vec2 headL=p-vec2(-.88,.78);
+ vec2 headR=p-vec2(.88,.78);
+ float headLA=atan(headL.y,headL.x);
+ float headRA=atan(headR.y,headR.x);
+ float scanL=-.80+sin(time*.31*rotationSpeed)*.34;
+ float scanR=-2.34+sin(time*.27*rotationSpeed+1.8)*.32;
+ float headSharp=58./max(.62,beamWidth);
+ float headBeamL=pow(max(cos(headLA-scanL),0.),headSharp)*exp(-length(headL)*.52);
+ float headBeamR=pow(max(cos(headRA-scanR),0.),headSharp*1.05)*exp(-length(headR)*.52);
+ float headHaze=.38+.62*haze;
+ color+=cyan*headBeamL*headHaze*beamIntensity*(.010+.045*energy+.075*beat);
+ color+=violet*headBeamR*headHaze*beamIntensity*(.009+.040*energy+.065*beat);
 
  if(r<radius){
    vec3 n=normalize(vec3(p/radius,sqrt(max(0.,1.-r*r/(radius*radius)))));
@@ -61,7 +80,7 @@ void main(){
    float diffuse=max(dot(n,l),0.);
    float rim=pow(1.-n.z,3.);
    float spec=pow(max(dot(reflect(-l,n),vec3(0.,0.,1.)),0.),65.);
-   float longitude=atan(n.x,n.z)+time*(.18+.30*rotationSpeed);
+   float longitude=atan(n.x,n.z)+time*(.28+.42*rotationSpeed);
    float latitude=asin(clamp(n.y,-1.,1.));
    float bands=pow(.5+.5*sin(longitude*22.),18.)*pow(.5+.5*sin(n.y*26.),8.);
    float core=exp(-length(p-vec2(.07,-.03))*8.);
@@ -69,20 +88,20 @@ void main(){
    float hotCore=exp(-r*10.5);
    float innerBreath=.5+.5*sin(time*1.18);
    float innerOrbit=.5+.5*sin(longitude*4.0-latitude*2.5-time*1.7);
-   float mirrorLon=pow(.5+.5*cos(longitude*12.),26.);
+   float mirrorLon=pow(.5+.5*cos(longitude*12.+time*.22*rotationSpeed),26.);
    float mirrorLat=pow(.5+.5*cos(latitude*14.+sin(longitude*2.)*.16),24.);
    float mirrorGrid=max(mirrorLon,mirrorLat);
    float spinSheen=pow(.5+.5*cos(longitude*2.2-latitude*.8),8.);
 
    color=vec3(.025,.055,.085)*(diffuse+.3)+cyan*rim*(1.06+beat*.56);
    color+=mix(violet,cyan,n.y*.5+.5)*bands*(.76+beat*.38)+vec3(1.)*spec*(.90+beat*.50);
-   color+=mix(cyan,amber,warmth*.55)*core*(.34+energy*.12+beat*1.08);
+   color+=mix(cyan,amber,warmth*.34)*core*(.30+energy*.12+beat*.82);
    color+=mix(vec3(.82,.95,1.),cyan,.48)*mirrorGrid*(.045+.11*energy+.16*beat);
    color+=mix(cyan,violet,.38)*spinSheen*(.035+.065*energy);
 
    // Núcleo luminoso visible desde dentro: respira y cambia de tono con el ritmo.
    vec3 innerColor=mix(cyan,violet,.38+.34*innerOrbit);
-   innerColor=mix(innerColor,amber,warmth*beat*.28);
+   innerColor=mix(innerColor,amber,warmth*beat*.16);
    color+=innerColor*deepCore*(.10+.13*innerBreath+.32*energy+.44*beat);
    color+=mix(vec3(1.),cyan,.55)*hotCore*(.035+.12*innerBreath+.42*beat);
 
@@ -93,7 +112,7 @@ void main(){
    float leds=ledLon*ledLat;
    float ledWave=.5+.5*sin(longitude*3.6+latitude*4.2-time*2.0);
    vec3 ledColor=mix(cyan,violet,ledWave);
-   ledColor=mix(ledColor,amber,warmth*beat*.46);
+   ledColor=mix(ledColor,amber,warmth*beat*.24);
    color+=ledColor*leds*(.34+energy*.18+beat*1.55);
  }
 
@@ -145,22 +164,24 @@ void main(){
  float beamA=pow(max(cos(a-time*.28*rotationSpeed),0.),beamExponent)*halo;
  float beamB=pow(max(cos(a+time*.22*rotationSpeed+2.35),0.),beamExponent*1.10)*halo;
  float beamC=pow(max(cos(a-time*.13*rotationSpeed+4.25),0.),beamExponent*1.22)*halo;
- color+=mix(cyan,amber,warmth*.45)*beamA*beamIntensity*(.026+energy*.082+beat*.24);
+ color+=mix(cyan,amber,warmth*.30)*beamA*beamIntensity*(.022+energy*.070+beat*.17);
  color+=violet*beamB*beamIntensity*(.020+energy*.064+beat*.19);
  color+=mix(cyan,violet,.42)*beamC*beamIntensity*(.010+energy*.045+beat*.12);
 
  // Abanico láser y prisma: aparecen sobre todo en electrónica/techno.
  float fanFreq=8.+beamDensity*5.;
  float laserPattern=pow(.5+.5*cos(a*fanFreq-time*(.55+.22*ringSpeed)),42.)*halo;
+ float laserPattern2=pow(.5+.5*cos((a+.18)*(fanFreq+2.)+time*(.44+.18*ringSpeed)),46.)*halo;
  float prismPattern=pow(.5+.5*cos((a+.10)*fanFreq-time*(.52+.20*ringSpeed)),30.)*halo;
- color+=cyan*laserPattern*laserFan*(.018+.095*energy+.18*beat);
- color+=violet*prismPattern*prism*(.010+.055*energy+.10*beat);
+ color+=cyan*laserPattern*laserFan*(.014+.075*energy+.12*beat);
+ color+=violet*laserPattern2*laserFan*(.008+.045*energy+.07*beat);
+ color+=violet*prismPattern*prism*(.009+.045*energy+.075*beat);
  float bounce=exp(-abs(r-(.95+.035*sin(time*.8)))*40.)*(.014+energy*.025+beat*.13);
  color+=mix(cyan,mix(violet,amber,warmth),.45)*bounce;
 
  // Rebote bajo que refuerza la sensación de vidrio en las tarjetas.
  float floorGlow=exp(-abs(p.y+.72)*8.)*exp(-abs(p.x)*.58);
- color+=mix(cyan,amber,warmth*.58)*floorGlow*(.014+.11*beat);
+ color+=mix(cyan,amber,warmth*.34)*floorGlow*(.012+.075*beat);
 
  // La sala completa conserva un brillo muy tenue para que los rebotes alcancen
  // los extremos del Home incluso en pantallas anchas.
