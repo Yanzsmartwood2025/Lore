@@ -35,6 +35,7 @@ interface YouTubePlayer {
 interface MediaContextType {
   isPlaying: boolean;
   isMuted: boolean;
+  currentVideoId: string | null;
   ambientCategory: MusicCategory;
   videoSize: VideoSizeMode;
   hasEntered: boolean;
@@ -71,6 +72,11 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   const volumeRef = useRef(targetVolume);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(
+    MUSIC_CATEGORIES[DEFAULT_MUSIC_CATEGORY].source.type === 'video'
+      ? MUSIC_CATEGORIES[DEFAULT_MUSIC_CATEGORY].source.id
+      : null
+  );
   const [ambientCategory, setAmbientCategoryState] = useState<MusicCategory>(DEFAULT_MUSIC_CATEGORY);
   const [videoSize, setVideoSizeState] = useState<VideoSizeMode>('hero');
   const [hasEntered, setHasEntered] = useState(false);
@@ -107,6 +113,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   const loadSource = (player: YouTubePlayer, source: MusicSource, autoplay = true) => {
     requestedVideoIdRef.current = null;
     if (source.type === 'video') {
+      setCurrentVideoId(source.id);
       const options = { videoId: source.id, startSeconds: 0 };
       if (autoplay) player.loadVideoById(options);
       else player.cueVideoById(options);
@@ -167,6 +174,8 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
       events: {
         onReady: (event: { target: YouTubePlayer }) => {
           ytPlayerRef.current = event.target;
+          const readyVideoId = event.target.getVideoData?.().video_id;
+          if (readyVideoId) setCurrentVideoId(readyVideoId);
           event.target.setVolume(targetVolumeRef.current);
           if (isMutedRef.current) {
             event.target.mute();
@@ -183,6 +192,8 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
           }
         },
         onStateChange: (event: { data: number; target: YouTubePlayer }) => {
+          const activeVideoId = event.target.getVideoData?.().video_id;
+          if (activeVideoId) setCurrentVideoId(activeVideoId);
           if (event.data === 0) {
             const category = MUSIC_CATEGORIES[ambientCategoryRef.current];
             if (requestedVideoIdRef.current) {
@@ -212,7 +223,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         ytPlayerRef.current = null;
       }
     };
-  }, [ytApiReady]);
+  }, [ytApiReady, pathname]);
 
   // Reloj visual exclusivo de YouTube. Trabaja a 12.5 Hz, no provoca renders
   // de React y se apaga al pausar o mandar la app a segundo plano.
@@ -286,6 +297,8 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     ambientCategoryRef.current = category;
     setAmbientCategoryState(category);
     setActiveTab('music');
+    const nextSource = MUSIC_CATEGORIES[category].source;
+    setCurrentVideoId(nextSource.type === 'video' ? nextSource.id : null);
     if (ytPlayerRef.current) {
       try {
         loadSource(ytPlayerRef.current, MUSIC_CATEGORIES[category].source);
@@ -377,6 +390,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
 
   const playRequestedVideo = (videoId: string) => {
     requestedVideoIdRef.current = videoId;
+    setCurrentVideoId(videoId);
     if (ytPlayerRef.current) {
       try {
         ytPlayerRef.current.loadVideoById({
@@ -432,6 +446,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
       value={{
         isPlaying,
         isMuted,
+        currentVideoId,
         ambientCategory,
         videoSize,
         hasEntered,

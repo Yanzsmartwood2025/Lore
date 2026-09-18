@@ -11,11 +11,11 @@ import { DiscoSphere } from './DiscoSphere';
 export function MediaPanel() {
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const { isPlaying } = useMedia();
+  const { isPlaying, play, pause } = useMedia();
   const [selected, setSelected] = useState('lore');
   const [showYtPanel, setShowYtPanel] = useState(false);
-  const armedAt = useRef(0);
-  const touchStartY = useRef<number | null>(null);
+  const [homeYouTubeExpanded, setHomeYouTubeExpanded] = useState(false);
+  const [homeStageRect, setHomeStageRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
   const persona = models.find((model) => model.slug === (isHome ? selected : pathname.split('/')[1])) ?? models[0];
   const loreSignature = models[0].signature ?? '/assets/brand/intro/Lore-intro.png';
@@ -31,7 +31,8 @@ export function MediaPanel() {
 
   useEffect(() => {
     setShowYtPanel(false);
-    armedAt.current = 0;
+    setHomeYouTubeExpanded(false);
+    setHomeStageRect(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -46,49 +47,49 @@ export function MediaPanel() {
   useEffect(() => {
     if (!isHome) return;
 
-    function requestReveal() {
-      if (showYtPanel) return;
+    const handleSwap = (event: Event) => {
+      const expanded = Boolean((event as CustomEvent<boolean>).detail);
+      setHomeYouTubeExpanded(expanded);
 
-      const now = Date.now();
-      if (now - armedAt.current < 1400) {
-        armedAt.current = 0;
-        setShowYtPanel(true);
+      if (expanded) {
+        const stage = document.getElementById('home-main-youtube-slot');
+        if (stage) {
+          const rect = stage.getBoundingClientRect();
+          setHomeStageRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+        }
+        play();
       } else {
-        armedAt.current = now;
+        pause();
       }
-    }
-
-    function handleWheel(event: WheelEvent) {
-      if (showYtPanel) {
-        if (event.deltaY > 45) setShowYtPanel(false);
-        return;
-      }
-      if (event.deltaY < -45) requestReveal();
-    }
-
-    function handleTouchStart(event: TouchEvent) {
-      touchStartY.current = event.touches[0]?.clientY ?? null;
-    }
-
-    function handleTouchEnd(event: TouchEvent) {
-      if (touchStartY.current === null) return;
-      const endY = event.changedTouches[0]?.clientY ?? touchStartY.current;
-      const distance = endY - touchStartY.current;
-      touchStartY.current = null;
-
-      if (!showYtPanel && distance > 55) requestReveal();
-      if (showYtPanel && distance < -55) setShowYtPanel(false);
-    }
-
-    window.addEventListener('wheel', handleWheel, { passive: true });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [showYtPanel, isHome]);
+
+    window.addEventListener('lore:home-youtube-swap', handleSwap as EventListener);
+    return () => window.removeEventListener('lore:home-youtube-swap', handleSwap as EventListener);
+  }, [isHome, play, pause]);
+
+  useEffect(() => {
+    if (!isHome || !homeYouTubeExpanded) return;
+
+    const stage = document.getElementById('home-main-youtube-slot');
+    if (!stage) return;
+
+    const syncRect = () => {
+      const rect = stage.getBoundingClientRect();
+      setHomeStageRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+    };
+
+    syncRect();
+    const resizeObserver = new ResizeObserver(syncRect);
+    resizeObserver.observe(stage);
+    window.addEventListener('resize', syncRect);
+    window.addEventListener('orientationchange', syncRect);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', syncRect);
+      window.removeEventListener('orientationchange', syncRect);
+    };
+  }, [isHome, homeYouTubeExpanded]);
 
   return (
     <>
@@ -127,23 +128,42 @@ export function MediaPanel() {
         </div>
       )}
 
-      <div
-        className={`fixed left-0 right-0 top-0 z-40 flex justify-center border-b border-cyan-500/30 bg-black/90 p-2 shadow-2xl backdrop-blur-md transition-transform duration-350 ease-in-out ${
-          showYtPanel ? 'translate-y-0' : '-translate-y-full'
-        }`}
-      >
-        <div className="relative h-[158px] w-[280px] overflow-hidden rounded-lg border border-cyan-500/40 bg-black sm:h-[202px] sm:w-[360px]">
-          <div className="h-full w-full" id="yt-player-element" />
-          <button
-            type="button"
-            onClick={() => setShowYtPanel(false)}
-            className="absolute right-2 top-2 rounded border border-cyan-500/40 bg-black/75 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
-            title="Ocultar reproductor"
-          >
-            ✕ Ocultar
-          </button>
+      {isHome ? (
+        <div
+          className={`fixed z-40 overflow-hidden rounded-b-[1.65rem] bg-black shadow-[0_0_24px_rgba(0,0,0,0.45)] transition-opacity duration-300 [&>iframe]:h-full [&>iframe]:w-full ${
+            homeYouTubeExpanded && homeStageRect ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+          style={homeYouTubeExpanded && homeStageRect
+            ? {
+                top: homeStageRect.top,
+                left: homeStageRect.left,
+                width: homeStageRect.width,
+                height: homeStageRect.height,
+              }
+            : { top: -1000, left: -1000, width: 320, height: 200 }}
+          aria-hidden={!homeYouTubeExpanded}
+        >
+          <div className="h-full w-full [&>iframe]:h-full [&>iframe]:w-full" id="yt-player-element" />
         </div>
-      </div>
+      ) : (
+        <div
+          className={`fixed left-0 right-0 top-0 z-40 flex justify-center border-b border-cyan-500/30 bg-black/90 p-2 shadow-2xl backdrop-blur-md transition-transform duration-350 ease-in-out ${
+            showYtPanel ? 'translate-y-0' : '-translate-y-full'
+          }`}
+        >
+          <div className="relative h-[158px] w-[280px] overflow-hidden rounded-lg border border-cyan-500/40 bg-black sm:h-[202px] sm:w-[360px]">
+            <div className="h-full w-full [&>iframe]:h-full [&>iframe]:w-full" id="yt-player-element" />
+            <button
+              type="button"
+              onClick={() => setShowYtPanel(false)}
+              className="absolute right-2 top-2 rounded border border-cyan-500/40 bg-black/75 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
+              title="Ocultar reproductor"
+            >
+              ✕ Ocultar
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
