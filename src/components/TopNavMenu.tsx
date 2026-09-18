@@ -18,17 +18,20 @@ import { MusicRequestForm } from '@/components/MusicRequestForm';
 import { AuthPanel } from '@/components/AuthPanel';
 import { MenuMusicControls } from '@/components/MenuMusicControls';
 
-export function TopNavMenu() {
+export function TopNavMenu({ embedded = false }: { embedded?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const { enterLobby } = useMedia();
   const { user } = useAuth();
 
   return (
     <>
-      <div className="fixed top-[max(.6rem,env(safe-area-inset-top))] right-[max(.75rem,env(safe-area-inset-right))] z-50 flex items-center justify-center">
+      <div className={embedded
+        ? "relative z-50 flex items-center justify-center"
+        : "fixed top-[max(.6rem,env(safe-area-inset-top))] right-[max(.75rem,env(safe-area-inset-right))] z-50 flex items-center justify-center"
+      }>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`group relative flex h-[30px] w-[30px] items-center justify-center rounded-lg border transition-all duration-300 backdrop-blur-xl ${
+          className={`group relative flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 backdrop-blur-xl ${
             isOpen
               ? 'border-pink-400/70 bg-pink-950/35 text-pink-300 shadow-[0_0_16px_rgba(240,0,184,0.28)]'
               : 'border-[#00f2ea]/35 bg-black/35 text-[#00f2ea] shadow-[0_0_14px_rgba(0,242,234,0.18)] hover:border-[#00f2ea]/70 hover:bg-[#00f2ea]/10'
