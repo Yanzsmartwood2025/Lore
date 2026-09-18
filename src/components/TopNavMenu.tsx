@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTimes,
@@ -20,45 +21,25 @@ import { MenuMusicControls } from '@/components/MenuMusicControls';
 
 export function TopNavMenu({ embedded = false }: { embedded?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { enterLobby } = useMedia();
   const { user } = useAuth();
 
-  return (
-    <>
-      <div className={embedded
-        ? "relative z-50 flex items-center justify-center"
-        : "fixed top-[max(.6rem,env(safe-area-inset-top))] right-[max(.75rem,env(safe-area-inset-right))] z-50 flex items-center justify-center"
-      }>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={`group relative flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 backdrop-blur-xl ${
-            isOpen
-              ? 'border-pink-400/70 bg-pink-950/35 text-pink-300 shadow-[0_0_16px_rgba(240,0,184,0.28)]'
-              : 'border-[#00f2ea]/35 bg-black/35 text-[#00f2ea] shadow-[0_0_14px_rgba(0,242,234,0.18)] hover:border-[#00f2ea]/70 hover:bg-[#00f2ea]/10'
-          }`}
-          aria-label={isOpen ? 'Cerrar centro de control' : 'Abrir centro de control y acceso'}
-        >
-          <div className="absolute -inset-1.5 -z-10 rounded-2xl bg-[#00f2ea]/10 blur-lg opacity-60 transition-opacity group-hover:opacity-90" />
-          {isOpen ? (
-            <FontAwesomeIcon icon={faTimes} className="text-sm transition-transform duration-300" />
-          ) : (
-            <span className="relative h-[13px] w-[15px] rounded-[3px] border border-current" aria-hidden="true">
-              <span className="absolute bottom-[3px] left-[3px] top-[3px] w-px rounded-full bg-current opacity-80" />
-              <span className="absolute left-[7px] right-[3px] top-1/2 h-px -translate-y-1/2 rounded-full bg-current" />
-            </span>
-          )}
-        </button>
-      </div>
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
+  const menuLayer = (
+    <>
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
-          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-md transition-opacity duration-300 animate-fadeIn"
+          className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-md transition-opacity duration-300 animate-fadeIn"
         />
       )}
 
       <div
-        className={`fixed left-0 right-0 top-0 z-40 max-h-[92dvh] overflow-y-auto rounded-b-3xl border-b border-[#00f2ea]/40 bg-gradient-to-b from-black via-slate-950/95 to-black/95 px-5 pb-7 pt-20 shadow-[0_14px_38px_rgba(0,242,234,0.18)] backdrop-blur-xl transition-transform duration-500 ease-out sm:px-6 sm:pt-24 ${
+        className={`fixed left-0 right-0 top-0 z-[100] max-h-[92dvh] overflow-y-auto rounded-b-3xl border-b border-[#00f2ea]/40 bg-gradient-to-b from-black via-slate-950/95 to-black/95 px-5 pb-7 pt-20 shadow-[0_14px_38px_rgba(0,242,234,0.18)] backdrop-blur-xl transition-transform duration-500 ease-out sm:px-6 sm:pt-24 ${
           isOpen ? 'translate-y-0' : '-translate-y-full pointer-events-none'
         }`}
       >
@@ -134,6 +115,40 @@ export function TopNavMenu({ embedded = false }: { embedded?: boolean }) {
           </div>
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      <div
+        className={
+          embedded
+            ? 'relative z-50 flex items-center justify-center'
+            : 'fixed top-[max(.6rem,env(safe-area-inset-top))] right-[max(.75rem,env(safe-area-inset-right))] z-50 flex items-center justify-center'
+        }
+      >
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`group relative flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 backdrop-blur-xl ${
+            isOpen
+              ? 'border-pink-400/70 bg-pink-950/35 text-pink-300 shadow-[0_0_16px_rgba(240,0,184,0.28)]'
+              : 'border-[#00f2ea]/35 bg-black/35 text-[#00f2ea] shadow-[0_0_14px_rgba(0,242,234,0.18)] hover:border-[#00f2ea]/70 hover:bg-[#00f2ea]/10'
+          }`}
+          aria-label={isOpen ? 'Cerrar centro de control' : 'Abrir centro de control y acceso'}
+        >
+          <div className="absolute -inset-1.5 -z-10 rounded-2xl bg-[#00f2ea]/10 blur-lg opacity-60 transition-opacity group-hover:opacity-90" />
+          {isOpen ? (
+            <FontAwesomeIcon icon={faTimes} className="text-sm transition-transform duration-300" />
+          ) : (
+            <span className="relative h-[13px] w-[15px] rounded-[3px] border border-current" aria-hidden="true">
+              <span className="absolute bottom-[3px] left-[3px] top-[3px] w-px rounded-full bg-current opacity-80" />
+              <span className="absolute left-[7px] right-[3px] top-1/2 h-px -translate-y-1/2 rounded-full bg-current" />
+            </span>
+          )}
+        </button>
+      </div>
+
+      {mounted ? createPortal(menuLayer, document.body) : null}
     </>
   );
 }

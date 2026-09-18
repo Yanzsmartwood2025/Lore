@@ -2,7 +2,7 @@
 
 import { FormEvent, PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { models } from '@/data/models';
@@ -26,6 +26,7 @@ interface ChatInboxProps {
 const MAX_STORAGE_MESSAGES = 50;
 
 export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
+  const router = useRouter();
   const { setAmbientCategory } = useMedia();
   const { user, getIdToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -315,14 +316,16 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
         onWheel={handleHeaderWheel}
         className="relative z-10 flex touch-none select-none items-center justify-between border-b border-white/15 bg-white/[0.035] px-4 py-3 backdrop-blur-[3px]"
       >
-        <Link
-          href="/"
+        <button
+          type="button"
           aria-label={`Volver al inicio desde el chat de ${name}`}
           title="Volver al inicio"
-          onClick={(event) => {
-            if (!suppressHeaderLinkClickRef.current) return;
-            event.preventDefault();
-            suppressHeaderLinkClickRef.current = false;
+          onClick={() => {
+            if (suppressHeaderLinkClickRef.current) {
+              suppressHeaderLinkClickRef.current = false;
+              return;
+            }
+            router.replace('/');
           }}
           className="group inline-flex min-w-0 items-center rounded-xl px-1 py-0.5 outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-white/60"
         >
@@ -338,7 +341,7 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
               {name}
             </span>
           )}
-        </Link>
+        </button>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.045] px-2.5 py-1 text-[11px] font-medium text-white/90 shadow-[inset_0_0_12px_rgba(255,255,255,0.035)]">

@@ -6,6 +6,7 @@ import {
   DEFAULT_MUSIC_CATEGORY,
   MUSIC_CATEGORIES,
   REQUESTED_SONG_START_SECONDS,
+  getMusicCategorySources,
   type MusicCategory,
   type MusicSource,
 } from '@/lib/music';
@@ -87,6 +88,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   const isPlayingRef = useRef(isPlaying);
   const isMutedRef = useRef(isMuted);
   const requestedVideoIdRef = useRef<string | null>(null);
+  const activeSourceIndexRef = useRef(0);
 
   const broadcastLightingProfile = (category: MusicCategory, videoId?: string) => {
     const profile = getYouTubeLightingProfile(videoId, category);
@@ -214,20 +216,32 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
           const activeVideoId = event.target.getVideoData?.().video_id;
           if (activeVideoId) setCurrentVideoId(activeVideoId);
           if (event.data === 0) {
-            const category = MUSIC_CATEGORIES[ambientCategoryRef.current];
+            const categoryKey = ambientCategoryRef.current;
+            const sources = getMusicCategorySources(categoryKey);
             if (requestedVideoIdRef.current) {
-              loadSource(event.target, category.source);
-            } else if (category.source.type === 'video') {
-              event.target.seekTo(0, true);
-              event.target.playVideo();
+              activeSourceIndexRef.current = 0;
+              loadSource(event.target, sources[0]);
+            } else {
+              const activeSource = sources[activeSourceIndexRef.current] ?? sources[0];
+              if (activeSource?.type === 'video' && sources.length > 1) {
+                const nextIndex = (activeSourceIndexRef.current + 1) % sources.length;
+                activeSourceIndexRef.current = nextIndex;
+                loadSource(event.target, sources[nextIndex]);
+              } else if (activeSource?.type === 'video') {
+                event.target.seekTo(0, true);
+                event.target.playVideo();
+              }
             }
           }
           if (event.data === 1) setIsPlaying(true);
           if (event.data === 2) setIsPlaying(false);
         },
         onError: (event: { target: YouTubePlayer }) => {
-          const category = MUSIC_CATEGORIES[ambientCategoryRef.current];
-          if ('fallback' in category) loadSource(event.target, category.fallback);
+          const sources = getMusicCategorySources(ambientCategoryRef.current);
+          if (sources.length > 1) {
+            activeSourceIndexRef.current = (activeSourceIndexRef.current + 1) % sources.length;
+            loadSource(event.target, sources[activeSourceIndexRef.current]);
+          }
         },
       },
     });
@@ -242,7 +256,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         ytPlayerRef.current = null;
       }
     };
-  }, [ytApiReady, pathname]);
+  }, [ytApiReady]);
 
   // Reloj visual exclusivo de YouTube. Trabaja a 12.5 Hz, no provoca renders
   // de React y se apaga al pausar o mandar la app a segundo plano.
@@ -322,6 +336,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
 
   const setAmbientCategory = (category: MusicCategory) => {
     ambientCategoryRef.current = category;
+    activeSourceIndexRef.current = 0;
     setAmbientCategoryState(category);
     setActiveTab('music');
     const nextSource = MUSIC_CATEGORIES[category].source;
@@ -330,11 +345,14 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     broadcastLightingProfile(category, nextVideoId);
     if (ytPlayerRef.current) {
       try {
-        loadSource(ytPlayerRef.current, MUSIC_CATEGORIES[category].source);
+        loadSource(ytPlayerRef.current, nextSource);
         setIsPlaying(true);
       } catch {
-        const selectedCategory = MUSIC_CATEGORIES[category];
-        if ('fallback' in selectedCategory) loadSource(ytPlayerRef.current, selectedCategory.fallback);
+        const sources = getMusicCategorySources(category);
+        if (sources[1]) {
+          activeSourceIndexRef.current = 1;
+          loadSource(ytPlayerRef.current, sources[1]);
+        }
       }
     }
   };
@@ -367,22 +385,50 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   };
 
   const nextTrack = () => {
-    if (ytPlayerRef.current) {
-      try {
-        ytPlayerRef.current.nextVideo();
-      } catch {
-        // ignore
+    const player = ytPlayerRef.current;
+    if (!player) return;
+
+    try {
+      const category = ambientCategoryRef.current;
+      const sources = getMusicCategorySources(category);
+      const activeSource = sources[activeSourceIndexRef.current] ?? sources[0];
+
+      if (!requestedVideoIdRef.current && activeSource?.type === 'playlist') {
+        player.nextVideo();
+        setIsPlaying(true);
+        return;
       }
+
+      const nextIndex = (activeSourceIndexRef.current + 1) % sources.length;
+      activeSourceIndexRef.current = nextIndex;
+      loadSource(player, sources[nextIndex]);
+      setIsPlaying(true);
+    } catch {
+      // ignore
     }
   };
 
   const prevTrack = () => {
-    if (ytPlayerRef.current) {
-      try {
-        ytPlayerRef.current.previousVideo();
-      } catch {
-        // ignore
+    const player = ytPlayerRef.current;
+    if (!player) return;
+
+    try {
+      const category = ambientCategoryRef.current;
+      const sources = getMusicCategorySources(category);
+      const activeSource = sources[activeSourceIndexRef.current] ?? sources[0];
+
+      if (!requestedVideoIdRef.current && activeSource?.type === 'playlist') {
+        player.previousVideo();
+        setIsPlaying(true);
+        return;
       }
+
+      const prevIndex = (activeSourceIndexRef.current - 1 + sources.length) % sources.length;
+      activeSourceIndexRef.current = prevIndex;
+      loadSource(player, sources[prevIndex]);
+      setIsPlaying(true);
+    } catch {
+      // ignore
     }
   };
 

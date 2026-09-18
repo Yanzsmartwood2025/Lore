@@ -15,11 +15,13 @@ export const MUSIC_CATEGORIES = {
     name: 'Electrónica / EDM',
     group: 'club',
     source: { type: 'video', id: '3QDrZupMPuE' },
+    fallback: { type: 'video', id: 'hyFTDPTjl98' },
   },
   techno: {
     name: 'Techno 90s / 2000s',
     group: 'club',
     source: { type: 'video', id: '2zI9eujvInE' },
+    fallback: { type: 'video', id: 'rXBOtj-c6-I' },
   },
   rock_latino: {
     name: 'Rock latino clásico',
@@ -43,6 +45,7 @@ export const MUSIC_CATEGORIES = {
     name: 'Baladas en inglés',
     group: 'romantica',
     source: { type: 'video', id: 'n0K8iAi0ZMo' },
+    fallback: { type: 'video', id: 'eLqO5pQRtls' },
   },
   vallenato: {
     name: 'Vallenato clásico',
@@ -66,6 +69,7 @@ export const MUSIC_CATEGORIES = {
     name: 'Pop / fiesta clásicos',
     group: 'pop',
     source: { type: 'video', id: 'hLqUb_cBTfA' },
+    fallback: { type: 'video', id: 'HGPKriFzQoM' },
   },
 } as const;
 
@@ -109,4 +113,10 @@ export const REQUESTED_SONG_START_SECONDS = 18;
 
 export function isMusicCategory(value: unknown): value is MusicCategory {
   return typeof value === 'string' && value in MUSIC_CATEGORIES;
+}
+
+
+export function getMusicCategorySources(category: MusicCategory): MusicSource[] {
+  const config = MUSIC_CATEGORIES[category];
+  return [config.source as MusicSource, config.fallback as MusicSource];
 }
