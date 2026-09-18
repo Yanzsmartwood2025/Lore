@@ -88,6 +88,25 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   const isMutedRef = useRef(isMuted);
   const requestedVideoIdRef = useRef<string | null>(null);
 
+  const broadcastLightingProfile = (category: MusicCategory, videoId?: string) => {
+    const profile = getYouTubeLightingProfile(videoId, category);
+    window.dispatchEvent(new CustomEvent('lore:lighting-profile', {
+      detail: {
+        rotationSpeed: profile.rotationSpeed,
+        ringSpeed: profile.ringSpeed,
+        beamDensity: profile.beamDensity,
+        beamWidth: profile.beamWidth,
+        beamIntensity: profile.beamIntensity,
+        haze: profile.haze,
+        laserFan: profile.laserFan,
+        prism: profile.prism,
+        paletteA: profile.paletteA,
+        paletteB: profile.paletteB,
+        paletteC: profile.paletteC,
+      },
+    }));
+  };
+
   useEffect(() => {
     targetVolumeRef.current = targetVolume;
     const start = volumeRef.current;
@@ -231,6 +250,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     let timer = 0;
     let lastBeatIndex = -1;
+    let lastLightingKey = '';
 
     const resetLighting = () => {
       root.style.setProperty('--lore-card-glow', '0.05');
@@ -251,8 +271,15 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
       if (typeof seconds !== 'number' || !Number.isFinite(seconds)) return;
 
       const videoId = player.getVideoData?.().video_id;
-      const profile = getYouTubeLightingProfile(videoId, ambientCategoryRef.current);
+      const category = ambientCategoryRef.current;
+      const profile = getYouTubeLightingProfile(videoId, category);
       const light = getYouTubeLightingFrame(seconds, profile);
+      const lightingKey = `${category}:${videoId ?? ''}`;
+
+      if (lightingKey !== lastLightingKey) {
+        lastLightingKey = lightingKey;
+        broadcastLightingProfile(category, videoId);
+      }
 
       root.style.setProperty('--lore-card-glow', light.cardGlow.toFixed(3));
       root.style.setProperty('--lore-card-side-glow', (light.cardGlow * 0.52).toFixed(3));
@@ -298,7 +325,9 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     setAmbientCategoryState(category);
     setActiveTab('music');
     const nextSource = MUSIC_CATEGORIES[category].source;
-    setCurrentVideoId(nextSource.type === 'video' ? nextSource.id : null);
+    const nextVideoId = nextSource.type === 'video' ? nextSource.id : undefined;
+    setCurrentVideoId(nextVideoId ?? null);
+    broadcastLightingProfile(category, nextVideoId);
     if (ytPlayerRef.current) {
       try {
         loadSource(ytPlayerRef.current, MUSIC_CATEGORIES[category].source);
