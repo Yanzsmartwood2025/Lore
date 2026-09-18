@@ -118,7 +118,5 @@ export function isMusicCategory(value: unknown): value is MusicCategory {
 
 export function getMusicCategorySources(category: MusicCategory): MusicSource[] {
   const config = MUSIC_CATEGORIES[category];
-  return 'fallback' in config
-    ? [config.source as MusicSource, config.fallback as MusicSource]
-    : [config.source as MusicSource];
+  return [config.source as MusicSource, config.fallback as MusicSource];
 }
