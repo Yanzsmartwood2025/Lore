@@ -19,7 +19,7 @@ export interface YouTubeLightingProfile {
   paletteC: RgbTriplet;
 }
 
-// Cada género define no solo BPM, sino el comportamiento completo de la sala.
+// Cada género define no solo BPM, sino el comportamiento completo de la sala y de la esfera.
 // Los valores están normalizados para mantener el shader ligero y evitar
 // flashes agresivos. La paleta se expresa en RGB 0..1.
 const CATEGORY_PROFILES: Record<MusicCategory, YouTubeLightingProfile> = {
