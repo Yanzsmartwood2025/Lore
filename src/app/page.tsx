@@ -101,24 +101,18 @@ export default function Home() {
               aria-label={youtubeExpanded ? 'Volver a Lore en la pantalla principal' : 'Ver YouTube en la pantalla principal'}
             >
               {youtubeExpanded ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_50%_45%,rgba(0,242,234,0.13),rgba(0,0,0,0.92)_62%)]">
-                  <span className="text-[9px] font-medium uppercase tracking-[0.22em] text-white/65">Lore</span>
-                </div>
+                <div
+                  className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(0,242,234,0.10),rgba(0,0,0,0.96)_64%)]"
+                  aria-hidden="true"
+                />
               ) : (
-                <>
-                  <img
-                    src={`https://i.ytimg.com/vi/${previewVideoId}/hqdefault.jpg`}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover opacity-72"
-                    draggable={false}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/15" aria-hidden="true" />
-                </>
+                <img
+                  src={`https://i.ytimg.com/vi/${previewVideoId}/hqdefault.jpg`}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                  draggable={false}
+                />
               )}
-              <div className="absolute inset-x-2 bottom-1 flex items-center justify-between text-[6px] uppercase tracking-[0.16em] text-white/60">
-                <span>{youtubeExpanded ? 'Lore' : 'YouTube'}</span>
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/80 shadow-[0_0_7px_rgba(103,232,249,0.7)]" />
-              </div>
             </button>
           </div>
 
