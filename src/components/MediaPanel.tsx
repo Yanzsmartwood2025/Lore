@@ -30,9 +30,18 @@ export function MediaPanel() {
   }, []);
 
   useEffect(() => {
-    setShowYtPanel(false);
     setHomeYouTubeExpanded(false);
     setHomeStageRect(null);
+
+    if (isHome) {
+      setShowYtPanel(false);
+    } else {
+      // Mantiene el mismo player vivo al cambiar de "cuarto". Si la música
+      // venía reproduciéndose, el video se encoge a un dock visible sin cortar audio.
+      setShowYtPanel(isPlaying);
+    }
+    // Solo debe reaccionar al cambio de ruta, no a cada cambio de playback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   useEffect(() => {
@@ -91,6 +100,8 @@ export function MediaPanel() {
     };
   }, [isHome, homeYouTubeExpanded]);
 
+  const homePlayerVisible = isHome && homeYouTubeExpanded && homeStageRect;
+
   return (
     <>
       <div className="fixed inset-0 z-0 h-full w-full select-none overflow-hidden bg-black pointer-events-none">
@@ -128,42 +139,46 @@ export function MediaPanel() {
         </div>
       )}
 
-      {isHome ? (
-        <div
-          className={`fixed z-40 overflow-hidden rounded-b-[1.65rem] bg-black shadow-[0_0_24px_rgba(0,0,0,0.45)] transition-opacity duration-300 [&>iframe]:h-full [&>iframe]:w-full ${
-            homeYouTubeExpanded && homeStageRect ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
-          }`}
-          style={homeYouTubeExpanded && homeStageRect
-            ? {
-                top: homeStageRect.top,
-                left: homeStageRect.left,
-                width: homeStageRect.width,
-                height: homeStageRect.height,
-              }
-            : { top: -1000, left: -1000, width: 320, height: 200 }}
-          aria-hidden={!homeYouTubeExpanded}
-        >
-          <div className="h-full w-full [&>iframe]:h-full [&>iframe]:w-full" id="yt-player-element" />
-        </div>
-      ) : (
-        <div
-          className={`fixed left-0 right-0 top-0 z-40 flex justify-center border-b border-cyan-500/30 bg-black/90 p-2 shadow-2xl backdrop-blur-md transition-transform duration-350 ease-in-out ${
-            showYtPanel ? 'translate-y-0' : '-translate-y-full'
-          }`}
-        >
-          <div className="relative h-[158px] w-[280px] overflow-hidden rounded-lg border border-cyan-500/40 bg-black sm:h-[202px] sm:w-[360px]">
-            <div className="h-full w-full [&>iframe]:h-full [&>iframe]:w-full" id="yt-player-element" />
-            <button
-              type="button"
-              onClick={() => setShowYtPanel(false)}
-              className="absolute right-2 top-2 rounded border border-cyan-500/40 bg-black/75 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
-              title="Ocultar reproductor"
-            >
-              ✕ Ocultar
-            </button>
-          </div>
-        </div>
-      )}
+      <div
+        className={
+          isHome
+            ? `fixed z-40 overflow-hidden rounded-b-[1.65rem] bg-black shadow-[0_0_24px_rgba(0,0,0,0.45)] transition-[opacity,top,left,width,height] duration-300 [&>div>iframe]:h-full [&>div>iframe]:w-full ${
+                homePlayerVisible ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+              }`
+            : `fixed left-1/2 top-0 z-40 h-[200px] w-[min(92vw,360px)] -translate-x-1/2 overflow-hidden rounded-b-xl border border-cyan-500/30 bg-black shadow-2xl transition-transform duration-350 ease-in-out [&>div>iframe]:h-full [&>div>iframe]:w-full ${
+                showYtPanel ? 'translate-y-0 pointer-events-auto' : '-translate-y-[105%] pointer-events-none'
+              }`
+        }
+        style={
+          isHome
+            ? homePlayerVisible
+              ? {
+                  top: homeStageRect.top,
+                  left: homeStageRect.left,
+                  width: homeStageRect.width,
+                  height: homeStageRect.height,
+                }
+              : { top: -1000, left: -1000, width: 320, height: 200 }
+            : undefined
+        }
+        aria-hidden={isHome ? !homePlayerVisible : !showYtPanel}
+      >
+        <div className="h-full w-full" id="yt-player-element" />
+
+        {!isHome && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowYtPanel(false);
+              pause();
+            }}
+            className="absolute right-2 top-2 z-10 rounded border border-cyan-500/40 bg-black/80 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
+            title="Ocultar y pausar reproductor"
+          >
+            ✕ Ocultar
+          </button>
+        )}
+      </div>
     </>
   );
 }
