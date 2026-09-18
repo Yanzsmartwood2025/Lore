@@ -152,7 +152,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
       if (previousReady) previousReady();
       setYtApiReady(true);
     };
-  }, [ytApiReady, pathname]);
+  }, [ytApiReady]);
 
   useEffect(() => {
     if (!ytApiReady) return;
@@ -223,7 +223,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         ytPlayerRef.current = null;
       }
     };
-  }, [ytApiReady]);
+  }, [ytApiReady, pathname]);
 
   // Reloj visual exclusivo de YouTube. Trabaja a 12.5 Hz, no provoca renders
   // de React y se apaga al pausar o mandar la app a segundo plano.
