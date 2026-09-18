@@ -125,7 +125,7 @@ export default function Home() {
           <div
             id="home-main-youtube-slot"
             aria-label={youtubeExpanded ? 'YouTube en pantalla principal' : 'Pantalla principal de contenido Lore'}
-            className="relative aspect-video w-full overflow-hidden rounded-b-[1.65rem] bg-black shadow-[inset_0_0_18px_rgba(0,0,0,0.98)]"
+            className="relative min-h-[200px] aspect-video w-full overflow-hidden rounded-b-[1.65rem] bg-black shadow-[inset_0_0_18px_rgba(0,0,0,0.98)]"
           >
             <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/[0.07] via-black/95 to-black" aria-hidden="true" />
           </div>
