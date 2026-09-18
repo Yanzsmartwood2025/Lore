@@ -74,7 +74,7 @@ export default function Home() {
               Protocolo <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">VIP</span>
             </h1>
 
-            <div className="absolute bottom-1.5 left-2.5 right-[7.65rem] sm:left-3 sm:right-[8.9rem]">
+            <div className="absolute bottom-1.5 left-[3.5rem] right-[7.65rem] flex justify-center sm:left-[4rem] sm:right-[8.9rem]">
               <HomeStageControls />
             </div>
 
