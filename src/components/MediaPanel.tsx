@@ -100,7 +100,7 @@ export function MediaPanel() {
     };
   }, [isHome, homeYouTubeExpanded]);
 
-  const homePlayerVisible = isHome && homeYouTubeExpanded && homeStageRect;
+  const homePlayerVisible = isHome && homeYouTubeExpanded && homeStageRect !== null;
 
   return (
     <>
@@ -151,7 +151,7 @@ export function MediaPanel() {
         }
         style={
           isHome
-            ? homePlayerVisible
+            ? homeYouTubeExpanded && homeStageRect
               ? {
                   top: homeStageRect.top,
                   left: homeStageRect.left,
