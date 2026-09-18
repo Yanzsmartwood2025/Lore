@@ -10,12 +10,26 @@ function normalizeCategory(content: string | null | undefined) {
 
   const normalized = content.trim().toLowerCase().replace(/["'`.*]/g, '');
   if (isMusicCategory(normalized)) return normalized;
-  if (normalized.includes('romántica') || normalized.includes('romantica') || normalized.includes('despecho')) {
-    return 'romantica';
+
+  const aliases: Array<[string[], keyof typeof MUSIC_CATEGORIES]> = [
+    [['old school', 'reggaetón clásico', 'reggaeton clasico', 'perreo viejo'], 'reggaeton_clasico'],
+    [['reggaetón', 'reggaeton', 'urbano', 'perreo'], 'reggaeton'],
+    [['edm', 'electrónica', 'electronica', 'dance'], 'electronica'],
+    [['techno', 'rave'], 'techno'],
+    [['rock latino', 'rock en español', 'rock en espanol'], 'rock_latino'],
+    [['linkin park', 'evanescence', 'green day', 'rock 2000', 'rock moderno'], 'rock_2000'],
+    [['balada en inglés', 'balada en ingles', 'soft rock'], 'baladas_ingles'],
+    [['romántica', 'romantica', 'despecho', 'balada'], 'romantica'],
+    [['vallenato'], 'vallenato'],
+    [['bachata'], 'bachata'],
+    [['salsa', 'merengue', 'tropical'], 'tropical'],
+    [['pop clásico', 'pop clasico', 'retro', 'oldies'], 'pop_clasicos'],
+  ];
+
+  for (const [terms, category] of aliases) {
+    if (terms.some((term) => normalized.includes(term))) return category;
   }
-  if (normalized.includes('reggaetón') || normalized.includes('reggaeton') || normalized.includes('fiesta')) {
-    return 'reggaeton';
-  }
+
   return null;
 }
 
@@ -49,7 +63,7 @@ export async function POST(request: Request) {
         messages: [
           {
             role: 'system',
-            content: `Clasifica el estado de ánimo del usuario para elegir música. Responde únicamente una de estas claves, sin explicación: ${Object.keys(MUSIC_CATEGORIES).join(', ')}. Usa romantica para tristeza, amor o despecho; usa reggaeton para fiesta, energía o baile.`,
+            content: `Clasifica la preferencia musical del usuario. Responde únicamente una de estas claves, sin explicación: ${Object.keys(MUSIC_CATEGORIES).join(', ')}. Distingue reggaeton de reggaeton_clasico; rock_latino para rock en español clásico; rock_2000 para alternative/nu-metal/post-grunge desde los 2000; romantica para baladas en español; baladas_ingles para baladas anglo; electronica para EDM/dance; techno para rave/techno; vallenato, bachata y tropical para sus géneros; pop_clasicos para pop/fiesta retro.`,
           },
           { role: 'user', content: message },
         ],
