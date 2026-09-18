@@ -65,16 +65,15 @@ export default function Home() {
           aria-label="Cabina principal de Lore"
           className="relative z-20 mx-auto w-[calc(100%-1.25rem)] max-w-xl flex-none overflow-visible rounded-[1.75rem] border border-cyan-500/20 bg-black/30 shadow-[0_0_30px_rgba(0,242,234,0.08)] backdrop-blur-md"
         >
-          <div className="relative rounded-t-[1.75rem] border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,18,24,0.68),rgba(0,0,0,0.40))] px-3 pb-3 pt-2.5 sm:px-4">
-            <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2">
-              <div className="h-10 w-10" aria-hidden="true" />
-              <h1 className="text-center text-[1.05rem] font-medium uppercase tracking-[0.20em] text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.22)] sm:text-xl">
+          <div className="relative rounded-t-[1.75rem] border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,18,24,0.68),rgba(0,0,0,0.40))] px-3 pb-2.5 pt-2 sm:px-4">
+            <div className="grid grid-cols-[2.5rem_1fr] items-center gap-2">
+              <TopNavMenu embedded />
+              <h1 className="translate-x-1 text-center text-[1.05rem] font-medium uppercase tracking-[0.20em] text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.22)] sm:text-xl">
                 Protocolo <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">VIP</span>
               </h1>
-              <TopNavMenu embedded />
             </div>
 
-            <div className="mt-2 flex items-end gap-2.5">
+            <div className="mt-1.5 flex items-end gap-2.5">
               <div className="min-w-0 flex-1 pb-1">
                 <HomeStageControls />
                 <p className="mt-2 truncate pl-1 text-[8px] uppercase tracking-[0.22em] text-white/30">
@@ -83,7 +82,7 @@ export default function Home() {
               </div>
 
               <div
-                className="relative h-[4.9rem] w-[6.25rem] shrink-0 overflow-hidden rounded-2xl border border-white/16 bg-black shadow-[0_0_16px_rgba(0,242,234,0.08),inset_0_0_18px_rgba(255,255,255,0.025)] sm:h-[5.4rem] sm:w-[7.2rem]"
+                className="relative h-[4.65rem] w-[6.25rem] shrink-0 overflow-hidden rounded-2xl border border-white/16 bg-black shadow-[0_0_16px_rgba(0,242,234,0.08),inset_0_0_18px_rgba(255,255,255,0.025)] sm:h-[5.1rem] sm:w-[7.2rem]"
                 aria-label="Monitor secundario reservado"
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(0,242,234,0.07),transparent_58%)]" aria-hidden="true" />
@@ -97,7 +96,7 @@ export default function Home() {
 
           <div
             aria-label="Pantalla principal de contenido"
-            className="relative h-[clamp(245px,33dvh,340px)] overflow-hidden rounded-b-[1.75rem] bg-black shadow-[inset_0_0_22px_rgba(0,0,0,0.98)]"
+            className="relative h-[clamp(265px,35dvh,360px)] overflow-hidden rounded-b-[1.75rem] bg-black shadow-[inset_0_0_22px_rgba(0,0,0,0.98)]"
           >
             <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/[0.07] via-black/95 to-black" aria-hidden="true" />
           </div>
