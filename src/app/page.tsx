@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { TopNavMenu } from '@/components/TopNavMenu';
 import { Model3DCarousel } from '@/components/Model3DCarousel';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
+import { HomeStageControls } from '@/components/HomeStageControls';
 import { models } from '@/data/models';
 import styles from './splash.module.css';
 
@@ -51,8 +52,6 @@ export default function Home() {
 
   return (
     <main className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-transparent select-none">
-      <TopNavMenu />
-
       {showSplash && (
         <div className={styles.splash} aria-label="Presentación de Lore">
           <div className={`${styles.frame} ${currentFrame.kind === 'signature' ? styles.signature : styles.identity}`}>
@@ -61,18 +60,47 @@ export default function Home() {
         </div>
       )}
 
-      <div className="relative z-10 flex h-full min-h-0 w-full flex-col pb-[max(4.2rem,calc(env(safe-area-inset-bottom)+3.7rem))]">
-        <div className="flex flex-none flex-col items-center justify-center pb-1 pt-[max(.7rem,env(safe-area-inset-top))]">
-          <h1 className="text-xl font-medium uppercase tracking-[0.18em] text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.25)] sm:text-2xl">
-            Protocolo <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">VIP</span>
-          </h1>
-        </div>
-
+      <div className="relative z-10 flex h-full min-h-0 w-full flex-col pb-[max(4.2rem,calc(env(safe-area-inset-bottom)+3.7rem))] pt-[max(.55rem,env(safe-area-inset-top))]">
         <section
-          aria-label="Pantalla principal de contenido"
-          className="relative z-20 mx-auto mt-2 h-[clamp(220px,30dvh,310px)] w-[calc(100%-1.25rem)] max-w-xl flex-none overflow-hidden rounded-2xl border border-cyan-500/25 bg-black shadow-[0_0_24px_rgba(0,242,234,0.10),inset_0_0_18px_rgba(0,0,0,0.95)]"
+          aria-label="Cabina principal de Lore"
+          className="relative z-20 mx-auto w-[calc(100%-1.25rem)] max-w-xl flex-none overflow-visible rounded-[1.75rem] border border-cyan-500/20 bg-black/30 shadow-[0_0_30px_rgba(0,242,234,0.08)] backdrop-blur-md"
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/10 via-black/95 to-black" aria-hidden="true" />
+          <div className="relative rounded-t-[1.75rem] border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,18,24,0.68),rgba(0,0,0,0.40))] px-3 pb-3 pt-2.5 sm:px-4">
+            <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2">
+              <div className="h-10 w-10" aria-hidden="true" />
+              <h1 className="text-center text-[1.05rem] font-medium uppercase tracking-[0.20em] text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.22)] sm:text-xl">
+                Protocolo <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">VIP</span>
+              </h1>
+              <TopNavMenu embedded />
+            </div>
+
+            <div className="mt-2 flex items-end gap-2.5">
+              <div className="min-w-0 flex-1 pb-1">
+                <HomeStageControls />
+                <p className="mt-2 truncate pl-1 text-[8px] uppercase tracking-[0.22em] text-white/30">
+                  Audio · escena · efectos
+                </p>
+              </div>
+
+              <div
+                className="relative h-[4.9rem] w-[6.25rem] shrink-0 overflow-hidden rounded-2xl border border-white/16 bg-black shadow-[0_0_16px_rgba(0,242,234,0.08),inset_0_0_18px_rgba(255,255,255,0.025)] sm:h-[5.4rem] sm:w-[7.2rem]"
+                aria-label="Monitor secundario reservado"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(0,242,234,0.07),transparent_58%)]" aria-hidden="true" />
+                <div className="absolute inset-x-2 bottom-2 flex items-center justify-between text-[7px] uppercase tracking-[0.18em] text-white/30">
+                  <span>Monitor</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/70 shadow-[0_0_7px_rgba(103,232,249,0.7)]" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            aria-label="Pantalla principal de contenido"
+            className="relative h-[clamp(245px,33dvh,340px)] overflow-hidden rounded-b-[1.75rem] bg-black shadow-[inset_0_0_22px_rgba(0,0,0,0.98)]"
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/[0.07] via-black/95 to-black" aria-hidden="true" />
+          </div>
         </section>
 
         <div className="mt-2 min-h-0 w-full flex-1">
