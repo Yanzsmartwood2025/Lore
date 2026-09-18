@@ -15,7 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useMedia } from '@/context/MediaContext';
 import { models } from '@/data/models';
-import { MUSIC_CATEGORIES, type MusicCategory } from '@/lib/music';
+import { MUSIC_CATEGORIES, MUSIC_CATEGORY_GROUPS, type MusicCategory } from '@/lib/music';
 
 export function MenuMusicControls() {
   const pathname = usePathname();
@@ -100,22 +100,41 @@ export function MenuMusicControls() {
         </div>
 
         <div>
-          <div className="mb-2 text-left text-[9px] uppercase tracking-[0.2em] text-slate-500">Ambiente</div>
-          <div className="grid grid-cols-2 gap-2">
-            {(Object.entries(MUSIC_CATEGORIES) as [MusicCategory, (typeof MUSIC_CATEGORIES)[MusicCategory]][]).map(([key, category]) => (
-              <button
-                type="button"
-                key={key}
-                aria-pressed={ambientCategory === key}
-                onClick={() => setAmbientCategory(key)}
-                className={`rounded-xl border px-3 py-2 text-[11px] font-medium transition-all ${
-                  ambientCategory === key
-                    ? 'border-cyan-300/80 bg-cyan-400/20 text-cyan-50 shadow-[0_0_12px_rgba(0,242,234,0.15)]'
-                    : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-500/30'
-                }`}
-              >
-                {category.name}
-              </button>
+          <div className="mb-2 flex items-end justify-between text-left">
+            <div>
+              <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Biblioteca</div>
+              <div className="mt-0.5 text-[10px] text-slate-600">Elige un estilo para cambiar el ambiente</div>
+            </div>
+            <span className="text-[9px] uppercase tracking-[0.16em] text-cyan-400/60">YouTube</span>
+          </div>
+
+          <div className="space-y-3">
+            {MUSIC_CATEGORY_GROUPS.map((group) => (
+              <div key={group.id}>
+                <div className="mb-1.5 text-[8px] font-semibold uppercase tracking-[0.22em] text-white/35">
+                  {group.name}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {group.categories.map((key) => {
+                    const category = MUSIC_CATEGORIES[key as MusicCategory];
+                    return (
+                      <button
+                        type="button"
+                        key={key}
+                        aria-pressed={ambientCategory === key}
+                        onClick={() => setAmbientCategory(key as MusicCategory)}
+                        className={`min-h-10 rounded-xl border px-2.5 py-2 text-[10px] font-medium leading-tight transition-all ${
+                          ambientCategory === key
+                            ? 'border-cyan-300/80 bg-cyan-400/20 text-cyan-50 shadow-[0_0_12px_rgba(0,242,234,0.15)]'
+                            : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-500/30'
+                        }`}
+                      >
+                        {category.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             ))}
           </div>
         </div>
