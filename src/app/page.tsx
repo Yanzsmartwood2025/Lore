@@ -82,7 +82,7 @@ export default function Home() {
             </div>
 
             <div
-              className="absolute right-2 top-2.2 w-[7.1rem] aspect-video overflow-hidden rounded-xl border border-white/16 bg-black shadow-[0_0_16px_rgba(0,242,234,0.08),inset_0_0_18px_rgba(255,255,255,0.025)] sm:right-3 sm:top-2 sm:w-[8.1rem]"
+              className="absolute right-2 top-1.5 w-[7.1rem] aspect-video overflow-hidden rounded-xl border border-white/16 bg-black shadow-[0_0_16px_rgba(0,242,234,0.08),inset_0_0_18px_rgba(255,255,255,0.025)] sm:right-3 sm:top-2 sm:w-[8.1rem]"
               aria-label="Monitor secundario reservado"
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(0,242,234,0.07),transparent_58%)]" aria-hidden="true" />
