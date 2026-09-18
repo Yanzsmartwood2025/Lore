@@ -44,6 +44,7 @@ interface MediaContextType {
   togglePlay: () => void;
   nextTrack: () => void;
   prevTrack: () => void;
+  seekBy: (seconds: number) => void;
   toggleMute: () => void;
   setVideoSize: (size: VideoSizeMode) => void;
   toggleVideoSize: () => void;
@@ -343,6 +344,18 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const seekBy = (seconds: number) => {
+    const player = ytPlayerRef.current;
+    if (!player) return;
+    try {
+      const currentTime = player.getCurrentTime?.();
+      if (typeof currentTime !== 'number' || !Number.isFinite(currentTime)) return;
+      player.seekTo(Math.max(0, currentTime + seconds), true);
+    } catch {
+      // ignore
+    }
+  };
+
   const toggleMute = () => {
     if (ytPlayerRef.current) {
       try {
@@ -428,6 +441,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         togglePlay,
         nextTrack,
         prevTrack,
+        seekBy,
         toggleMute,
         setVideoSize,
         toggleVideoSize,
