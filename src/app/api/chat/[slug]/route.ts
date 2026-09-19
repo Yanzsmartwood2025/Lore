@@ -3,6 +3,7 @@ import { cleanNarratedActions } from '@/lib/chat-format';
 import { buildChatPrompt } from '@/lib/chat-policy';
 import { learnFromUserMessage, loadMemoryContext, refreshLearnedContextIfNeeded } from '@/lib/chat-memory';
 import { requireUser } from '@/lib/supabase/server';
+import { buildYouTubeAwarenessContext, parsePlaybackContext } from '@/lib/youtube-awareness';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -65,7 +66,7 @@ export async function POST(
     return Response.json({ error: 'Persona no disponible.' }, { status: 404 });
   }
 
-  let body: { message?: unknown };
+  let body: { message?: unknown; playback?: unknown };
   try {
     body = await request.json();
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Invalid body');
@@ -117,6 +118,14 @@ export async function POST(
     return '';
   });
 
+  const playback = parsePlaybackContext(body.playback);
+  const youtubeAwarenessPromise = buildYouTubeAwarenessContext(playback).catch(
+    (youtubeError) => {
+      console.error('Unable to load Lore YouTube awareness:', youtubeError);
+      return '';
+    },
+  );
+
   const { data: savedUserMessage, error: messageError } = await auth.supabase
     .from('lore_chat_messages')
     .insert({ conversation_id: conversation.id, role: 'user', content: message })
@@ -126,7 +135,10 @@ export async function POST(
     return Response.json({ error: 'No se pudo guardar el mensaje.' }, { status: 500 });
   }
 
-  const memoryContext = await memoryContextPromise;
+  const [memoryContext, youtubeAwarenessContext] = await Promise.all([
+    memoryContextPromise,
+    youtubeAwarenessPromise,
+  ]);
   const memoryLearningPromise = learnFromUserMessage({
     supabase: auth.supabase,
     userId: auth.user.id,
@@ -152,7 +164,7 @@ export async function POST(
           {
             role: 'system',
             content: buildChatPrompt(
-              `${persona.systemPrompt}\n\n${memoryContext}`,
+              `${persona.systemPrompt}\n\n${memoryContext}\n\n${youtubeAwarenessContext}`,
             ),
           },
           ...history,
