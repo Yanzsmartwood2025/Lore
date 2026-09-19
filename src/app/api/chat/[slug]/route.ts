@@ -111,6 +111,7 @@ export async function POST(
     auth.user.id,
     slug,
     message,
+    apiKeys,
   ).catch((memoryError) => {
     console.error('Unable to load Lore memory context:', memoryError);
     return '';
