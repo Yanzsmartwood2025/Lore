@@ -182,6 +182,7 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
       role,
       content: messageContent,
     }));
+    const playbackSnapshot = getPlaybackSnapshot();
 
     const assistantMessageId = crypto.randomUUID();
     const assistantMessagePlaceholder: ChatMessage = {
@@ -202,13 +203,19 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
     void fetch('/api/youtube-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: content }),
+      body: JSON.stringify({
+        message: content,
+        history,
+        playback: playbackSnapshot,
+      }),
     })
       .then(async (response) => {
         let data: {
           action?: unknown;
           videoId?: unknown;
           mediaType?: unknown;
+          requestKind?: unknown;
+          error?: unknown;
         } = {};
 
         try {
@@ -216,6 +223,8 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
             action?: unknown;
             videoId?: unknown;
             mediaType?: unknown;
+            requestKind?: unknown;
+            error?: unknown;
           };
         } catch {
           // Si la búsqueda exacta falla, dejamos que el ambiente musical siga funcionando.
@@ -230,6 +239,13 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
           const startSeconds = data.mediaType === 'music' ? undefined : 0;
           playRequestedVideo(data.videoId, startSeconds);
           window.dispatchEvent(new CustomEvent('lore:youtube-reveal'));
+          return;
+        }
+
+        if (data.action === 'play' || data.action === 'error') {
+          if (typeof data.error === 'string' && data.error) {
+            setError(data.error);
+          }
           return;
         }
 
@@ -259,7 +275,7 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
         body: JSON.stringify({
           message: content,
           history,
-          playback: getPlaybackSnapshot(),
+          playback: playbackSnapshot,
         }),
       });
 
