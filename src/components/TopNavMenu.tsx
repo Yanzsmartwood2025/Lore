@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTimes,
@@ -11,6 +12,7 @@ import {
   faShieldHalved,
   faWandMagicSparkles,
   faCirclePlay,
+  faBrain,
 } from '@fortawesome/free-solid-svg-icons';
 import { GlassCard } from '@/components/GlassCard';
 import { useMedia } from '@/context/MediaContext';
@@ -80,6 +82,23 @@ export function TopNavMenu({ embedded = false }: { embedded?: boolean }) {
             </div>
 
             <MenuMusicControls />
+
+            {user && (
+              <Link
+                href="/memory"
+                onClick={() => setIsOpen(false)}
+                className="flex w-full items-center justify-between rounded-2xl border border-pink-400/25 bg-pink-950/15 px-4 py-3 text-left text-sm text-pink-100 transition hover:border-pink-400/50 hover:bg-pink-950/25"
+              >
+                <span className="flex items-center gap-3">
+                  <FontAwesomeIcon icon={faBrain} className="text-pink-300" />
+                  <span>
+                    <span className="block font-medium">Lo que Lore recuerda de mí</span>
+                    <span className="block text-[10px] text-slate-500">Revisar y corregir memoria</span>
+                  </span>
+                </span>
+                <span className="text-xs text-pink-300">→</span>
+              </Link>
+            )}
           </div>
 
           <MusicRequestForm onRequested={() => setIsOpen(false)} />

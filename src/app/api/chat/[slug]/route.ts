@@ -1,7 +1,7 @@
 import { models } from '@/data/models';
 import { cleanNarratedActions } from '@/lib/chat-format';
 import { buildChatPrompt } from '@/lib/chat-policy';
-import { learnFromUserMessage, loadMemoryContext } from '@/lib/chat-memory';
+import { learnFromUserMessage, loadMemoryContext, refreshLearnedContextIfNeeded } from '@/lib/chat-memory';
 import { requireUser } from '@/lib/supabase/server';
 
 type ChatMessage = {
@@ -110,6 +110,7 @@ export async function POST(
     auth.supabase,
     auth.user.id,
     slug,
+    message,
   ).catch((memoryError) => {
     console.error('Unable to load Lore memory context:', memoryError);
     return '';
@@ -191,6 +192,15 @@ export async function POST(
     });
 
     await memoryLearningPromise;
+    await refreshLearnedContextIfNeeded({
+      supabase: auth.supabase,
+      userId: auth.user.id,
+      personaSlug: slug,
+      conversationId: conversation.id,
+      apiKeys,
+    }).catch((memoryError) => {
+      console.error('Unable to refresh Lore learned context:', memoryError);
+    });
 
     return new Response(createAssistantStream(content), {
       headers: {
