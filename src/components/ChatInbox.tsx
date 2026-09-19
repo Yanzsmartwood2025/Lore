@@ -25,6 +25,14 @@ type YouTubeSuggestion = {
   mediaType: 'music' | 'video' | 'reportage' | 'documentary' | 'movie' | 'trailer' | 'other';
 };
 
+
+type MediaActionContext = {
+  status: 'none' | 'played' | 'choice' | 'ambient' | 'quota' | 'error';
+  title?: string;
+  query?: string;
+  choices?: string[];
+};
+
 interface ChatInboxProps {
   name: string;
   slug: string;
@@ -211,9 +219,9 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
     setYoutubeSuggestions([]);
     setIsSending(true);
 
-    void (async () => {
+    const mediaDecisionPromise = (async (): Promise<MediaActionContext> => {
       const mediaToken = await getIdToken();
-      if (!mediaToken) return;
+      if (!mediaToken) return { status: 'error' };
 
       const response = await fetch('/api/youtube-request', {
         method: 'POST',
@@ -227,9 +235,12 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
           playback: playbackSnapshot,
         }),
       });
+
       let data: {
         action?: unknown;
         videoId?: unknown;
+        title?: unknown;
+        query?: unknown;
         mediaType?: unknown;
         requestKind?: unknown;
         error?: unknown;
@@ -238,17 +249,9 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
       } = {};
 
       try {
-        data = (await response.json()) as {
-          action?: unknown;
-          videoId?: unknown;
-          mediaType?: unknown;
-          requestKind?: unknown;
-          error?: unknown;
-          userRemaining?: unknown;
-          suggestions?: unknown;
-        };
+        data = (await response.json()) as typeof data;
       } catch {
-        // Si no hay JSON válido, no cambiamos la reproducción.
+        return { status: 'error' };
       }
 
       if (typeof data.userRemaining === 'number') {
@@ -264,7 +267,11 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
         const startSeconds = data.mediaType === 'music' ? undefined : 0;
         playRequestedVideo(data.videoId, startSeconds);
         window.dispatchEvent(new CustomEvent('lore:youtube-reveal'));
-        return;
+        return {
+          status: 'played',
+          title: typeof data.title === 'string' ? data.title : undefined,
+          query: typeof data.query === 'string' ? data.query : content,
+        };
       }
 
       if (data.action === 'choose' && Array.isArray(data.suggestions)) {
@@ -294,32 +301,47 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
 
         if (suggestions.length > 0) {
           setYoutubeSuggestions(suggestions);
-          return;
+          return {
+            status: 'choice',
+            query: typeof data.query === 'string' ? data.query : content,
+            choices: suggestions.map((suggestion) => suggestion.title),
+          };
         }
       }
 
-      if (data.action === 'play' || data.action === 'error' || data.action === 'quota' || data.action === 'choose') {
-        if (typeof data.error === 'string' && data.error) {
-          setError(data.error);
-        }
-        return;
+      if (data.action === 'quota') {
+        if (typeof data.error === 'string' && data.error) setError(data.error);
+        return { status: 'quota', query: content };
       }
 
-      const categoryResponse = await fetch('/api/music-category', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: content }),
-      });
-      if (!categoryResponse.ok) return;
-      const categoryData = (await categoryResponse.json()) as { category?: unknown };
-      if (isMusicCategory(categoryData.category)) {
-        setAmbientCategory(categoryData.category);
+      if (data.action === 'play' || data.action === 'error' || data.action === 'choose') {
+        if (typeof data.error === 'string' && data.error) setError(data.error);
+        return { status: 'error', query: content };
       }
-    })().catch(() => undefined);
+
+      if (data.action === 'none' && data.requestKind === 'generic') {
+        const categoryResponse = await fetch('/api/music-category', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: content }),
+        });
+
+        if (categoryResponse.ok) {
+          const categoryData = (await categoryResponse.json()) as { category?: unknown };
+          if (isMusicCategory(categoryData.category)) {
+            setAmbientCategory(categoryData.category);
+            return { status: 'ambient', query: content };
+          }
+        }
+      }
+
+      return { status: 'none' };
+    })().catch((): MediaActionContext => ({ status: 'error', query: content }));
 
     try {
       const idToken = await getIdToken();
       if (!idToken) throw new Error('Tu sesión venció. Inicia sesión otra vez.');
+      const mediaAction = await mediaDecisionPromise;
 
       const response = await fetch(`/api/chat/${encodeURIComponent(slug)}`, {
         method: 'POST',
@@ -331,6 +353,7 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
           message: content,
           history,
           playback: playbackSnapshot,
+          mediaAction,
         }),
       });
 
@@ -524,7 +547,7 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
         <div className="relative z-10 border-t border-white/15 bg-black/55 p-3 backdrop-blur-md sm:p-4">
           <div className="mb-2 flex items-center justify-between gap-3">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
-              ¿Cuál querías?
+              ${name}: ¿cuál quieres que te ponga?
             </p>
             {youtubeRemaining !== null && (
               <span className="text-[11px] text-white/55">
