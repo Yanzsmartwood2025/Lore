@@ -278,23 +278,22 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
             ? data.mediaType
             : 'other';
 
-        const suggestions = data.suggestions
-          .map((item) => {
-            if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
-            const record = item as Record<string, unknown>;
-            if (typeof record.videoId !== 'string' || typeof record.title !== 'string') return null;
-            return {
-              videoId: record.videoId,
-              title: record.title,
-              channelTitle: typeof record.channelTitle === 'string' ? record.channelTitle : '',
-              thumbnail: typeof record.thumbnail === 'string' ? record.thumbnail : null,
-              mediaType,
-            } satisfies YouTubeSuggestion;
-          })
-          .filter((item): item is YouTubeSuggestion => Boolean(item));
+        const suggestions: YouTubeSuggestion[] = [];
+        for (const item of data.suggestions.slice(0, 3)) {
+          if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+          const record = item as Record<string, unknown>;
+          if (typeof record.videoId !== 'string' || typeof record.title !== 'string') continue;
+          suggestions.push({
+            videoId: record.videoId,
+            title: record.title,
+            channelTitle: typeof record.channelTitle === 'string' ? record.channelTitle : '',
+            thumbnail: typeof record.thumbnail === 'string' ? record.thumbnail : null,
+            mediaType,
+          });
+        }
 
         if (suggestions.length > 0) {
-          setYoutubeSuggestions(suggestions.slice(0, 3));
+          setYoutubeSuggestions(suggestions);
           return;
         }
       }
