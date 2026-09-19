@@ -1,3 +1,4 @@
+import { createMemoryEmbedding, MEMORY_EMBEDDING_MODEL } from '@/lib/chat-memory';
 import { requireUser } from '@/lib/supabase/server';
 
 const SCOPES = {
@@ -79,11 +80,13 @@ export async function PATCH(request: Request) {
   }
 
   const changes: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  let embeddingText = '';
 
   if (scope === 'shared' || scope === 'persona') {
     const value = typeof body.value === 'string' ? body.value.trim().slice(0, 1200) : '';
     if (!value) return Response.json({ error: 'El recuerdo no puede quedar vacío.' }, { status: 400 });
     changes.memory_value = value;
+    embeddingText = value;
   } else {
     const title = typeof body.title === 'string' ? body.title.trim().slice(0, 180) : '';
     const details = typeof body.details === 'string' ? body.details.trim().slice(0, 1600) : '';
@@ -98,7 +101,19 @@ export async function PATCH(request: Request) {
     changes.details = details;
     changes.event_date = eventDate;
     changes.last_confirmed_at = new Date().toISOString();
+    embeddingText = `${title}: ${details}`;
   }
+
+  const apiKeys = [process.env.MISTRAL_API_KEY_1, process.env.MISTRAL_API_KEY_2].filter(
+    (key): key is string => Boolean(key),
+  );
+  const embedding =
+    apiKeys.length > 0 && embeddingText
+      ? await createMemoryEmbedding(apiKeys, embeddingText).catch(() => null)
+      : null;
+
+  changes.embedding = embedding;
+  changes.embedding_model = embedding ? MEMORY_EMBEDDING_MODEL : null;
 
   const { error } = await auth.supabase
     .from(SCOPES[scope])
