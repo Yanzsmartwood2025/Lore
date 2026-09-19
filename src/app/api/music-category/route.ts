@@ -63,20 +63,54 @@ export async function POST(request: Request) {
         messages: [
           {
             role: 'system',
-            content: `Clasifica la preferencia musical del usuario. Responde únicamente una de estas claves, sin explicación: ${Object.keys(MUSIC_CATEGORIES).join(', ')}. Distingue reggaeton de reggaeton_clasico; rock_latino para rock en español clásico; rock_2000 para alternative/nu-metal/post-grunge desde los 2000; romantica para baladas en español; baladas_ingles para baladas anglo; electronica para EDM/dance; techno para rave/techno; vallenato, bachata y tropical para sus géneros; pop_clasicos para pop/fiesta retro.`,
+            content: `Clasifica la preferencia musical del usuario en una sola categoría válida. Distingue reggaeton de reggaeton_clasico; rock_latino para rock en español clásico; rock_2000 para alternative/nu-metal/post-grunge desde los 2000; romantica para baladas en español; baladas_ingles para baladas anglo; electronica para EDM/dance; techno para rave/techno; vallenato, bachata y tropical para sus géneros; pop_clasicos para pop/fiesta retro.`,
           },
           { role: 'user', content: message },
         ],
         temperature: 0,
-        max_completion_tokens: 20,
+        reasoning_effort: 'low',
+        max_completion_tokens: 120,
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'music_category',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                category: {
+                  type: 'string',
+                  enum: Object.keys(MUSIC_CATEGORIES),
+                },
+              },
+              required: ['category'],
+              additionalProperties: false,
+            },
+          },
+        },
       }),
       cache: 'no-store',
     });
 
-    if (!groqResponse.ok) throw new Error('Groq request failed');
+    if (!groqResponse.ok) {
+      const rawError = await groqResponse.text();
+      console.error('Groq music classification failed:', groqResponse.status, rawError.slice(0, 300));
+      throw new Error('Groq request failed');
+    }
 
     const data = (await groqResponse.json()) as GroqResponse;
-    const category = normalizeCategory(data.choices?.[0]?.message?.content);
+    const rawContent = data.choices?.[0]?.message?.content;
+    let category: keyof typeof MUSIC_CATEGORIES | null = null;
+
+    if (rawContent) {
+      try {
+        const parsed = JSON.parse(rawContent) as { category?: unknown };
+        category = isMusicCategory(parsed.category) ? parsed.category : null;
+      } catch {
+        category = normalizeCategory(rawContent);
+      }
+    }
+
     if (!category) throw new Error('Invalid category');
 
     return NextResponse.json({ category });
