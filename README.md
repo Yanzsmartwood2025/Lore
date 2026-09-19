@@ -81,7 +81,15 @@ npm run start
 
 Las variables sensibles no deben guardarse en Git.
 
-El proyecto utiliza variables para Firebase, Supabase, Cloudflare R2 y otras integraciones. Los archivos `.env*` están excluidos del repositorio salvo `.env.example`.
+El proyecto utiliza variables para Firebase, Supabase, Cloudflare R2, Groq, Mistral y YouTube. Los archivos `.env*` están excluidos del repositorio salvo `.env.example`.
+
+Para la búsqueda directa de videos públicos desde el chat, producción espera la variable server-side:
+
+```bash
+YOUTUBE_API_KEY
+```
+
+Esta clave corresponde a YouTube Data API v3 y debe existir como secreto en Vercel. No debe exponerse con prefijo `NEXT_PUBLIC_` ni versionarse en Git.
 
 ## Organización de assets
 
