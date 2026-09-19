@@ -53,7 +53,7 @@ interface MediaContextType {
   enterLobby: () => void;
   setActiveTab: (tab: 'music' | 'content') => void;
   setAmbientCategory: (category: MusicCategory) => void;
-  playRequestedVideo: (videoId: string) => void;
+  playRequestedVideo: (videoId: string, startSeconds?: number) => void;
 }
 
 const MediaContext = createContext<MediaContextType | undefined>(undefined);
@@ -88,6 +88,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   const isPlayingRef = useRef(isPlaying);
   const isMutedRef = useRef(isMuted);
   const requestedVideoIdRef = useRef<string | null>(null);
+  const requestedStartSecondsRef = useRef(REQUESTED_SONG_START_SECONDS);
   const activeSourceIndexRef = useRef(0);
 
   const broadcastLightingProfile = (category: MusicCategory, videoId?: string) => {
@@ -206,7 +207,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
           if (requestedVideoIdRef.current) {
             event.target.loadVideoById({
               videoId: requestedVideoIdRef.current,
-              startSeconds: REQUESTED_SONG_START_SECONDS,
+              startSeconds: requestedStartSecondsRef.current,
             });
           } else if (isPlayingRef.current) {
             event.target.playVideo();
@@ -463,14 +464,18 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
   const setVideoSize = (size: VideoSizeMode) => setVideoSizeState(size);
   const toggleVideoSize = () => setVideoSizeState((prev) => (prev === 'micro' ? 'expanded' : 'micro'));
 
-  const playRequestedVideo = (videoId: string) => {
+  const playRequestedVideo = (
+    videoId: string,
+    startSeconds = REQUESTED_SONG_START_SECONDS,
+  ) => {
     requestedVideoIdRef.current = videoId;
+    requestedStartSecondsRef.current = Math.max(0, startSeconds);
     setCurrentVideoId(videoId);
     if (ytPlayerRef.current) {
       try {
         ytPlayerRef.current.loadVideoById({
           videoId,
-          startSeconds: REQUESTED_SONG_START_SECONDS,
+          startSeconds: requestedStartSecondsRef.current,
         });
         setIsPlaying(true);
       } catch {
