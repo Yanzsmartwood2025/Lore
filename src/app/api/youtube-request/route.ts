@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { requireUser } from '@/lib/supabase/server';
 
 type GroqResponse = {
   choices?: Array<{ message?: { content?: string | null } }>;
@@ -32,6 +34,7 @@ type MediaIntent = {
   artist: string;
   title: string;
   avoidCurrent: boolean;
+  needsChoice: boolean;
 };
 
 type HistoryItem = {
@@ -42,6 +45,14 @@ type HistoryItem = {
 type PlaybackInput = {
   videoId?: string;
 };
+
+type RankedCandidate = {
+  item: YouTubeSearchItem;
+  score: number;
+};
+
+const USER_DAILY_SEARCH_LIMIT = 5;
+const GLOBAL_DAILY_SEARCH_LIMIT = 90;
 
 function extractJsonObject(raw: string) {
   const start = raw.indexOf('{');
@@ -65,6 +76,7 @@ function parseIntent(raw: string | null | undefined): MediaIntent | null {
   const artist = typeof record.artist === 'string' ? record.artist.trim().slice(0, 100) : '';
   const title = typeof record.title === 'string' ? record.title.trim().slice(0, 140) : '';
   const avoidCurrent = record.avoidCurrent === true;
+  const needsChoice = record.needsChoice === true;
 
   const allowedTypes = new Set([
     'music',
@@ -99,6 +111,7 @@ function parseIntent(raw: string | null | undefined): MediaIntent | null {
     artist,
     title,
     avoidCurrent,
+    needsChoice,
   };
 }
 
@@ -147,21 +160,23 @@ async function classifyMediaIntent(
       messages: [
         {
           role: 'system',
-          content: `Eres el intérprete de peticiones multimedia de Lore. Determina si el usuario quiere reproducir un contenido concreto de YouTube o si solo está conversando.
+          content: `Eres el intérprete de peticiones multimedia de Lore. Determina si el usuario quiere reproducir contenido de YouTube o si solo está conversando.
 
-REGLAS IMPORTANTES:
-- action="play" para peticiones como "pon X", "una de X", "otra de X", "cambia a X", "quiero escuchar/ver X", "esa no, pon X", aunque falte el verbo "poner" si el contexto deja claro que están eligiendo contenido.
-- "otra de Korn" es action="play", mediaType="music", requestKind="artist", artist="Korn", avoidCurrent=true.
-- "pon Freak on a Leash de Korn" es action="play", requestKind="exact", artist="Korn", title="Freak on a Leash".
-- Una petición genérica de género/ambiente como "pon rock", "quiero baladas" o "algo de electrónica" debe ser action="none" y requestKind="generic"; el DJ interno se ocupará.
-- Si solo hablan SOBRE una canción, artista, película o noticia y no piden reproducirla, action="none".
-- Usa el contexto reciente para resolver referencias como "otra", "esa no", "la anterior", "otra de ellos".
-- Puedes corregir errores ortográficos OBVIOS en nombres conocidos de artistas o títulos cuando tengas alta confianza. No inventes canciones ni artistas.
-- Para música exacta, query debe ser "ARTISTA TITULO official" cuando conozcas ambos.
+REGLAS:
+- action="play" para "pon X", "una de X", "otra de X", "cambia a X", "quiero escuchar/ver X", "esa no, pon X" y equivalentes.
+- "otra de Korn" => action="play", mediaType="music", requestKind="artist", artist="Korn", avoidCurrent=true, needsChoice=true.
+- "pon Freak on a Leash de Korn" => action="play", requestKind="exact", artist="Korn", title="Freak on a Leash", needsChoice=false.
+- Si el usuario solo da un artista, un tema amplio, recuerda solo parte del título, escribe algo dudoso o pide "otra", needsChoice=true.
+- Si proporciona artista + título concreto con alta confianza, needsChoice=false.
+- Una petición genérica de ambiente como "pon rock", "quiero baladas" o "algo de electrónica" => action="none", requestKind="generic"; el DJ interno se ocupa.
+- Si solo conversa SOBRE un contenido y no pide reproducirlo => action="none".
+- Usa el contexto reciente para resolver "otra", "esa no", "la anterior", "otra de ellos".
+- Puedes corregir errores ortográficos obvios en nombres conocidos cuando tengas alta confianza, pero no inventes canciones, programas ni artistas.
+- Para música exacta, query debe conservar artista + título y añadir "official".
 - Para artista sin canción concreta, query debe ser "ARTISTA official music video".
-- Para reportajes, documentales, entrevistas, trailers u otros videos, conserva nombres y términos relevantes.
-- avoidCurrent=true cuando el usuario pide "otra", "diferente", "esa no" o equivalente y ya hay un video activo.
-- Si action="none": query="", artist="", title="", mediaType="other" salvo una petición genérica musical, requestKind="generic".
+- Para reportajes, documentales, entrevistas, trailers u otros videos, conserva los términos relevantes.
+- avoidCurrent=true cuando pide "otra", "diferente", "esa no" y ya hay un video activo.
+- Si action="none": query="", artist="", title="", mediaType="other" salvo petición genérica musical.
 
 Contexto reciente:
 ${recentContext}
@@ -172,7 +187,7 @@ Hay video reproduciéndose ahora: ${hasCurrentVideo ? 'sí' : 'no'}.`,
       ],
       temperature: 0,
       reasoning_effort: 'low',
-      max_completion_tokens: 220,
+      max_completion_tokens: 240,
       response_format: {
         type: 'json_schema',
         json_schema: {
@@ -194,6 +209,7 @@ Hay video reproduciéndose ahora: ${hasCurrentVideo ? 'sí' : 'no'}.`,
               artist: { type: 'string' },
               title: { type: 'string' },
               avoidCurrent: { type: 'boolean' },
+              needsChoice: { type: 'boolean' },
             },
             required: [
               'action',
@@ -203,6 +219,7 @@ Hay video reproduciéndose ahora: ${hasCurrentVideo ? 'sí' : 'no'}.`,
               'artist',
               'title',
               'avoidCurrent',
+              'needsChoice',
             ],
             additionalProperties: false,
           },
@@ -288,6 +305,7 @@ function candidateScore(item: YouTubeSearchItem, intent: MediaIntent, index: num
   if (intent.artist) {
     score += artistCoverage * 65;
     if (artistCoverage === 0) score -= 80;
+
     const normalizedArtist = normalizeText(intent.artist);
     const normalizedChannel = normalizeText(channel);
     if (
@@ -319,12 +337,12 @@ function candidateScore(item: YouTubeSearchItem, intent: MediaIntent, index: num
   return score;
 }
 
-function selectBestCandidate(
+function rankCandidates(
   items: YouTubeSearchItem[],
   intent: MediaIntent,
   currentVideoId?: string,
 ) {
-  const candidates = items
+  return items
     .filter((item) => {
       const videoId = item.id?.videoId;
       if (!videoId) return false;
@@ -334,28 +352,44 @@ function selectBestCandidate(
       item,
       score: candidateScore(item, intent, index),
     }))
+    .filter((candidate) => Number.isFinite(candidate.score))
     .sort((a, b) => b.score - a.score);
-
-  const best = candidates[0];
-  if (!best || !Number.isFinite(best.score)) return null;
-
-  const title = best.item.snippet?.title ?? '';
-  const channelTitle = best.item.snippet?.channelTitle ?? '';
-
-  if (intent.mediaType === 'music' && intent.artist) {
-    const artistCoverage = tokenCoverage(intent.artist, `${title} ${channelTitle}`);
-    if (artistCoverage < 0.5) return null;
-  }
-
-  if (intent.requestKind === 'exact' && intent.title) {
-    const titleCoverage = tokenCoverage(intent.title, title);
-    if (titleCoverage < 0.5) return null;
-  }
-
-  return best.item;
 }
 
-async function searchYouTube(
+function candidateToPayload(candidate: RankedCandidate, fallbackTitle: string) {
+  const snippet = candidate.item.snippet;
+  return {
+    videoId: candidate.item.id?.videoId ?? '',
+    title: snippet?.title ?? fallbackTitle,
+    channelTitle: snippet?.channelTitle ?? '',
+    thumbnail:
+      snippet?.thumbnails?.high?.url ??
+      snippet?.thumbnails?.medium?.url ??
+      snippet?.thumbnails?.default?.url ??
+      null,
+  };
+}
+
+function isStrongExactMatch(candidate: RankedCandidate | undefined, intent: MediaIntent) {
+  if (!candidate?.item.id?.videoId) return false;
+
+  const title = candidate.item.snippet?.title ?? '';
+  const channel = candidate.item.snippet?.channelTitle ?? '';
+
+  if (intent.artist) {
+    const artistCoverage = tokenCoverage(intent.artist, `${title} ${channel}`);
+    if (artistCoverage < 0.5) return false;
+  }
+
+  if (intent.title) {
+    const titleCoverage = tokenCoverage(intent.title, title);
+    if (titleCoverage < 0.7) return false;
+  }
+
+  return true;
+}
+
+async function fetchYouTubeCandidates(
   intent: MediaIntent,
   apiKey: string,
   currentVideoId?: string,
@@ -387,27 +421,49 @@ async function searchYouTube(
   }
 
   const data = (await response.json()) as YouTubeSearchResponse;
-  const best = selectBestCandidate(data.items ?? [], intent, currentVideoId);
-  if (!best?.id?.videoId) return null;
+  return rankCandidates(data.items ?? [], intent, currentVideoId);
+}
 
-  const snippet = best.snippet;
-  return {
-    videoId: best.id.videoId,
-    title: snippet?.title ?? intent.query,
-    channelTitle: snippet?.channelTitle ?? '',
-    thumbnail:
-      snippet?.thumbnails?.high?.url ??
-      snippet?.thumbnails?.medium?.url ??
-      snippet?.thumbnails?.default?.url ??
-      null,
+async function consumeSearchQuota(
+  supabase: SupabaseClient,
+  userId: string,
+) {
+  const { data, error } = await supabase
+    .rpc('consume_lore_youtube_search_quota', {
+      p_user_id: userId,
+      p_user_limit: USER_DAILY_SEARCH_LIMIT,
+      p_global_limit: GLOBAL_DAILY_SEARCH_LIMIT,
+    })
+    .single();
+
+  if (error || !data) {
+    console.error('Unable to consume YouTube search quota:', error?.message);
+    return null;
+  }
+
+  return data as {
+    allowed: boolean;
+    user_used: number;
+    user_remaining: number;
+    global_used: number;
+    global_remaining: number;
+    quota_date: string;
   };
 }
 
 export async function POST(request: Request) {
+  const auth = await requireUser(request);
+  if (!auth) {
+    return NextResponse.json(
+      { action: 'error', error: 'Inicia sesión para buscar contenido en YouTube.' },
+      { status: 401 },
+    );
+  }
+
   const groqApiKey = process.env.GROQ_API_KEY;
   if (!groqApiKey) {
     return NextResponse.json(
-      { error: 'El intérprete de peticiones de video no está configurado.' },
+      { action: 'error', error: 'El intérprete de peticiones de video no está configurado.' },
       { status: 503 },
     );
   }
@@ -452,28 +508,76 @@ export async function POST(request: Request) {
     if (!youtubeApiKey) {
       return NextResponse.json(
         {
-          action: 'play',
-          query: intent.query,
-          mediaType: intent.mediaType,
-          requestKind: intent.requestKind,
-          error: 'La API de YouTube no está configurada en el servidor.',
+          action: 'error',
+          error: 'La búsqueda de YouTube no está disponible en este momento.',
         },
         { status: 503 },
       );
     }
 
-    const video = await searchYouTube(intent, youtubeApiKey, playback.videoId);
-    if (!video) {
+    const quota = await consumeSearchQuota(auth.supabase, auth.user.id);
+    if (!quota) {
       return NextResponse.json(
         {
-          action: 'play',
+          action: 'error',
+          error: 'No pude comprobar el límite de búsquedas. Inténtalo de nuevo.',
+        },
+        { status: 503 },
+      );
+    }
+
+    if (!quota.allowed) {
+      const userLimitReached = quota.user_remaining <= 0;
+      return NextResponse.json(
+        {
+          action: 'quota',
+          error: userLimitReached
+            ? 'Ya usaste tus 5 búsquedas de YouTube de hoy. Mañana tendrás 5 nuevas.'
+            : 'Las búsquedas de YouTube disponibles para hoy se agotaron. Vuelve mañana.',
+          userRemaining: quota.user_remaining,
+          quotaDate: quota.quota_date,
+        },
+        { status: 429 },
+      );
+    }
+
+    const ranked = await fetchYouTubeCandidates(intent, youtubeApiKey, playback.videoId);
+    const top = ranked[0];
+
+    if (!top?.item.id?.videoId) {
+      return NextResponse.json(
+        {
+          action: 'choose',
           query: intent.query,
           mediaType: intent.mediaType,
-          requestKind: intent.requestKind,
-          error: 'No encontré un resultado suficientemente parecido a lo que pediste.',
+          suggestions: [],
+          userRemaining: quota.user_remaining,
+          error: 'No encontré resultados reproducibles para esa petición.',
         },
         { status: 404 },
       );
+    }
+
+    const shouldOfferChoices =
+      intent.needsChoice ||
+      intent.requestKind === 'artist' ||
+      intent.requestKind === 'topic' ||
+      (intent.requestKind === 'exact' && !isStrongExactMatch(top, intent));
+
+    if (shouldOfferChoices) {
+      const suggestions = ranked
+        .slice(0, 3)
+        .map((candidate) => candidateToPayload(candidate, intent.query))
+        .filter((candidate) => candidate.videoId);
+
+      return NextResponse.json({
+        action: 'choose',
+        query: intent.query,
+        mediaType: intent.mediaType,
+        requestKind: intent.requestKind,
+        suggestions,
+        userRemaining: quota.user_remaining,
+      });
     }
 
     return NextResponse.json({
@@ -481,7 +585,8 @@ export async function POST(request: Request) {
       query: intent.query,
       mediaType: intent.mediaType,
       requestKind: intent.requestKind,
-      ...video,
+      ...candidateToPayload(top, intent.query),
+      userRemaining: quota.user_remaining,
     });
   } catch (error) {
     console.error(

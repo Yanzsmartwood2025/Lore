@@ -17,6 +17,14 @@ type ChatMessage = {
   content: string;
 };
 
+type YouTubeSuggestion = {
+  videoId: string;
+  title: string;
+  channelTitle: string;
+  thumbnail?: string | null;
+  mediaType: 'music' | 'video' | 'reportage' | 'documentary' | 'movie' | 'trailer' | 'other';
+};
+
 interface ChatInboxProps {
   name: string;
   slug: string;
@@ -34,6 +42,8 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [youtubeSuggestions, setYoutubeSuggestions] = useState<YouTubeSuggestion[]>([]);
+  const [youtubeRemaining, setYoutubeRemaining] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const headerPointerStartRef = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const suppressHeaderLinkClickRef = useRef(false);
@@ -198,69 +208,114 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
     ]);
     setInput('');
     setError(null);
+    setYoutubeSuggestions([]);
     setIsSending(true);
 
-    void fetch('/api/youtube-request', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: content,
-        history,
-        playback: playbackSnapshot,
-      }),
-    })
-      .then(async (response) => {
-        let data: {
+    void (async () => {
+      const mediaToken = await getIdToken();
+      if (!mediaToken) return;
+
+      const response = await fetch('/api/youtube-request', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${mediaToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: content,
+          history,
+          playback: playbackSnapshot,
+        }),
+      });
+      let data: {
+        action?: unknown;
+        videoId?: unknown;
+        mediaType?: unknown;
+        requestKind?: unknown;
+        error?: unknown;
+        userRemaining?: unknown;
+        suggestions?: unknown;
+      } = {};
+
+      try {
+        data = (await response.json()) as {
           action?: unknown;
           videoId?: unknown;
           mediaType?: unknown;
           requestKind?: unknown;
           error?: unknown;
-        } = {};
+          userRemaining?: unknown;
+          suggestions?: unknown;
+        };
+      } catch {
+        // Si no hay JSON válido, no cambiamos la reproducción.
+      }
 
-        try {
-          data = (await response.json()) as {
-            action?: unknown;
-            videoId?: unknown;
-            mediaType?: unknown;
-            requestKind?: unknown;
-            error?: unknown;
-          };
-        } catch {
-          // Si la búsqueda exacta falla, dejamos que el ambiente musical siga funcionando.
+      if (typeof data.userRemaining === 'number') {
+        setYoutubeRemaining(data.userRemaining);
+      }
+
+      if (
+        response.ok &&
+        data.action === 'play' &&
+        typeof data.videoId === 'string' &&
+        data.videoId
+      ) {
+        const startSeconds = data.mediaType === 'music' ? undefined : 0;
+        playRequestedVideo(data.videoId, startSeconds);
+        window.dispatchEvent(new CustomEvent('lore:youtube-reveal'));
+        return;
+      }
+
+      if (data.action === 'choose' && Array.isArray(data.suggestions)) {
+        const mediaType =
+          data.mediaType === 'music' ||
+          data.mediaType === 'video' ||
+          data.mediaType === 'reportage' ||
+          data.mediaType === 'documentary' ||
+          data.mediaType === 'movie' ||
+          data.mediaType === 'trailer'
+            ? data.mediaType
+            : 'other';
+
+        const suggestions: YouTubeSuggestion[] = [];
+        for (const item of data.suggestions.slice(0, 3)) {
+          if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+          const record = item as Record<string, unknown>;
+          if (typeof record.videoId !== 'string' || typeof record.title !== 'string') continue;
+          suggestions.push({
+            videoId: record.videoId,
+            title: record.title,
+            channelTitle: typeof record.channelTitle === 'string' ? record.channelTitle : '',
+            thumbnail: typeof record.thumbnail === 'string' ? record.thumbnail : null,
+            mediaType,
+          });
         }
 
-        if (
-          response.ok &&
-          data.action === 'play' &&
-          typeof data.videoId === 'string' &&
-          data.videoId
-        ) {
-          const startSeconds = data.mediaType === 'music' ? undefined : 0;
-          playRequestedVideo(data.videoId, startSeconds);
-          window.dispatchEvent(new CustomEvent('lore:youtube-reveal'));
+        if (suggestions.length > 0) {
+          setYoutubeSuggestions(suggestions);
           return;
         }
+      }
 
-        if (data.action === 'play' || data.action === 'error') {
-          if (typeof data.error === 'string' && data.error) {
-            setError(data.error);
-          }
-          return;
+      if (data.action === 'play' || data.action === 'error' || data.action === 'quota' || data.action === 'choose') {
+        if (typeof data.error === 'string' && data.error) {
+          setError(data.error);
         }
+        return;
+      }
 
-        const categoryResponse = await fetch('/api/music-category', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: content }),
-        });
-        if (!categoryResponse.ok) return;
-        const categoryData = (await categoryResponse.json()) as { category?: unknown };
-        if (isMusicCategory(categoryData.category)) {
-          setAmbientCategory(categoryData.category);
-        }
-      })
-      .catch(() => undefined);
+      const categoryResponse = await fetch('/api/music-category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: content }),
+      });
+      if (!categoryResponse.ok) return;
+      const categoryData = (await categoryResponse.json()) as { category?: unknown };
+      if (isMusicCategory(categoryData.category)) {
+        setAmbientCategory(categoryData.category);
+      }
+    })().catch(() => undefined);
 
     try {
       const idToken = await getIdToken();
@@ -464,6 +519,46 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
 
         <div ref={bottomRef} />
       </div>
+
+      {youtubeSuggestions.length > 0 && (
+        <div className="relative z-10 border-t border-white/15 bg-black/55 p-3 backdrop-blur-md sm:p-4">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+              ¿Cuál querías?
+            </p>
+            {youtubeRemaining !== null && (
+              <span className="text-[11px] text-white/55">
+                {youtubeRemaining} búsquedas disponibles hoy
+              </span>
+            )}
+          </div>
+          <div className="grid gap-2">
+            {youtubeSuggestions.map((suggestion) => (
+              <button
+                key={suggestion.videoId}
+                type="button"
+                onClick={() => {
+                  const startSeconds = suggestion.mediaType === 'music' ? undefined : 0;
+                  playRequestedVideo(suggestion.videoId, startSeconds);
+                  setYoutubeSuggestions([]);
+                  setError(null);
+                  window.dispatchEvent(new CustomEvent('lore:youtube-reveal'));
+                }}
+                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3 py-2.5 text-left transition hover:bg-white/[0.13] active:scale-[0.99]"
+              >
+                <span className="block line-clamp-2 text-sm font-medium text-white">
+                  {suggestion.title}
+                </span>
+                {suggestion.channelTitle && (
+                  <span className="mt-0.5 block truncate text-xs text-white/55">
+                    {suggestion.channelTitle}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!user && (
         <div className="relative z-10 border-t border-white/15 bg-white/[0.035] p-3 sm:p-4">
