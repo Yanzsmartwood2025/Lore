@@ -77,9 +77,6 @@ async function classifyMediaIntent(message: string, groqApiKey: string) {
           role: 'system',
           content: `Detecta si el usuario está pidiendo de forma explícita reproducir, poner, buscar para ver/escuchar o mostrar contenido de YouTube.
 
-Devuelve SOLO JSON válido con esta forma:
-{"action":"play|none","query":"consulta concreta para YouTube","mediaType":"music|video|reportage|documentary|movie|trailer|other"}
-
 REGLAS:
 - action="play" solo cuando hay una petición clara de reproducir/ver/escuchar/poner/buscar un contenido.
 - Si solo está conversando SOBRE una película, canción, noticia, reportaje o artista, action="none".
@@ -87,17 +84,45 @@ REGLAS:
 - Para reportajes, documentales, películas, tráileres, noticias, entrevistas, conciertos u otros videos, conserva los nombres y datos importantes que dio el usuario.
 - No inventes títulos, artistas, personas ni sucesos.
 - Si el usuario pide "pon algo de X" o "quiero ver algo sobre X", crea una query útil y breve con X.
-- No incluyas instrucciones fuera del JSON.`,
+- Si action="none", query debe ser una cadena vacía y mediaType="other".`,
         },
         { role: 'user', content: message },
       ],
       temperature: 0,
-      max_completion_tokens: 120,
+      reasoning_effort: 'low',
+      max_completion_tokens: 180,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'youtube_media_intent',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: {
+              action: {
+                type: 'string',
+                enum: ['play', 'none'],
+              },
+              query: {
+                type: 'string',
+              },
+              mediaType: {
+                type: 'string',
+                enum: ['music', 'video', 'reportage', 'documentary', 'movie', 'trailer', 'other'],
+              },
+            },
+            required: ['action', 'query', 'mediaType'],
+            additionalProperties: false,
+          },
+        },
+      },
     }),
     cache: 'no-store',
   });
 
   if (!response.ok) {
+    const rawError = await response.text();
+    console.error('Groq YouTube intent failed:', response.status, rawError.slice(0, 300));
     throw new Error(`Groq intent request failed: ${response.status}`);
   }
 
@@ -110,6 +135,8 @@ function getYouTubeApiKey() {
     process.env.YOUTUBE_API_KEY ||
     process.env.YOUTUBE_DATA_API_KEY ||
     process.env.GOOGLE_YOUTUBE_API_KEY ||
+    process.env.YOUTUBE_V3_API_KEY ||
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEY ||
     ''
   );
 }
