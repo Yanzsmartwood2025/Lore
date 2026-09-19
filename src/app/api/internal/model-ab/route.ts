@@ -62,9 +62,12 @@ async function complete(task: Task, apiKeys: string[]) {
       });
 
       lastStatus = response.status;
-      if (response.status === 429) continue;
-
       const raw = await response.text();
+      if (response.status === 429) {
+        lastError = raw.slice(0, 500);
+        continue;
+      }
+
       if (!response.ok) {
         lastError = raw.slice(0, 500);
         break;
@@ -140,12 +143,28 @@ export async function GET(request: Request) {
     return Response.json({ error: 'No Mistral API keys in this Preview.' }, { status: 503 });
   }
 
-  const activePersonas = models.filter((persona) => persona.isActive && persona.systemPrompt);
+  const targetModel = url.searchParams.get('target');
+  const targetPersona = url.searchParams.get('persona');
+  const targetScenario = url.searchParams.get('scenario');
+
+  const selectedModels = TEST_MODELS.filter(
+    (model) => !targetModel || model.id === targetModel,
+  );
+  const activePersonas = models.filter(
+    (persona) =>
+      persona.isActive &&
+      persona.systemPrompt &&
+      (!targetPersona || persona.slug === targetPersona),
+  );
+  const selectedScenarios = SCENARIOS.filter(
+    (scenario) => !targetScenario || scenario.id === targetScenario,
+  );
+
   const tasks: Task[] = [];
 
-  for (const model of TEST_MODELS) {
+  for (const model of selectedModels) {
     for (const persona of activePersonas) {
-      for (const scenario of SCENARIOS) {
+      for (const scenario of selectedScenarios) {
         tasks.push({
           modelId: model.id,
           modelLabel: model.label,
@@ -162,10 +181,10 @@ export async function GET(request: Request) {
   const results = await runPool(
     tasks,
     (task) => complete(task, apiKeys),
-    4,
+    targetModel ? 1 : 4,
   );
 
-  const summary = TEST_MODELS.map((model) => {
+  const summary = selectedModels.map((model) => {
     const rows = results.filter((row) => row.modelId === model.id);
     const successful = rows.filter((row) => row.ok);
     return {
