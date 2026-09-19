@@ -208,12 +208,14 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
         let data: {
           action?: unknown;
           videoId?: unknown;
+          mediaType?: unknown;
         } = {};
 
         try {
           data = (await response.json()) as {
             action?: unknown;
             videoId?: unknown;
+            mediaType?: unknown;
           };
         } catch {
           // Si la búsqueda exacta falla, dejamos que el ambiente musical siga funcionando.
@@ -225,7 +227,8 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
           typeof data.videoId === 'string' &&
           data.videoId
         ) {
-          playRequestedVideo(data.videoId);
+          const startSeconds = data.mediaType === 'music' ? undefined : 0;
+          playRequestedVideo(data.videoId, startSeconds);
           window.dispatchEvent(new CustomEvent('lore:youtube-reveal'));
           return;
         }
