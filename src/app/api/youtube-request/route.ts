@@ -139,6 +139,65 @@ function sanitizePlayback(value: unknown): PlaybackInput {
     : {};
 }
 
+
+function hasRecentMediaOffer(history: HistoryItem[]) {
+  const lastAssistant = [...history].reverse().find((item) => item.role === 'assistant')?.content ?? '';
+  const normalized = normalizeText(lastAssistant);
+  if (!normalized) return false;
+
+  return (
+    /\bquieres que te (?:la|lo|las|los) ponga\b/.test(normalized) ||
+    /\bquieres (?:escuchar|oir|ver)\b/.test(normalized) ||
+    /\bte (?:la|lo|las|los) pongo\b/.test(normalized) ||
+    /\bte busco (?:esa|ese|una|un)\b/.test(normalized) ||
+    /\b(?:ponemos|vemos|escuchamos) (?:esa|ese|una|un)\b/.test(normalized)
+  );
+}
+
+function hasExplicitMediaCue(message: string, history: HistoryItem[]) {
+  const normalized = normalizeText(message);
+  if (!normalized) return false;
+
+  const startsWithCommand =
+    /^(?:pon|ponme|ponla|ponlo|reproduce|reproduceme|cambia|cambiala|cambialo|busca|buscame|escuchemos|oigamos|veamos)\b/.test(
+      normalized,
+    );
+
+  const explicitListen =
+    /\b(?:quiero|quisiera|querria|me gustaria|podemos|vamos a)\s+(?:escuchar|oir)\b/.test(
+      normalized,
+    );
+
+  const explicitWatch =
+    /\b(?:quiero|quisiera|querria|me gustaria|podemos|vamos a)\s+ver\s+(?:(?:un|una|el|la)\s+)?(?:video|pelicula|documental|reportaje|trailer|concierto|entrevista|clip)\b/.test(
+      normalized,
+    );
+
+  const shortArtistRequest =
+    /^(?:otra|una)\s+de\s+(?!las?\b|los?\b|mis?\b|tus?\b|sus?\b|estas?\b|esas?\b|aquellas?\b).{2,80}$/.test(
+      normalized,
+    ) && normalized.split(/\s+/).length <= 10;
+
+  const shortMediaRequest =
+    /^(?:otra|una)\s+(?:cancion|cancioncita|tema|rola|video)\s+de\b/.test(normalized);
+
+  if (
+    startsWithCommand ||
+    explicitListen ||
+    explicitWatch ||
+    shortArtistRequest ||
+    shortMediaRequest
+  ) {
+    return true;
+  }
+
+  if (!hasRecentMediaOffer(history)) return false;
+
+  return /^(?:si|sí|dale|ok|okay|va|de una|hazlo|esa|ese|esa misma|ese mismo|ponla|ponlo|quiero esa|quiero ese)(?:\b|$)/.test(
+    message.trim().toLowerCase(),
+  );
+}
+
 async function classifyMediaIntent(
   message: string,
   history: HistoryItem[],
@@ -490,6 +549,14 @@ export async function POST(request: Request) {
   }
 
   try {
+    if (!hasExplicitMediaCue(message, history)) {
+      return NextResponse.json({
+        action: 'none',
+        requestKind: 'none',
+        reason: 'no_explicit_media_intent',
+      });
+    }
+
     const intent = await classifyMediaIntent(
       message,
       history,
