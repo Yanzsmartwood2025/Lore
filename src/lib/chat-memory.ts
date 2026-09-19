@@ -2,7 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 const MISTRAL_CHAT_URL = 'https://api.mistral.ai/v1/chat/completions';
 const MEMORY_MODEL = 'open-mistral-7b';
-const MAX_MEMORIES_PER_SCOPE = 12;
+const MAX_SHARED_CANDIDATES = 40;
+const MAX_PERSONA_CANDIDATES = 40;
+const MAX_TIMELINE_CANDIDATES = 30;
+const MAX_SHARED_CONTEXT = 10;
+const MAX_PERSONA_CONTEXT = 10;
+const MAX_TIMELINE_CONTEXT = 10;
 
 type MemoryType =
   | 'fact'
@@ -18,6 +23,23 @@ type StoredMemory = {
   memory_value: string;
   memory_type: MemoryType;
   importance: number;
+  confidence: number;
+  updated_at: string;
+};
+
+type TimelineRow = {
+  id: string;
+  event_key: string;
+  title: string;
+  details: string;
+  event_type: string;
+  event_date: string | null;
+  recurs_annually: boolean;
+  status: string;
+  is_pinned: boolean;
+  importance: number;
+  confidence: number;
+  updated_at: string;
 };
 
 type CastMember = {
@@ -29,11 +51,31 @@ type CastMember = {
   relationships: Record<string, string> | null;
 };
 
+type RelationshipStage = 'new' | 'familiar' | 'close' | 'bonded';
+
 type RelationshipState = {
   interaction_count: number;
   familiarity_score: number;
   affection_score: number;
   flirtation_score: number;
+  trust_score: number;
+  conflict_score: number;
+  relationship_stage: RelationshipStage;
+};
+
+type LearnedContext = {
+  relationship_summary: string;
+  active_topics: unknown;
+  story_summary: string;
+  recent_arc: string;
+  last_refreshed_interaction: number;
+};
+
+type LearnedContextPayload = {
+  relationshipSummary: string;
+  activeTopics: string[];
+  storySummary: string;
+  recentArc: string;
 };
 
 type MemoryCandidate = {
@@ -47,6 +89,9 @@ type MemoryCandidate = {
 type MemorySignals = {
   warmth: number;
   flirtation: number;
+  trust: number;
+  conflict: number;
+  repair: number;
 };
 
 type TimelineCandidate = {
@@ -68,6 +113,94 @@ type MemoryExtraction = {
   timeline: TimelineCandidate[];
   signals: MemorySignals;
 };
+
+const STOP_WORDS = new Set([
+  'que', 'como', 'para', 'por', 'con', 'una', 'uno', 'unos', 'unas', 'del', 'las',
+  'los', 'pero', 'porque', 'esta', 'este', 'esto', 'esa', 'ese', 'eso', 'muy', 'mas',
+  'sin', 'sobre', 'entre', 'cuando', 'donde', 'desde', 'hasta', 'tengo', 'tiene',
+  'quiero', 'puedo', 'dice', 'dijo', 'hacer', 'hace', 'hoy', 'ayer', 'manana',
+  'and', 'the', 'for', 'with', 'from', 'this', 'that', 'have', 'has', 'you', 'your',
+]);
+
+function normalizeSearchText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function tokenize(value: string) {
+  return new Set(
+    normalizeSearchText(value)
+      .split(/[^a-z0-9]+/)
+      .filter((token) => token.length >= 3 && !STOP_WORDS.has(token)),
+  );
+}
+
+function recencyScore(updatedAt: string) {
+  const time = Date.parse(updatedAt);
+  if (!Number.isFinite(time)) return 0;
+  const days = Math.max(0, (Date.now() - time) / 86_400_000);
+  if (days <= 7) return 3;
+  if (days <= 30) return 2;
+  if (days <= 120) return 1;
+  return 0;
+}
+
+function relevanceScore(
+  queryTokens: Set<string>,
+  searchable: string,
+  importance: number,
+  updatedAt: string,
+  bonus = 0,
+) {
+  const candidateTokens = tokenize(searchable);
+  let overlap = 0;
+  for (const token of queryTokens) {
+    if (candidateTokens.has(token)) overlap += 1;
+  }
+  return importance * 3 + overlap * 7 + recencyScore(updatedAt) + bonus;
+}
+
+function rankMemories(rows: StoredMemory[], query: string, limit: number) {
+  const queryTokens = tokenize(query);
+  return [...rows]
+    .map((row) => ({
+      row,
+      score: relevanceScore(
+        queryTokens,
+        row.memory_key + ' ' + row.memory_value,
+        row.importance,
+        row.updated_at,
+        row.memory_type === 'boundary' || row.memory_type === 'nickname' ? 2 : 0,
+      ),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(({ row }) => row);
+}
+
+function rankTimeline(rows: TimelineRow[], query: string, limit: number) {
+  const queryTokens = tokenize(query);
+  const pinned = rows.filter((row) => row.is_pinned).slice(0, 6);
+  const pinnedIds = new Set(pinned.map((row) => row.id));
+  const relevant = [...rows]
+    .filter((row) => !pinnedIds.has(row.id))
+    .map((row) => ({
+      row,
+      score: relevanceScore(
+        queryTokens,
+        row.event_key + ' ' + row.title + ' ' + row.details,
+        row.importance,
+        row.updated_at,
+        row.status === 'active' ? 2 : 0,
+      ),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Math.max(0, limit - pinned.length))
+    .map(({ row }) => row);
+  return [...pinned, ...relevant].slice(0, limit);
+}
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
