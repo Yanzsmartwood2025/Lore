@@ -1,6 +1,7 @@
 import { models } from '@/data/models';
 import { cleanNarratedActions } from '@/lib/chat-format';
 import { buildChatPrompt } from '@/lib/chat-policy';
+import { learnFromUserMessage, loadMemoryContext } from '@/lib/chat-memory';
 import { requireUser } from '@/lib/supabase/server';
 
 type ChatMessage = {
@@ -104,9 +105,36 @@ export async function POST(
   const history = (savedHistory ?? []).filter(isChatMessage).reverse()
     .map(({ role, content }) => ({ role, content: role === 'assistant' ? cleanNarratedActions(content) : content }))
     .filter(({ content }) => content.length > 0);
-  const { error: messageError } = await auth.supabase.from('lore_chat_messages')
-    .insert({ conversation_id: conversation.id, role: 'user', content: message });
-  if (messageError) return Response.json({ error: 'No se pudo guardar el mensaje.' }, { status: 500 });
+
+  const memoryContextPromise = loadMemoryContext(
+    auth.supabase,
+    auth.user.id,
+    slug,
+  ).catch((memoryError) => {
+    console.error('Unable to load Lore memory context:', memoryError);
+    return '';
+  });
+
+  const { data: savedUserMessage, error: messageError } = await auth.supabase
+    .from('lore_chat_messages')
+    .insert({ conversation_id: conversation.id, role: 'user', content: message })
+    .select('id')
+    .single();
+  if (messageError || !savedUserMessage) {
+    return Response.json({ error: 'No se pudo guardar el mensaje.' }, { status: 500 });
+  }
+
+  const memoryContext = await memoryContextPromise;
+  const memoryLearningPromise = learnFromUserMessage({
+    supabase: auth.supabase,
+    userId: auth.user.id,
+    personaSlug: slug,
+    sourceMessageId: savedUserMessage.id,
+    userMessage: message,
+    apiKeys,
+  }).catch((memoryError) => {
+    console.error('Unable to persist Lore memory:', memoryError);
+  });
 
   let lastResponse: Response | undefined;
   for (const apiKey of apiKeys) {
@@ -119,7 +147,12 @@ export async function POST(
       body: JSON.stringify({
         model: 'open-mistral-7b',
         messages: [
-          { role: 'system', content: buildChatPrompt(persona.systemPrompt) },
+          {
+            role: 'system',
+            content: buildChatPrompt(
+              `${persona.systemPrompt}\n\n${memoryContext}`,
+            ),
+          },
           ...history,
           { role: 'user', content: message },
         ],
@@ -156,6 +189,8 @@ export async function POST(
       role: 'assistant',
       content,
     });
+
+    await memoryLearningPromise;
 
     return new Response(createAssistantStream(content), {
       headers: {
