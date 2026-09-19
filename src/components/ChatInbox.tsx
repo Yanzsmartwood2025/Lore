@@ -27,7 +27,7 @@ const MAX_STORAGE_MESSAGES = 50;
 
 export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
   const router = useRouter();
-  const { setAmbientCategory, playRequestedVideo } = useMedia();
+  const { setAmbientCategory, playRequestedVideo, getPlaybackSnapshot } = useMedia();
   const { user, getIdToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -256,7 +256,11 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
           Authorization: `Bearer ${idToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: content, history }),
+        body: JSON.stringify({
+          message: content,
+          history,
+          playback: getPlaybackSnapshot(),
+        }),
       });
 
       if (!response.ok) {
