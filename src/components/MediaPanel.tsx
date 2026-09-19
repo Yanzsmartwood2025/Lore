@@ -172,10 +172,11 @@ export function MediaPanel() {
               setShowYtPanel(false);
               pause();
             }}
-            className="absolute right-2 top-2 z-10 rounded border border-cyan-500/40 bg-black/80 px-2 py-1 text-xs text-cyan-300 backdrop-blur-sm"
-            title="Ocultar y pausar reproductor"
+            aria-label="Cerrar reproductor"
+            title="Cerrar"
+            className="absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-lg leading-none text-white/85 shadow-[0_4px_14px_rgba(0,0,0,0.30)] backdrop-blur-md transition hover:bg-black/75 hover:text-white active:scale-95"
           >
-            ✕ Ocultar
+            ×
           </button>
         )}
       </div>
