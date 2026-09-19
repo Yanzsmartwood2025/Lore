@@ -14,6 +14,7 @@ export function MediaPanel() {
   const { isPlaying, play, pause } = useMedia();
   const [selected, setSelected] = useState('lore');
   const [showYtPanel, setShowYtPanel] = useState(false);
+  const [showCloseControl, setShowCloseControl] = useState(false);
   const [homeYouTubeExpanded, setHomeYouTubeExpanded] = useState(false);
   const [homeStageRect, setHomeStageRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
@@ -35,10 +36,12 @@ export function MediaPanel() {
 
     if (isHome) {
       setShowYtPanel(false);
+      setShowCloseControl(false);
     } else {
       // Mantiene el mismo player vivo al cambiar de "cuarto". Si la música
       // venía reproduciéndose, el video se encoge a un dock visible sin cortar audio.
       setShowYtPanel(isPlaying);
+      setShowCloseControl(isPlaying);
     }
     // Solo debe reaccionar al cambio de ruta, no a cada cambio de playback.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,12 +49,26 @@ export function MediaPanel() {
 
   useEffect(() => {
     const revealFromChatHeader = () => {
-      if (!isHome) setShowYtPanel(true);
+      if (!isHome) {
+        setShowYtPanel(true);
+        setShowCloseControl(true);
+      }
     };
 
     window.addEventListener('lore:youtube-reveal', revealFromChatHeader);
     return () => window.removeEventListener('lore:youtube-reveal', revealFromChatHeader);
   }, [isHome]);
+
+
+  useEffect(() => {
+    if (isHome || !showYtPanel || !showCloseControl) return;
+
+    const timer = window.setTimeout(() => {
+      setShowCloseControl(false);
+    }, 5_000);
+
+    return () => window.clearTimeout(timer);
+  }, [isHome, showYtPanel, showCloseControl]);
 
   useEffect(() => {
     if (!isHome) return;
@@ -169,14 +186,32 @@ export function MediaPanel() {
           <button
             type="button"
             onClick={() => {
+              if (!showCloseControl) {
+                setShowCloseControl(true);
+                return;
+              }
               setShowYtPanel(false);
+              setShowCloseControl(false);
               pause();
             }}
-            aria-label="Cerrar reproductor"
-            title="Cerrar"
-            className="absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-lg leading-none text-white/85 shadow-[0_4px_14px_rgba(0,0,0,0.30)] backdrop-blur-md transition hover:bg-black/75 hover:text-white active:scale-95"
+            aria-label={showCloseControl ? 'Cerrar reproductor' : 'Mostrar control de cierre'}
+            title={showCloseControl ? 'Cerrar' : 'Mostrar cierre'}
+            className="absolute right-2 top-2 z-10 h-11 w-11 touch-manipulation"
           >
-            ×
+            <span
+              aria-hidden="true"
+              className={`absolute inset-1 flex items-center justify-center rounded-full border border-white/20 bg-black/45 shadow-[0_4px_16px_rgba(0,0,0,0.28)] backdrop-blur-md transition-all duration-300 ${
+                showCloseControl
+                  ? 'scale-100 opacity-100'
+                  : 'pointer-events-none scale-75 opacity-0'
+              }`}
+            >
+              {showCloseControl && (
+                <span className="absolute inset-0 rounded-full border border-white/20 motion-safe:animate-ping" />
+              )}
+              <span className="absolute h-[2px] w-4 rotate-45 rounded-full bg-white/90" />
+              <span className="absolute h-[2px] w-4 -rotate-45 rounded-full bg-white/90" />
+            </span>
           </button>
         )}
       </div>
