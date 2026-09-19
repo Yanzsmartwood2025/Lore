@@ -14,6 +14,13 @@ import { getYouTubeLightingFrame, getYouTubeLightingProfile } from '@/lib/youtub
 
 export type VideoSizeMode = 'hero' | 'micro' | 'expanded';
 
+export type PlaybackSnapshot = {
+  videoId: string;
+  currentTime: number;
+  duration: number;
+  playerState: number;
+};
+
 interface YouTubePlayer {
   cueVideoById: (options: { videoId: string; startSeconds?: number }) => void;
   loadVideoById: (options: { videoId: string; startSeconds?: number }) => void;
@@ -30,6 +37,8 @@ interface YouTubePlayer {
   destroy: () => void;
   setVolume: (volume: number) => void;
   getCurrentTime?: () => number;
+  getDuration?: () => number;
+  getPlayerState?: () => number;
   getVideoData?: () => { video_id?: string };
 }
 
@@ -54,6 +63,7 @@ interface MediaContextType {
   setActiveTab: (tab: 'music' | 'content') => void;
   setAmbientCategory: (category: MusicCategory) => void;
   playRequestedVideo: (videoId: string, startSeconds?: number) => void;
+  getPlaybackSnapshot: () => PlaybackSnapshot | null;
 }
 
 const MediaContext = createContext<MediaContextType | undefined>(undefined);
@@ -484,6 +494,43 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const getPlaybackSnapshot = (): PlaybackSnapshot | null => {
+    const player = ytPlayerRef.current;
+    if (!player) return null;
+
+    try {
+      const videoId = player.getVideoData?.().video_id ?? currentVideoId;
+      const currentTime = player.getCurrentTime?.();
+      const duration = player.getDuration?.();
+      const playerState = player.getPlayerState?.();
+
+      if (
+        !videoId ||
+        typeof currentTime !== 'number' ||
+        !Number.isFinite(currentTime)
+      ) {
+        return null;
+      }
+
+      return {
+        videoId,
+        currentTime: Math.max(0, currentTime),
+        duration:
+          typeof duration === 'number' && Number.isFinite(duration)
+            ? Math.max(0, duration)
+            : 0,
+        playerState:
+          typeof playerState === 'number' && Number.isFinite(playerState)
+            ? playerState
+            : isPlayingRef.current
+              ? 1
+              : 2,
+      };
+    } catch {
+      return null;
+    }
+  };
+
   const enterLobby = () => {
     setHasEntered(true);
     play();
@@ -544,6 +591,7 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         setActiveTab,
         setAmbientCategory,
         playRequestedVideo,
+        getPlaybackSnapshot,
       }}
     >
       {children}
