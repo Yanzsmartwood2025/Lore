@@ -417,6 +417,27 @@ ${rows.map((event) => {
 }).join('\n')}`;
 }
 
+function formatWorldEvents(rows: Array<{
+  title: string;
+  summary: string;
+  involved_personas: string[];
+  status: string;
+  happened_at: string | null;
+}>) {
+  if (rows.length === 0) return '';
+  return [
+    'HECHOS OFICIALES DEL UNIVERSO LORE',
+    ...rows.map((event) => {
+      const who = event.involved_personas.length
+        ? ` Personajes: ${event.involved_personas.join(', ')}.`
+        : '';
+      const when = event.happened_at ? ` Fecha: ${event.happened_at}.` : '';
+      return `- ${event.title}: ${event.summary} Estado: ${event.status}.${who}${when}`;
+    }),
+    'Estos eventos sí son parte del mundo compartido. No inventes otros acontecimientos como hechos oficiales.',
+  ].join('\n');
+}
+
 function formatRelationshipState(state: RelationshipState | null) {
   if (!state) {
     return 'ESTADO DE RELACIÓN\nEtapa: nueva. Mantén curiosidad y cercanía sin fingir confianza previa.';
@@ -458,6 +479,7 @@ export async function loadMemoryContext(
     personaResult,
     timelineResult,
     castResult,
+    worldResult,
     relationshipResult,
     learnedResult,
   ] = await Promise.all([
@@ -485,6 +507,12 @@ export async function loadMemoryContext(
       .select('slug,name,age,role_title,personality_summary,relationships')
       .eq('is_active', true)
       .order('name', { ascending: true }),
+    supabase
+      .from('lore_world_events')
+      .select('title,summary,involved_personas,status,happened_at,importance')
+      .order('importance', { ascending: false })
+      .order('happened_at', { ascending: false, nullsFirst: false })
+      .limit(8),
     supabase
       .from('lore_persona_relationship_state')
       .select('interaction_count,familiarity_score,affection_score,flirtation_score,trust_score,conflict_score,relationship_stage')
@@ -515,6 +543,13 @@ export async function loadMemoryContext(
     MAX_TIMELINE_CONTEXT,
   );
   const cast = (castResult.data ?? []) as CastMember[];
+  const worldEvents = (worldResult.data ?? []) as Array<{
+    title: string;
+    summary: string;
+    involved_personas: string[];
+    status: string;
+    happened_at: string | null;
+  }>;
   const relationship = (relationshipResult.data as RelationshipState | null) ?? null;
   const learned = (learnedResult.data as LearnedContext | null) ?? null;
 
@@ -526,6 +561,7 @@ export async function loadMemoryContext(
     formatLearnedContext(learned),
     formatRelationshipState(relationship),
     formatCast(cast, personaSlug),
+    formatWorldEvents(worldEvents),
   ].filter(Boolean);
 
   return sections.join('\n\n');
