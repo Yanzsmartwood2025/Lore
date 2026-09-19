@@ -51,8 +51,8 @@ type RankedCandidate = {
   score: number;
 };
 
-const USER_DAILY_SEARCH_LIMIT = 5;
-const GLOBAL_DAILY_SEARCH_LIMIT = 90;
+const USER_DAILY_SEARCH_LIMIT = 98;
+const GLOBAL_DAILY_SEARCH_LIMIT = 98;
 
 function extractJsonObject(raw: string) {
   const start = raw.indexOf('{');
@@ -599,7 +599,7 @@ export async function POST(request: Request) {
         {
           action: 'quota',
           error: userLimitReached
-            ? 'Ya usaste tus 5 búsquedas de YouTube de hoy. Mañana tendrás 5 nuevas.'
+            ? `Ya usaste tus ${USER_DAILY_SEARCH_LIMIT} búsquedas de YouTube de hoy. Mañana tendrás ${USER_DAILY_SEARCH_LIMIT} nuevas.`
             : 'Las búsquedas de YouTube disponibles para hoy se agotaron. Vuelve mañana.',
           userRemaining: quota.user_remaining,
           quotaDate: quota.quota_date,
