@@ -27,7 +27,7 @@ const MAX_STORAGE_MESSAGES = 50;
 
 export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
   const router = useRouter();
-  const { setAmbientCategory } = useMedia();
+  const { setAmbientCategory, playRequestedVideo } = useMedia();
   const { user, getIdToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -199,15 +199,50 @@ export function ChatInbox({ name, slug, avatar }: ChatInboxProps) {
     setError(null);
     setIsSending(true);
 
-    void fetch('/api/music-category', {
+    void fetch('/api/youtube-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: content }),
     })
       .then(async (response) => {
-        if (!response.ok) return;
-        const data = (await response.json()) as { category?: unknown };
-        if (isMusicCategory(data.category)) setAmbientCategory(data.category);
+        let data: {
+          action?: unknown;
+          videoId?: unknown;
+          mediaType?: unknown;
+        } = {};
+
+        try {
+          data = (await response.json()) as {
+            action?: unknown;
+            videoId?: unknown;
+            mediaType?: unknown;
+          };
+        } catch {
+          // Si la búsqueda exacta falla, dejamos que el ambiente musical siga funcionando.
+        }
+
+        if (
+          response.ok &&
+          data.action === 'play' &&
+          typeof data.videoId === 'string' &&
+          data.videoId
+        ) {
+          const startSeconds = data.mediaType === 'music' ? undefined : 0;
+          playRequestedVideo(data.videoId, startSeconds);
+          window.dispatchEvent(new CustomEvent('lore:youtube-reveal'));
+          return;
+        }
+
+        const categoryResponse = await fetch('/api/music-category', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: content }),
+        });
+        if (!categoryResponse.ok) return;
+        const categoryData = (await categoryResponse.json()) as { category?: unknown };
+        if (isMusicCategory(categoryData.category)) {
+          setAmbientCategory(categoryData.category);
+        }
       })
       .catch(() => undefined);
 
