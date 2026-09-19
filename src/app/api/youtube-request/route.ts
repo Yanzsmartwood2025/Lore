@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { requireUser } from '@/lib/supabase/server';
 
 type GroqResponse = {
@@ -424,11 +425,7 @@ async function fetchYouTubeCandidates(
 }
 
 async function consumeSearchQuota(
-  supabase: Awaited<ReturnType<typeof requireUser>> extends infer T
-    ? T extends { supabase: infer S }
-      ? S
-      : never
-    : never,
+  supabase: SupabaseClient,
   userId: string,
 ) {
   const { data, error } = await supabase
